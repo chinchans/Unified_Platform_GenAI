@@ -1,0 +1,320 @@
+{
+  "deployment_context": {
+    "cu_ip_address": "10.138.77.131",
+    "du_ip_address": "10.138.77.131",
+    "gnb_ip_address": "10.138.77.131",
+    "amf_ip_address": "192.168.70.132",
+    "core_network_machine_ip": "10.138.77.217",
+    "local_s_portc": "501",
+    "local_s_portd": "2152",
+    "remote_s_portc": "500",
+    "remote_s_portd": "2152",
+    "dnn": "oai",
+    "nssai_sst": "1",
+    "nssai_sd": "0xc",
+    "Deploy_command_cu_gnb_conf": "sudo RFSIMULATOR=server ./nr-softmodem -O ../../../targets/PROJECTS/GENERIC-NR-5GC/CONF/cu_gnb.conf --sa",
+    "Deploy_command_du_gnb_conf": "sudo RFSIMULATOR=server ./nr-softmodem -O ../../../targets/PROJECTS/GENERIC-NR-5GC/CONF/du_gnb.conf --sa"
+  },
+  "patterns": {
+    "pdcp_integrity": {
+      "keywords": [
+        "pdcp.*integrity",
+        "integrity.*failed",
+        "discard.*pdu.*integrity"
+      ],
+      "root_cause_template": "PDCP integrity verification failure in {layer} layer. This indicates a security issue where the integrity check of PDCP PDUs is failing. This is often caused by security key mismatch, incorrect integrity algorithm configuration, or COUNT/HFN synchronization issues.",
+      "suggested_fixes": [
+        "1. Check security key derivation in nr_pdcp_security.c",
+        "2. Verify integrity algorithm configuration in both UE and gNB",
+        "3. Check security context handling during handover if issue occurs during mobility",
+        "4. Review COUNT/HFN handling in PDCP entity"
+      ],
+      "specifications": [
+        "3GPP TS 38.323 - PDCP protocol specification",
+        "3GPP TS 38.323 Section 5.9 - Data PDU integrity protection",
+        "3GPP TS 33.501 - Security architecture for 5G system"
+      ],
+      "function_analysis": [
+        "Check PDCP integrity verification function implementation",
+        "Review security key handling in PDCP entity",
+        "Verify proper transfer of security context during mobility procedures"
+      ],
+      "config_params": [
+        "imsi",
+        "key",
+        "opc",
+        "dnn",
+        "nssai_sst",
+        "nssai_sd",
+        "amf",
+        "sqn",
+        "nmc_size"
+      ]
+    },
+    "rrc_setup": {
+      "keywords": [
+        "rrc",
+        "setup"
+      ],
+      "root_cause_template": "RRC connection establishment failure in {layer} layer. This indicates an issue during the RRC setup procedure. Common causes include ASN.1 encoding/decoding errors, UE capability mismatch, or resource allocation failures.",
+      "suggested_fixes": [
+        "1. Check ASN.1 encoding in nr_rrc_msg_encode.c",
+        "2. Verify RRC setup procedure implementation",
+        "3. Review UE capability handling",
+        "4. Check for resource allocation failures"
+      ],
+      "specifications": [
+        "3GPP TS 38.331 - RRC protocol specification",
+        "3GPP TS 38.331 Section 5.3.3 - RRC connection establishment",
+        "3GPP TS 38.306 - UE radio access capabilities"
+      ],
+      "function_analysis": [
+        "Check RRC setup function implementation",
+        "Review ASN.1 encoding functions",
+        "Verify resource allocation during RRC setup"
+      ]
+    },
+    "handover": {
+      "keywords": [
+        "handover"
+      ],
+      "root_cause_template": "Handover failure in {layer} layer. This indicates an issue during the mobility procedure. Common causes include target cell selection issues, security context transfer problems, or resource allocation failures at the target cell.",
+      "suggested_fixes": [
+        "1. Check handover preparation and execution procedure",
+        "2. Verify security context transfer during handover",
+        "3. Review resource allocation at target cell",
+        "4. Check UE measurements handling"
+      ],
+      "specifications": [
+        "3GPP TS 38.331 - RRC protocol specification",
+        "3GPP TS 38.331 Section 5.3.5 - RRC reconfiguration",
+        "3GPP TS 38.300 - NR and NG-RAN Overall Description"
+      ],
+      "function_analysis": [
+        "Check handover preparation functions",
+        "Review security context transfer during handover",
+        "Verify target cell resource allocation"
+      ]
+    },
+    "amf_association_failure": {
+      "keywords": [
+        "amf_association_failure",
+        "ngap",
+        "association",
+        "amf",
+        "associated",
+        "gNB"
+      ],
+      "root_cause_template": "{error_name} detected in {layer} layer with {severity} severity. This indicates an issue in the NGAP layer functionality, specifically in the association between the gNB and the AMF. In this case, no AMF is associated to the gNB. Common causes include incorrect NGAP message handling, missing or misconfigured AMF parameters, missing routing information or protocol mismatches.",
+      "suggested_fixes": [
+        "Recheck and correct AMF IP, port, and gNB configuration files: openairinterface5g/targets/PROJECTS/GENERIC-NR-5GC/CONF/cu_gnb.conf",
+        "Validate network configuration and ensure AMF parameters are correctly set in configuration files like AMF IP, port, ",
+        "Check if the AMF is reachable from the gNB",
+        "Ensure PLMN, TAI, and slices in gNB match those in AMF.",
+        "Add a static route to the AMF machine if it is running on a different network or interface: ip route add <AMF_IP> via <gNB_IP> dev <interface>"
+      ],
+      "specifications": [
+        "3GPP TS 38.413 - NG-RAN; NG Application Protocol (NGAP)",
+        "3GPP TS 38.413 Section 8 - NGAP procedures",
+        "3GPP TS 38.401 - NG-RAN architecture description"
+      ],
+      "function_analysis": [
+        "Check NGAP association setup function implementation",
+        "Review error handling and logging in NGAP association setup",
+        "Verify AMF parameters and network configuration",
+        "Check for protocol mismatches or unsupported NGAP messages"
+      ],
+      "default_function": "ngap_gNB_handle_nas_first_req"
+    },
+    "dynamic_rlc_buffer_overflow_causing_pa": {
+      "keywords": [
+        "rlc"
+      ],
+      "root_cause_template": "Error analysis for: RLC buffer overflow causing packet loss. This requires investigation of network connectivity, configuration parameters, and protocol-specific issues.",
+      "suggested_fixes": [
+        "1. Check network connectivity and configuration",
+        "2. Verify protocol-specific parameters",
+        "3. Review error logs for additional context",
+        "4. Validate system configuration files"
+      ],
+      "specifications": [
+        "3GPP TS 38.300 - NR and NG-RAN Overall Description",
+        "3GPP TS 38.331 - NR RRC Protocol Specification"
+      ],
+      "function_analysis": [
+        "Review error handling in relevant functions",
+        "Check parameter validation and initialization",
+        "Verify protocol state machine transitions"
+      ]
+    },
+    "dynamic_contention_resolution_timer_ha": {
+      "keywords": [
+        "contention"
+      ],
+      "root_cause_template": "Error analysis for: Contention resolution timer has expired, RA procedure has failed.... This requires investigation of network connectivity, configuration parameters, and protocol-specific issues.",
+      "suggested_fixes": [
+        "1. Check network connectivity and configuration",
+        "2. Verify protocol-specific parameters",
+        "3. Review error logs for additional context",
+        "4. Validate system configuration files"
+      ],
+      "specifications": [
+        "3GPP TS 38.300 - NR and NG-RAN Overall Description",
+        "3GPP TS 38.331 - NR RRC Protocol Specification"
+      ],
+      "function_analysis": [
+        "Review error handling in relevant functions",
+        "Check parameter validation and initialization",
+        "Verify protocol state machine transitions"
+      ]
+    },
+    "dynamic_pdcp_discard_nr_pdu_integrity_": {
+      "keywords": [
+        "PDCP",
+        "integrity",
+        "discard",
+        "NR PDU"
+      ],
+      "root_cause_template": "This error indicates that the Packet Data Convergence Protocol (PDCP) has discarded a New Radio (NR) Protocol Data Unit (PDU) due to integrity check failure. Common causes include issues with the encryption keys, incorrect configuration of the integrity protection algorithm, or problems in the radio link quality.",
+      "suggested_fixes": [
+        "1. Verify the integrity protection keys and ensure they are correctly configured.",
+        "2. Check the configuration of the integrity protection algorithm to ensure it matches the expected settings.",
+        "3. Monitor the radio link quality and address any issues that may be causing signal degradation.",
+        "4. Review the PDCP layer logs for additional context on the discard events and investigate any patterns."
+      ],
+      "specifications": [
+        "3GPP TS 38.322 - NR; Protocol specification for the Packet Data Convergence Protocol (PDCP)",
+        "3GPP TS 33.501 - Security architecture for 5G System"
+      ],
+      "function_analysis": [
+        "Function analysis point 1: Inspect the PDCP layer implementation for proper handling of integrity checks.",
+        "Function analysis point 2: Analyze the key management procedures to ensure keys are correctly distributed and updated.",
+        "Function analysis point 3: Debug the radio link control (RLC) layer to identify any retransmission issues that may lead to integrity failures."
+      ]
+    },
+    "dynamic_received_pdu_session_establish": {
+      "keywords": [
+        "PDU Session",
+        "Establishment Reject",
+        "5G",
+        "LTE"
+      ],
+      "root_cause_template": "This error indicates that the request to establish a PDU session has been rejected by the network. Common causes include insufficient resources, incorrect parameters in the request, or issues with the subscriber's profile.",
+      "suggested_fixes": [
+        "1. Verify the parameters in the PDU session establishment request for correctness.",
+        "2. Check the network resources to ensure they are available for new session establishment.",
+        "3. Review the subscriber's profile for any restrictions or limitations that may affect session establishment.",
+        "4. Monitor the signaling messages for any additional error information that may indicate the specific reason for rejection."
+      ],
+      "specifications": [
+        "3GPP TS 23.501 - System Architecture for the 5G System",
+        "3GPP TS 24.501 - Non-Access Stratum (NAS) Protocol for 5G System"
+      ],
+      "function_analysis": [
+        "Function analysis point 1: Inspect the logs for the PDU session establishment request and response messages.",
+        "Function analysis point 2: Analyze the network slice configuration to ensure compatibility with the requested PDU session.",
+        "Function analysis point 3: Debug the interaction between the AMF and UPF to identify any misconfigurations."
+      ]
+    },
+    "dynamic_error_message__\nmultiple_compi": {
+      "keywords": [
+        "unknown type",
+        "compilation error",
+        "F1AP UE context",
+        "free_byte_array"
+      ],
+      "root_cause_template": "This error indicates missing or incorrect type definitions and incompatible function arguments during compilation, commonly caused by missing header file inclusions, outdated or mismatched source files, or incorrect API usage in the F1AP UE context module.",
+      "suggested_fixes": [
+        "1. Verify and include the correct header files that define ‘F1AP_CSIResourceConfiguration_t’ and ‘F1AP_LTMConfigurationIDMapping_Item_t’, ensuring they are accessible in the compilation unit.",
+        "2. Check for recent changes or merges that might have removed or renamed these types and restore or update the source accordingly.",
+        "3. Review the usage of ‘free_byte_array’ to ensure the argument types match the function prototype; update calls or the function definition as necessary.",
+        "4. Clean and rebuild the entire project to eliminate stale object files that may cause type mismatches."
+      ],
+      "specifications": [
+        "3GPP TS 38.473 - F1 Application Protocol (F1AP)",
+        "3GPP TS 38.331 - NR Radio Resource Control (RRC); Protocol specification"
+      ],
+      "function_analysis": [
+        "Inspect the function(s) around lines 1429-1457 for missing or incorrect type declarations and verify the inclusion of relevant headers.",
+        "Trace the data structures related to ‘cSIResourceConfigToAddModList’ to confirm they are properly defined and used as structures or unions.",
+        "Examine the calls to ‘free_byte_array’ at lines 1724, 1730, and 1734 to confirm argument types and ensure compatibility with the function signature."
+      ]
+    },
+    "dynamic_error_message_\n/usr/bin/ld_ope": {
+      "keywords": [
+        "undefined reference",
+        "asn_DEF_F1AP_LTMConfiguration",
+        "linker error"
+      ],
+      "root_cause_template": "This error indicates that the linker cannot find the definition of the symbol `asn_DEF_F1AP_LTMConfiguration`, which typically means that the corresponding ASN.1 generated source or object files for the F1AP LTMConfiguration message are missing, not compiled, or not linked properly. Common causes include missing source files, incorrect build configurations, or incomplete ASN.1 compilation for the F1AP protocol messages.",
+      "suggested_fixes": [
+        "1. Verify that the ASN.1 specification for F1AP_LTMConfiguration is included and correctly compiled into the project using the ASN.1 compiler.",
+        "2. Ensure that the generated source files and object files for F1AP_LTMConfiguration are present and included in the build system and linker inputs.",
+        "3. Check the build configuration and Makefiles to confirm that libasn1_f1ap.a is properly built and linked, and that no files are excluded.",
+        "4. Clean and rebuild the entire project to avoid stale or missing object files causing unresolved references."
+      ],
+      "specifications": [
+        "3GPP TS 38.473 - F1 Application Protocol (F1AP)",
+        "3GPP TS 38.331 - Radio Resource Control (RRC) protocol specification"
+      ],
+      "function_analysis": [
+        "Inspect the compilation logs to confirm that ASN.1 compiler generated files for F1AP_LTMConfiguration are created without errors.",
+        "Check the source directory openair2/F1AP/MESSAGES for presence of F1AP_LTMConfiguration related source and header files.",
+        "Verify that the linker command line includes libasn1_f1ap.a and that this static library contains the symbol `asn_DEF_F1AP_LTMConfiguration` using tools like nm or objdump."
+      ]
+    },
+    "dynamic_error_message_cc1_fatal_error_": {
+      "keywords": [
+        "missing file",
+        "build error",
+        "F1AP_LTMConfigurationIDMapping_Item.c",
+        "compilation terminated"
+      ],
+      "root_cause_template": "This error indicates that the compiler cannot find the source file 'F1AP_LTMConfigurationIDMapping_Item.c' during the build process. Common causes include missing or incorrectly generated source files, incomplete or failed code generation steps, or incorrect file paths in the build configuration.",
+      "suggested_fixes": [
+        "1. Verify that the file 'F1AP_LTMConfigurationIDMapping_Item.c' exists in the specified directory or the expected build output directory.",
+        "2. Check the code generation scripts or ASN.1 compilation steps to ensure that the source file is correctly generated before the build.",
+        "3. Inspect and correct the CMakeLists.txt or build scripts to ensure file paths and dependencies are properly specified.",
+        "4. Clean the build environment (e.g., run 'make clean') and rebuild to regenerate missing files and resolve stale build artifacts."
+      ],
+      "specifications": [
+        "3GPP TS 38.413 - NG-RAN; F1 Application Protocol (F1AP)",
+        "3GPP TS 38.300 - NR; Overall description; Stage-2"
+      ],
+      "function_analysis": [
+        "Check the ASN.1 compiler invocation logs to confirm if 'F1AP_LTMConfigurationIDMapping_Item.c' was generated or if there was a failure.",
+        "Trace the build dependency graph to ensure that the generation of ASN.1 source files occurs before compilation steps.",
+        "Review the include paths and source file lists in the CMake configuration related to the F1AP module to detect misconfigurations."
+      ]
+    },
+    "dynamic_error_message_\"/build_oai_line": {
+      "keywords": [
+        "cmake",
+        "command not found",
+        "build failure"
+      ],
+      "root_cause_template": "This error indicates that the build script attempted to invoke 'cmake' but the command was not found in the system environment. Common causes include cmake not being installed, not being added to the system PATH, or environment misconfiguration.",
+      "suggested_fixes": [
+        "1. Verify if cmake is installed by running 'cmake --version' in the terminal.",
+        "2. If cmake is not installed, install it using the appropriate package manager (e.g., apt-get install cmake on Ubuntu).",
+        "3. Ensure that the cmake executable path is included in the system PATH environment variable.",
+        "4. Restart the terminal or system after installation to apply environment changes and retry the build."
+      ],
+      "specifications": [
+        "3GPP TS 23.501 - System Architecture for the 5G System (5GS)",
+        "3GPP TS 36.300 - E-UTRA and E-UTRAN Overall Description"
+      ],
+      "function_analysis": [
+        "Check the build script at line 503 to confirm the invocation of cmake and capture the environment variables at that point.",
+        "Validate the PATH environment variable within the build environment to ensure cmake's directory is included.",
+        "Review the build environment setup steps or Docker/container configuration to confirm cmake installation and accessibility."
+      ]
+    }
+  },
+  "metadata": {
+    "version": "1.0",
+    "description": "Structured error patterns for telecom error fixing pipeline",
+    "last_updated": "2025-09-11",
+    "total_patterns": 4
+  }
+}

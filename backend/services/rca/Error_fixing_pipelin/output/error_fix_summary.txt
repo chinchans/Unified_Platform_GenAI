@@ -1,0 +1,30 @@
+Error Fix Summary Report
+============================================================
+
+Error: ERROR MESSAGE:
+Compilation errors in function ‘encode_drbs_to_setupmod’ and related functions in file openair2/F1AP/lib/f1ap_ue_context.c:
+
+- Unknown type name ‘F1AP_ProtocolExtensionContainer_10696P83_t’ (did you mean ‘F1AP_ProtocolExtensionContainer_19016P83_t’?)
+- Request for member ‘list’ in something not a structure or union at lines 671, 679, 729, 737, 786, 788, 789, 853, 854
+- Multiple errors indicating misuse of ‘ext->list’ where ‘ext’ is not a structure or union
+- Compilation terminated with error 1 in openair2/F1AP/lib/f1ap_ue_context.c during build of target f1ap_lib
+- Build failed with error 2 for target nr-softmodem
+
+Context:
+These errors prevent successful compilation of critical F1AP UE context handling code
+Log File: C:\Users\JayasviBattu\Documents\Unified_Platform\backend\resources\rca_logs\0cd84185-189d-4048-80e0-ffa51f196fe5_Build_gNB_fail_2.log
+Analysis Date: 2026-04-17 16:33:45
+
+Deployment Context:
+- Role: CU
+- Active Configs: 0
+- Network: gNB=None, AMF=None
+
+Phase 2 Results:
+- Retrieval Method: compiler_ground_truth_primary_only
+- Functions: 6
+- Configs: 0
+
+Phase 3 Results:
+- Root Cause: The root cause of the compilation errors is the use of incorrect ASN.1 generated type names for F1AP protocol extension containers. The compiler explicitly suggests replacing all occurrences of 'F1AP_...
+- Fix Available: No

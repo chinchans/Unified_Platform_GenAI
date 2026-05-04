@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Unified Platform UI</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div id="app">
+      <section id="splash-screen" class="screen active">
+        <div class="splash-card">
+          <h1>Unified Platform</h1>
+          <p>Code Gen | Test Automation | RCA & Bug Fixing</p>
+          <button id="enter-platform-btn" class="primary">Start</button>
+        </div>
+      </section>
+
+      <section id="main-screen" class="screen">
+        <div class="app-shell-header">
+          <div class="app-shell-header-left">
+            <div class="app-shell-title">Unified Platform UI</div>
+            <div class="app-shell-context">Intent-Driven Dev Intelligence</div>
+          </div>
+          <button class="titlebar-settings-btn" type="button" aria-label="Settings" title="Settings">
+            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M19.14 12.94c.04-.31.06-.62.06-.94s-.02-.63-.06-.94l2.03-1.58a.5.5 0 0 0 .12-.64l-1.92-3.32a.5.5 0 0 0-.6-.22l-2.39.96a7.02 7.02 0 0 0-1.63-.94l-.36-2.54a.5.5 0 0 0-.49-.42h-3.84a.5.5 0 0 0-.49.42l-.36 2.54c-.57.23-1.12.54-1.63.94l-2.39-.96a.5.5 0 0 0-.6.22L2.71 8.84a.5.5 0 0 0 .12.64l2.03 1.58c-.04.31-.06.62-.06.94s.02.63.06.94L2.83 14.5a.5.5 0 0 0-.12.64l1.92 3.32c.13.23.4.32.64.22l2.39-.96c.51.4 1.06.72 1.63.94l.36 2.54c.04.24.25.42.49.42h3.84c.24 0 .45-.18.49-.42l.36-2.54c.57-.23 1.12-.54 1.63-.94l2.39.96c.24.1.51.01.64-.22l1.92-3.32a.5.5 0 0 0-.12-.64zM12 15.5A3.5 3.5 0 1 1 12 8a3.5 3.5 0 0 1 0 7.5z"/>
+            </svg>
+            <span>Settings</span>
+          </button>
+        </div>
+        <div class="layout">
+          <aside class="left-panel">
+            <div class="panel top-panel">
+              <div class="panel-head-row">
+                <h3>User Intent</h3>
+                <span class="status-pill">Ready to run</span>
+              </div>
+              <textarea
+                id="intent-input"
+                placeholder="Enter 5G feature intent or ambiguity resolution..."
+              ></textarea>
+              <div id="self-learning-ambiguity-callout" class="ambiguity-callout hidden" aria-live="polite">
+                <div class="ambiguity-callout-heading">Self-learning — open points</div>
+                <p class="ambiguity-callout-lead">
+                  The pipeline paused before final prompt generation. Answer in the box above, then click
+                  Submit Resolution.
+                </p>
+                <ul id="ambiguity-item-list" class="ambiguity-item-list"></ul>
+              </div>
+              <div class="actions" id="left-actions">
+                <button id="primary-action-btn" class="primary">Generate Prompt</button>
+                <button id="generate-code-btn" class="secondary hidden">Generate Code</button>
+                <button id="commit-btn" class="success hidden">Commit</button>
+                <button id="push-btn" class="success hidden">Push</button>
+              </div>
+              <div id="commit-message-group" class="commit-message-group hidden">
+                <label for="commit-message-input">Commit message</label>
+                <textarea
+                  id="commit-message-input"
+                  class="commit-message-input"
+                  placeholder="Enter commit message..."
+                ></textarea>
+              </div>
+            </div>
+
+            <div class="panel bottom-panel">
+              <div class="milestones-header">
+                <h3>Progress Milestones</h3>
+                <button id="open-git-history-btn" class="git-history-btn" type="button" title="Open Git History">
+                  <span class="git-logo" aria-hidden="true">
+                    <svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" width="100" height="100" viewBox="0 0 50 50">
+                      <path d="M 46.792969 22.089844 L 27.910156 3.207031 C 27.109375 2.402344 26.054688 2 25 2 C 23.945313 2 22.890625 2.402344 22.089844 3.207031 L 18.355469 6.941406 L 22.976563 11.5625 C 24.511719 10.660156 26.511719 10.855469 27.828125 12.171875 C 29.144531 13.488281 29.335938 15.488281 28.433594 17.019531 L 32.976563 21.5625 C 34.511719 20.660156 36.511719 20.855469 37.828125 22.171875 C 39.390625 23.734375 39.390625 26.265625 37.828125 27.828125 C 36.265625 29.390625 33.734375 29.390625 32.171875 27.828125 C 30.855469 26.511719 30.660156 24.511719 31.5625 22.976563 L 27.019531 18.433594 C 26.695313 18.625 26.355469 18.765625 26 18.855469 L 26 31.140625 C 27.722656 31.585938 29 33.136719 29 35 C 29 37.210938 27.210938 39 25 39 C 22.789063 39 21 37.210938 21 35 C 21 33.136719 22.277344 31.585938 24 31.140625 L 24 18.855469 C 23.332031 18.683594 22.695313 18.351563 22.171875 17.828125 C 20.855469 16.511719 20.664063 14.511719 21.566406 12.980469 L 16.941406 8.355469 L 3.207031 22.089844 C 1.597656 23.695313 1.597656 26.304688 3.207031 27.910156 L 22.089844 46.792969 C 22.890625 47.597656 23.945313 48 25 48 C 26.054688 48 27.109375 47.597656 27.910156 46.792969 L 46.792969 27.910156 C 48.402344 26.304688 48.402344 23.695313 46.792969 22.089844 Z"></path>
+                    </svg>
+                  </span>
+                  <span>Git History</span>
+                </button>
+              </div>
+              <ul id="milestone-list" class="milestones"></ul>
+            </div>
+          </aside>
+
+          <main class="center-panel panel">
+            <div class="center-header-tabs">
+              <button class="header-tab active" type="button">Logs & Outputs</button>
+            </div>
+            <div class="right-panel-header">
+              <div class="right-panel-heading">
+                <h3>Live Output</h3>
+                <span class="pipeline-badge">SYS</span>
+              </div>
+              <div class="right-panel-actions">
+                <div id="running-indicator" class="running-indicator hidden" aria-live="polite">
+                  <span class="running-spinner" aria-hidden="true"></span>
+                  <span id="running-indicator-text">Running...</span>
+                </div>
+                <div id="review-actions" class="review-actions hidden">
+                  <button id="accept-btn" class="success">Accept</button>
+                  <button id="reject-btn" class="danger">Reject</button>
+                </div>
+              </div>
+            </div>
+            <div id="log-stream" class="log-stream"></div>
+          </main>
+
+          <aside class="pipeline-panel panel">
+            <div class="pipeline-panel-head">
+              <h3>Pipeline</h3>
+              <span class="pipeline-count">Phase 1 of 7</span>
+            </div>
+            <div id="pipeline-empty-state" class="pipeline-empty-state">
+              Pipeline phases will appear after you start a run.
+            </div>
+            <div id="pipeline-track" class="pipeline-track hidden">
+              <div class="pipeline-item active">
+                <div class="pipeline-title">Intent Decomposition</div>
+                <div class="pipeline-subtitle">Requirement integrity and expansion checks</div>
+              </div>
+              <div class="pipeline-item">Prompt Generation</div>
+              <div class="pipeline-item">Code Generation</div>
+              <div class="pipeline-item">Review & Commit</div>
+              <div class="pipeline-item">CI/CD Pipeline</div>
+              <div class="pipeline-item">Test Execution</div>
+              <div class="pipeline-item">RCA Fix Loop</div>
+              <div class="pipeline-item">Done</div>
+            </div>
+          </aside>
+        </div>
+      </section>
+
+      <section id="git-history-screen" class="screen">
+        <div class="git-history-layout">
+          <aside class="panel git-history-left">
+            <div class="git-history-left-header">
+              <h3>Git History</h3>
+              <button id="close-git-history-btn" class="secondary" type="button">Back</button>
+            </div>
+            <label class="git-branch-label" for="git-branch-select">Branch</label>
+            <div class="git-branch-row">
+              <select id="git-branch-select" class="git-branch-select"></select>
+              <button id="git-refresh-btn" class="git-refresh-btn" type="button" title="Reload git history" aria-label="Reload git history">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
+                  <path d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 1 1 .908-.418A6 6 0 1 1 8 2v1z"/>
+                  <path d="M8 4.5a.5.5 0 0 1 .5-.5h3.793L10.146 1.854a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1-.353.854h-5a.5.5 0 0 1-.5-.5z"/>
+                </svg>
+              </button>
+            </div>
+            <div id="git-commit-tree" class="git-commit-tree"></div>
+          </aside>
+
+          <main class="panel git-history-right">
+            <div id="git-commit-detail" class="git-commit-detail">
+              <div class="git-empty-state">Select a commit to view file-wise changes.</div>
+            </div>
+          </main>
+        </div>
+      </section>
+    </div>
+
+    <script src="./stream-utils.js"></script>
+    <script src="./renderer.js"></script>
+  </body>
+</html>

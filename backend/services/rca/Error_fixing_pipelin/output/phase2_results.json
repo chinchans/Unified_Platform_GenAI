@@ -1,0 +1,2417 @@
+{
+  "error_message": "ERROR MESSAGE:\nCompilation errors in function ‘encode_drbs_to_setupmod’ and related functions in file openair2/F1AP/lib/f1ap_ue_context.c:\n\n- Unknown type name ‘F1AP_ProtocolExtensionContainer_10696P83_t’ (did you mean ‘F1AP_ProtocolExtensionContainer_19016P83_t’?)\n- Request for member ‘list’ in something not a structure or union at lines 671, 679, 729, 737, 786, 788, 789, 853, 854\n- Multiple errors indicating misuse of ‘ext->list’ where ‘ext’ is not a structure or union\n- Compilation terminated with error 1 in openair2/F1AP/lib/f1ap_ue_context.c during build of target f1ap_lib\n- Build failed with error 2 for target nr-softmodem\n\nContext:\nThese errors prevent successful compilation of critical F1AP UE context handling code",
+  "timestamp": "2026-04-17T16:33:05.757114",
+  "log_file": "..\\..\\..\\resources\\rca_logs\\0cd84185-189d-4048-80e0-ffa51f196fe5_Build_gNB_fail_2.log",
+  "phase2_results": {
+    "suspected_functions": [
+      {
+        "function_name": "encode_cu_to_du_rrc_info",
+        "file_path": "openair2/F1AP/lib/f1ap_ue_context.c",
+        "relevance_score": 1.0,
+        "source": "compiler_ground_truth_primary",
+        "code_snippet": " * the OAI Public License, Version 1.1  (the \"License\"); you may not use this file\n * except in compliance with the License.\n * You may obtain a copy of the License at\n *\n *      http://www.openairinterface.org/?page_id=698\n *\n * Unless required by applicable law or agreed to in writing, software\n * distributed under the License is distributed on an \"AS IS\" BASIS,\n * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n * See the License for the specific language governing permissions and\n * limitations under the License.\n *-------------------------------------------------------------------------------\n * For more information about the OpenAirInterface (OAI) Software Alliance:\n *      contact@openairinterface.org\n */\n\n #include \"f1ap_ue_context.h\"\n\n #include \"f1ap_lib_common.h\"\n #include \"f1ap_lib_includes.h\"\n #include \"f1ap_messages_types.h\"\n \n #include \"common/utils/assertions.h\"\n #include \"openair3/UTILS/conversions.h\"\n #include \"common/utils/oai_asn1.h\"\n #include \"common/utils/utils.h\"\n #include \"common/utils/ds/byte_array.h\"\n \n static F1AP_CUtoDURRCInformation_t encode_cu_to_du_rrc_info(const f1ap_cu_to_du_rrc_info_t *cu2du)\n {\n   F1AP_CUtoDURRCInformation_t enc = {0};\n \n   /* optional: cG_ConfigInfo */\n   if (cu2du->cg_configinfo) {\n     asn1cCalloc(enc.cG_ConfigInfo, cG_ConfigInfo);\n     const byte_array_t *ba = cu2du->cg_configinfo;\n     OCTET_STRING_fromBuf(cG_ConfigInfo, (const char *)ba->buf, ba->len);\n   }\n \n   /* optional: uE_CapabilityRAT_ContainerList */\n   if (cu2du->ue_cap) {\n     asn1cCalloc(enc.uE_CapabilityRAT_ContainerList, uE_CapabilityRAT_ContainerList);\n     const byte_array_t *ba = cu2du->ue_cap;\n     OCTET_STRING_fromBuf(uE_CapabilityRAT_ContainerList, (const char *)ba->buf, ba->len);\n   }\n \n   /* optional: measConfig */\n   if (cu2du->meas_config) {\n     asn1cCalloc(enc.measConfig, measConfig);\n     const byte_array_t *ba = cu2du->meas_config;\n     OCTET_STRING_fromBuf(measConfig, (const char *)ba->buf, ba->len);\n   }\n \n   /* optional: HandoverPreparationInformation */\n   if (cu2du->ho_prep_info) {\n     F1AP_ProtocolExtensionContainer_19016P60_t *p = calloc_or_fail(1, sizeof(*p));\n     enc.iE_Extensions = (struct F1AP_ProtocolExtensionContainer *)p;\n     asn1cSequenceAdd(p->list, F1AP_CUtoDURRCInformation_ExtIEs_t, ie_ext);\n     ie_ext->id = F1AP_ProtocolIE_ID_id_HandoverPreparationInformation;\n     ie_ext->criticality = F1AP_Criticality_ignore;\n     ie_ext->extensionValue.present = F1AP_CUtoDURRCInformation_ExtIEs__extensionValue_PR_HandoverPreparationInformation;\n     const byte_array_t *ba = cu2du->ho_prep_info;\n     F1AP_HandoverPreparationInformation_t *hpi = &ie_ext->extensionValue.choice.HandoverPreparationInformation;\n     OCTET_STRING_fromBuf(hpi, (const char *)ba->buf, ba->len);\n   }\n   return enc;\n }\n \n static bool decode_cu_to_du_rrc_info(f1ap_cu_to_du_rrc_info_t *dec, const F1AP_CUtoDURRCInformation_t *cu2du)\n {\n   if (cu2du->cG_ConfigInfo) {\n     dec->cg_configinfo = calloc_or_fail(1, sizeof(*dec->cg_configinfo));\n     const F1AP_CG_ConfigInfo_t *cgci = cu2du->cG_ConfigInfo;\n     *dec->cg_configinfo = create_byte_array(cgci->size, (uint8_t*)cgci->buf);\n   }\n   if (cu2du->uE_CapabilityRAT_ContainerList) {\n     dec->ue_cap = calloc_or_fail(1, sizeof(*dec->ue_cap));\n     const F1AP_UE_CapabilityRAT_ContainerList_t *l = cu2du->uE_CapabilityRAT_ContainerList;\n     *dec->ue_cap = create_byte_array(l->size, (uint8_t*)l->buf);\n   }\n   if (cu2du->measConfig) {\n     dec->meas_config = calloc_or_fail(1, sizeof(*dec->meas_config));\n     const F1AP_MeasConfig_t *mc = cu2du->measConfig;\n     *dec->meas_config = create_byte_array(mc->size, (uint8_t*)mc->buf);\n   }\n   if (cu2du->iE_Extensions) {\n     const F1AP_ProtocolExtensionContainer_19016P60_t *ext = (const F1AP_ProtocolExtensionContainer_19016P60_t *)cu2du->iE_Extensions;\n     for (int i = 0; i < ext->list.count; ++i) {\n       const F1AP_CUtoDURRCInformation_ExtIEs_t *cu2du_info_ext = ext->list.array[i];\n       switch (cu2du_info_ext->id) {\n         case F1AP_ProtocolIE_ID_id_HandoverPreparationInformation:\n           dec->ho_prep_info = calloc_or_fail(1, sizeof(*dec->ho_prep_info));\n           const F1AP_HandoverPreparationInformation_t *hopi = &cu2du_info_ext->extensionValue.choice.HandoverPreparationInformation;\n           *dec->ho_prep_info = create_byte_array(hopi->size, (uint8_t*) hopi->buf);\n           break;\n         default:\n           PRINT_ERROR(\"received unsupported F1AP CUtoDURRCInfo extension container %ld\\n\", cu2du_info_ext->id);\n       }\n     }\n   }\n   return true;\n }\n \n static f1ap_cu_to_du_rrc_info_t cp_cu_to_du_rrc_info(const f1ap_cu_to_du_rrc_info_t *src)\n {\n   f1ap_cu_to_du_rrc_info_t dst = {0};\n   CP_OPT_BYTE_ARRAY(dst.cg_configinfo, src->cg_configinfo);\n   CP_OPT_BYTE_ARRAY(dst.ue_cap, src->ue_cap);\n   CP_OPT_BYTE_ARRAY(dst.meas_config, src->meas_config);\n   CP_OPT_BYTE_ARRAY(dst.ho_prep_info, src->ho_prep_info);\n",
+        "reason": "Primary compiler cluster [unknown_type_name]: unknown type name ‘F1AP_ProtocolExtensionContainer_10696P60_t’; did you mean ‘F1AP_ProtocolExtensionContainer_19016P60_t’?"
+      },
+      {
+        "function_name": "decode_cu_to_du_rrc_info",
+        "file_path": "openair2/F1AP/lib/f1ap_ue_context.c",
+        "relevance_score": 1.0,
+        "source": "compiler_ground_truth_primary",
+        "code_snippet": " \n   /* optional: cG_ConfigInfo */\n   if (cu2du->cg_configinfo) {\n     asn1cCalloc(enc.cG_ConfigInfo, cG_ConfigInfo);\n     const byte_array_t *ba = cu2du->cg_configinfo;\n     OCTET_STRING_fromBuf(cG_ConfigInfo, (const char *)ba->buf, ba->len);\n   }\n \n   /* optional: uE_CapabilityRAT_ContainerList */\n   if (cu2du->ue_cap) {\n     asn1cCalloc(enc.uE_CapabilityRAT_ContainerList, uE_CapabilityRAT_ContainerList);\n     const byte_array_t *ba = cu2du->ue_cap;\n     OCTET_STRING_fromBuf(uE_CapabilityRAT_ContainerList, (const char *)ba->buf, ba->len);\n   }\n \n   /* optional: measConfig */\n   if (cu2du->meas_config) {\n     asn1cCalloc(enc.measConfig, measConfig);\n     const byte_array_t *ba = cu2du->meas_config;\n     OCTET_STRING_fromBuf(measConfig, (const char *)ba->buf, ba->len);\n   }\n \n   /* optional: HandoverPreparationInformation */\n   if (cu2du->ho_prep_info) {\n     F1AP_ProtocolExtensionContainer_19016P60_t *p = calloc_or_fail(1, sizeof(*p));\n     enc.iE_Extensions = (struct F1AP_ProtocolExtensionContainer *)p;\n     asn1cSequenceAdd(p->list, F1AP_CUtoDURRCInformation_ExtIEs_t, ie_ext);\n     ie_ext->id = F1AP_ProtocolIE_ID_id_HandoverPreparationInformation;\n     ie_ext->criticality = F1AP_Criticality_ignore;\n     ie_ext->extensionValue.present = F1AP_CUtoDURRCInformation_ExtIEs__extensionValue_PR_HandoverPreparationInformation;\n     const byte_array_t *ba = cu2du->ho_prep_info;\n     F1AP_HandoverPreparationInformation_t *hpi = &ie_ext->extensionValue.choice.HandoverPreparationInformation;\n     OCTET_STRING_fromBuf(hpi, (const char *)ba->buf, ba->len);\n   }\n   return enc;\n }\n \n static bool decode_cu_to_du_rrc_info(f1ap_cu_to_du_rrc_info_t *dec, const F1AP_CUtoDURRCInformation_t *cu2du)\n {\n   if (cu2du->cG_ConfigInfo) {\n     dec->cg_configinfo = calloc_or_fail(1, sizeof(*dec->cg_configinfo));\n     const F1AP_CG_ConfigInfo_t *cgci = cu2du->cG_ConfigInfo;\n     *dec->cg_configinfo = create_byte_array(cgci->size, (uint8_t*)cgci->buf);\n   }\n   if (cu2du->uE_CapabilityRAT_ContainerList) {\n     dec->ue_cap = calloc_or_fail(1, sizeof(*dec->ue_cap));\n     const F1AP_UE_CapabilityRAT_ContainerList_t *l = cu2du->uE_CapabilityRAT_ContainerList;\n     *dec->ue_cap = create_byte_array(l->size, (uint8_t*)l->buf);\n   }\n   if (cu2du->measConfig) {\n     dec->meas_config = calloc_or_fail(1, sizeof(*dec->meas_config));\n     const F1AP_MeasConfig_t *mc = cu2du->measConfig;\n     *dec->meas_config = create_byte_array(mc->size, (uint8_t*)mc->buf);\n   }\n   if (cu2du->iE_Extensions) {\n     const F1AP_ProtocolExtensionContainer_19016P60_t *ext = (const F1AP_ProtocolExtensionContainer_19016P60_t *)cu2du->iE_Extensions;\n     for (int i = 0; i < ext->list.count; ++i) {\n       const F1AP_CUtoDURRCInformation_ExtIEs_t *cu2du_info_ext = ext->list.array[i];\n       switch (cu2du_info_ext->id) {\n         case F1AP_ProtocolIE_ID_id_HandoverPreparationInformation:\n           dec->ho_prep_info = calloc_or_fail(1, sizeof(*dec->ho_prep_info));\n           const F1AP_HandoverPreparationInformation_t *hopi = &cu2du_info_ext->extensionValue.choice.HandoverPreparationInformation;\n           *dec->ho_prep_info = create_byte_array(hopi->size, (uint8_t*) hopi->buf);\n           break;\n         default:\n           PRINT_ERROR(\"received unsupported F1AP CUtoDURRCInfo extension container %ld\\n\", cu2du_info_ext->id);\n       }\n     }\n   }\n   return true;\n }\n \n static f1ap_cu_to_du_rrc_info_t cp_cu_to_du_rrc_info(const f1ap_cu_to_du_rrc_info_t *src)\n {\n   f1ap_cu_to_du_rrc_info_t dst = {0};\n   CP_OPT_BYTE_ARRAY(dst.cg_configinfo, src->cg_configinfo);\n   CP_OPT_BYTE_ARRAY(dst.ue_cap, src->ue_cap);\n   CP_OPT_BYTE_ARRAY(dst.meas_config, src->meas_config);\n   CP_OPT_BYTE_ARRAY(dst.ho_prep_info, src->ho_prep_info);\n   return dst;\n }\n \n static bool eq_ba(const byte_array_t a, const byte_array_t b)\n {\n   return eq_byte_array(&a, &b);\n }\n \n static bool eq_cu_to_du_rrc_info(const f1ap_cu_to_du_rrc_info_t *a, const f1ap_cu_to_du_rrc_info_t *b)\n {\n   _F1_EQ_CHECK_OPTIONAL_IE(a, b, cg_configinfo, eq_ba);\n   _F1_EQ_CHECK_OPTIONAL_IE(a, b, ue_cap, eq_ba);\n   _F1_EQ_CHECK_OPTIONAL_IE(a, b, meas_config, eq_ba);\n   _F1_EQ_CHECK_OPTIONAL_IE(a, b, ho_prep_info, eq_ba);\n   return true;\n }\n \n static void free_cu_to_du_rrc_info(f1ap_cu_to_du_rrc_info_t *cu2du)\n {\n   FREE_OPT_BYTE_ARRAY(cu2du->cg_configinfo);\n   FREE_OPT_BYTE_ARRAY(cu2du->ue_cap);\n   FREE_OPT_BYTE_ARRAY(cu2du->meas_config);\n   FREE_OPT_BYTE_ARRAY(cu2du->ho_prep_info);\n }\n \n static F1AP_DUtoCURRCInformation_t encode_du_to_cu_rrc_info(const f1ap_du_to_cu_rrc_info_t *du2cu)\n {\n   F1AP_DUtoCURRCInformation_t enc = {0};\n \n   /* mandatory: cellGroupConfig */\n   const byte_array_t *ba = &du2cu->cell_group_config;\n",
+        "reason": "Primary compiler cluster [unknown_type_name]: unknown type name ‘F1AP_ProtocolExtensionContainer_10696P60_t’"
+      },
+      {
+        "function_name": "encode_drbs_to_setup",
+        "file_path": "openair2/F1AP/lib/f1ap_ue_context.c",
+        "relevance_score": 1.0,
+        "source": "compiler_ground_truth_primary",
+        "code_snippet": " }\n \n static f1ap_up_tnl_t cp_up_tnl(const f1ap_up_tnl_t *orig)\n {\n   f1ap_up_tnl_t cp = { .teid = orig->teid, };\n   memcpy(&cp.tl_address, &orig->tl_address, sizeof(orig->tl_address));\n   return cp;\n }\n \n static bool eq_up_tnl(const f1ap_up_tnl_t *a, const f1ap_up_tnl_t *b)\n {\n   if (memcmp(&a->tl_address, &b->tl_address, sizeof(a->tl_address)) != 0) {\n     PRINT_ERROR(\"tl_address mismatch\\n\");\n     return false;\n   }\n   _F1_EQ_CHECK_INT(a->teid, b->teid);\n   return true;\n }\n \n static void free_up_tnl(const f1ap_up_tnl_t *tnl)\n {\n   // nothing to free\n }\n \n /* Encode a DRBs_ToSetup list for UE Context Setup Request, from f1ap_drb_to_setup_t. */\n static F1AP_DRBs_ToBeSetup_List_t encode_drbs_to_setup(int n, const f1ap_drb_to_setup_t *drbs)\n {\n   F1AP_DRBs_ToBeSetup_List_t list = {0};\n   for (int i = 0; i < n; ++i) {\n     const f1ap_drb_to_setup_t *drb = &drbs[i];\n     asn1cSequenceAdd(list, F1AP_DRBs_ToBeSetup_ItemIEs_t, itie);\n     itie->id = F1AP_ProtocolIE_ID_id_DRBs_ToBeSetup_Item;\n     itie->criticality = F1AP_Criticality_reject;\n     itie->value.present = F1AP_DRBs_ToBeSetup_ItemIEs__value_PR_DRBs_ToBeSetup_Item;\n \n     F1AP_DRBs_ToBeSetup_Item_t *it = &itie->value.choice.DRBs_ToBeSetup_Item;\n     it->dRBID = drb->id;\n     AssertFatal(drb->qos_choice == F1AP_QOS_CHOICE_NR, \"only NR QoS choice implemented\\n\");\n     it->qoSInformation.present = F1AP_QoSInformation_PR_choice_extension;\n     F1AP_QoSInformation_ExtIEs_t *qos_ext_ie = calloc_or_fail(1, sizeof(*qos_ext_ie));\n     it->qoSInformation.choice.choice_extension = (struct F1AP_ProtocolIE_SingleContainer *)qos_ext_ie;\n     qos_ext_ie->id = F1AP_ProtocolIE_ID_id_DRB_Information;\n     qos_ext_ie->criticality = F1AP_Criticality_reject;\n     qos_ext_ie->value.present = F1AP_QoSInformation_ExtIEs__value_PR_DRB_Information;\n     qos_ext_ie->value.choice.DRB_Information = encode_drb_info_nr(&drb->nr);\n \n     /* 12.1.3 uLUPTNLInformation_ToBeSetup_List */\n     for (int j = 0; j < drb->up_ul_tnl_len; j++) {\n       DevAssert(drb->up_ul_tnl[j].teid > 0);\n       asn1cSequenceAdd(it->uLUPTNLInformation_ToBeSetup_List.list, F1AP_ULUPTNLInformation_ToBeSetup_Item_t, tnl_it);\n       tnl_it->uLUPTNLInformation = encode_up_tnl(&drb->up_ul_tnl[j]);\n     }\n \n     it->rLCMode = rlc_mode_to_asn1(drb->rlc_mode);\n \n     F1AP_ProtocolExtensionContainer_19016P82_t *ext = calloc_or_fail(1, sizeof(*ext));\n     it->iE_Extensions = (struct F1AP_ProtocolExtensionContainer *)ext;\n     asn1cSequenceAdd(ext->list, F1AP_DRBs_ToBeSetup_ItemExtIEs_t, ext_ie);\n     ext_ie->id = F1AP_ProtocolIE_ID_id_DLPDCPSNLength;\n     ext_ie->criticality = F1AP_Criticality_ignore;\n     ext_ie->extensionValue.present = F1AP_DRBs_ToBeSetup_ItemExtIEs__extensionValue_PR_PDCPSNLength;\n     AssertFatal(drb->dl_pdcp_sn_len != NULL, \"dl_pdcp_sn_len required for setup\\n\");\n     ext_ie->extensionValue.choice.PDCPSNLength = *drb->dl_pdcp_sn_len;\n \n     if (drb->ul_pdcp_sn_len) {\n       asn1cSequenceAdd(ext->list, F1AP_DRBs_ToBeSetup_ItemExtIEs_t, ext_ie);\n       ext_ie->id = F1AP_ProtocolIE_ID_id_ULPDCPSNLength;\n       ext_ie->criticality = F1AP_Criticality_ignore;\n       ext_ie->extensionValue.present = F1AP_DRBs_ToBeSetup_ItemExtIEs__extensionValue_PR_PDCPSNLength_1;\n       ext_ie->extensionValue.choice.PDCPSNLength_1 = *drb->ul_pdcp_sn_len;\n     }\n   }\n   return list;\n }\n \n /* Encode a DRBs_ToBeSetupMod list for UE Context Modification Request, from\n  * f1ap_drb_to_setup_t. The ToBeSetup/ToBeSetupMod lists are almost the same\n  * (with the exception that one field is optional in the latter), so that we\n  * can reuse the internal types, but the asn1c types are different. */\n static F1AP_DRBs_ToBeSetupMod_List_t encode_drbs_to_setupmod(int n, const f1ap_drb_to_setup_t *drbs)\n {\n   F1AP_DRBs_ToBeSetupMod_List_t list = {0};\n   for (int i = 0; i < n; ++i) {\n     const f1ap_drb_to_setup_t *drb = &drbs[i];\n     asn1cSequenceAdd(list, F1AP_DRBs_ToBeSetupMod_ItemIEs_t, itie);\n     itie->id = F1AP_ProtocolIE_ID_id_DRBs_ToBeSetupMod_Item;\n     itie->criticality = F1AP_Criticality_reject;\n     itie->value.present = F1AP_DRBs_ToBeSetupMod_ItemIEs__value_PR_DRBs_ToBeSetupMod_Item;\n \n     F1AP_DRBs_ToBeSetupMod_Item_t *it = &itie->value.choice.DRBs_ToBeSetupMod_Item;\n     it->dRBID = drb->id;\n     AssertFatal(drb->qos_choice == F1AP_QOS_CHOICE_NR, \"only NR QoS choice implemented\\n\");\n     it->qoSInformation.present = F1AP_QoSInformation_PR_choice_extension;\n     F1AP_QoSInformation_ExtIEs_t *qos_ext_ie = calloc_or_fail(1, sizeof(*qos_ext_ie));\n     it->qoSInformation.choice.choice_extension = (struct F1AP_ProtocolIE_SingleContainer *)qos_ext_ie;\n     qos_ext_ie->id = F1AP_ProtocolIE_ID_id_DRB_Information;\n     qos_ext_ie->criticality = F1AP_Criticality_reject;\n     qos_ext_ie->value.present = F1AP_QoSInformation_ExtIEs__value_PR_DRB_Information;\n     qos_ext_ie->value.choice.DRB_Information = encode_drb_info_nr(&drb->nr);\n \n     /* 12.1.3 uLUPTNLInformation_ToBeSetupMod_List */\n     for (int j = 0; j < drb->up_ul_tnl_len; j++) {\n       DevAssert(drb->up_ul_tnl[j].teid > 0);\n       asn1cSequenceAdd(it->uLUPTNLInformation_ToBeSetup_List.list, F1AP_ULUPTNLInformation_ToBeSetup_Item_t, tnl_it);\n       tnl_it->uLUPTNLInformation = encode_up_tnl(&drb->up_ul_tnl[j]);\n     }\n \n     it->rLCMode = rlc_mode_to_asn1(drb->rlc_mode);\n \n     if (!drb->dl_pdcp_sn_len && !drb->ul_pdcp_sn_len)\n",
+        "reason": "Primary compiler cluster [unknown_type_name]: unknown type name ‘F1AP_ProtocolExtensionContainer_10696P82_t’; did you mean ‘F1AP_ProtocolExtensionContainer_19016P82_t’?"
+      },
+      {
+        "function_name": "decode_drbs_to_setup",
+        "file_path": "openair2/F1AP/lib/f1ap_ue_context.c",
+        "relevance_score": 1.0,
+        "source": "compiler_ground_truth_primary",
+        "code_snippet": "       asn1cSequenceAdd(ext->list, F1AP_DRBs_ToBeSetupMod_ItemExtIEs_t, ext_ie);\n       ext_ie->id = F1AP_ProtocolIE_ID_id_DLPDCPSNLength;\n       ext_ie->criticality = F1AP_Criticality_ignore;\n       ext_ie->extensionValue.present = F1AP_DRBs_ToBeSetupMod_ItemExtIEs__extensionValue_PR_PDCPSNLength;\n       ext_ie->extensionValue.choice.PDCPSNLength = *drb->dl_pdcp_sn_len;\n     }\n \n     if (drb->ul_pdcp_sn_len) {\n       asn1cSequenceAdd(ext->list, F1AP_DRBs_ToBeSetupMod_ItemExtIEs_t, ext_ie);\n       ext_ie->id = F1AP_ProtocolIE_ID_id_ULPDCPSNLength;\n       ext_ie->criticality = F1AP_Criticality_ignore;\n       ext_ie->extensionValue.present = F1AP_DRBs_ToBeSetupMod_ItemExtIEs__extensionValue_PR_PDCPSNLength_1;\n       ext_ie->extensionValue.choice.PDCPSNLength_1 = *drb->ul_pdcp_sn_len;\n     }\n   }\n   return list;\n }\n \n /* \\brief Decode DRBS-ToBeSetup list from UE Context Setup request, into\n  * f1ap_drb_to_setup_t. */\n static bool decode_drbs_to_setup(const F1AP_DRBs_ToBeSetup_List_t *f1ap, int *n, f1ap_drb_to_setup_t **out)\n {\n   DevAssert(out != NULL);\n   *out = NULL;\n   int count = *n = f1ap->list.count;\n   if (count == 0)\n     return true;\n \n   f1ap_drb_to_setup_t *drbs = *out = calloc_or_fail(count, sizeof(*drbs));\n   for (int i = 0; i < count; ++i) {\n     const F1AP_DRBs_ToBeSetup_ItemIEs_t *itie = (const F1AP_DRBs_ToBeSetup_ItemIEs_t *)f1ap->list.array[i];\n     _F1_EQ_CHECK_LONG(itie->id, F1AP_ProtocolIE_ID_id_DRBs_ToBeSetup_Item);\n     _F1_EQ_CHECK_INT(itie->value.present, F1AP_DRBs_ToBeSetup_ItemIEs__value_PR_DRBs_ToBeSetup_Item);\n     const F1AP_DRBs_ToBeSetup_Item_t *it = &itie->value.choice.DRBs_ToBeSetup_Item;\n \n     f1ap_drb_to_setup_t *drb = &drbs[i];\n     drb->id = it->dRBID;\n \n     _F1_EQ_CHECK_INT(it->qoSInformation.present, F1AP_QoSInformation_PR_choice_extension);\n     const F1AP_QoSInformation_ExtIEs_t *qos_ext = (F1AP_QoSInformation_ExtIEs_t *)it->qoSInformation.choice.choice_extension;\n     _F1_EQ_CHECK_LONG(qos_ext->id, F1AP_ProtocolIE_ID_id_DRB_Information);\n     _F1_EQ_CHECK_INT(qos_ext->value.present, F1AP_QoSInformation_ExtIEs__value_PR_DRB_Information);\n     drb->qos_choice = F1AP_QOS_CHOICE_NR;\n     _F1_CHECK_EXP(decode_drb_info_nr(&qos_ext->value.choice.DRB_Information, &drb->nr));\n \n     drb->up_ul_tnl_len = it->uLUPTNLInformation_ToBeSetup_List.list.count;\n     _F1_EQ_CHECK_GENERIC(drb->up_ul_tnl_len > 0 && drb->up_ul_tnl_len <= 2, \"%d\", drb->up_ul_tnl_len, 1);\n     for (int j = 0; j < drb->up_ul_tnl_len; ++j) {\n       const F1AP_ULUPTNLInformation_ToBeSetup_Item_t *it_tnl = it->uLUPTNLInformation_ToBeSetup_List.list.array[j];\n       _F1_CHECK_EXP(decode_up_tnl(&it_tnl->uLUPTNLInformation, &drb->up_ul_tnl[j]));\n     }\n \n     _F1_CHECK_EXP(rlc_mode_from_asn1(it->rLCMode, &drb->rlc_mode));\n \n     _F1_CHECK_EXP(it->iE_Extensions); // PDCP SN length is under extension, is mandatory\n     const F1AP_ProtocolExtensionContainer_19016P82_t *ext = (const F1AP_ProtocolExtensionContainer_19016P82_t *)it->iE_Extensions;\n     const F1AP_DRBs_ToBeSetup_ItemExtIEs_t *ie;\n     F1AP_LIB_FIND_IE(F1AP_DRBs_ToBeSetup_ItemExtIEs_t, ie, &ext->list, F1AP_ProtocolIE_ID_id_DLPDCPSNLength, true);\n \n     for (int j = 0; j < ext->list.count; ++j) {\n       ie = ext->list.array[j];\n       AssertError(ie != NULL, return false, \"ext->list.array[j] is NULL\");\n       switch (ie->id) {\n         case F1AP_ProtocolIE_ID_id_DLPDCPSNLength:\n           _F1_EQ_CHECK_INT(ie->extensionValue.present, F1AP_DRBs_ToBeSetup_ItemExtIEs__extensionValue_PR_PDCPSNLength);\n           _F1_MALLOC(drb->dl_pdcp_sn_len, ie->extensionValue.choice.PDCPSNLength);\n           break;\n         case F1AP_ProtocolIE_ID_id_ULPDCPSNLength:\n           _F1_EQ_CHECK_INT(ie->extensionValue.present, F1AP_DRBs_ToBeSetup_ItemExtIEs__extensionValue_PR_PDCPSNLength_1);\n           _F1_MALLOC(drb->ul_pdcp_sn_len, ie->extensionValue.choice.PDCPSNLength_1);\n           break;\n         default:\n           PRINT_ERROR(\"F1AP_ProtocolIE_ID_id %ld unknown, skipping\\n\", ie->id);\n           break;\n       }\n     }\n   }\n \n   return true;\n }\n \n /* \\brief Decode DRBS-ToBeSetupMod list from UE Context Modification Request, into\n  * f1ap_drb_to_setup_t. The ToBeSetup/ToBeSetupMod lists are almost the same\n  * (except for some optional types in the latter), so we reuse the internal\n  * representation, but  the asn1c types are different. */\n static bool decode_drbs_to_setupmod(const F1AP_DRBs_ToBeSetupMod_List_t *f1ap, int *n, f1ap_drb_to_setup_t **out)\n {\n   DevAssert(out != NULL);\n   *out = NULL;\n   int count = *n = f1ap->list.count;\n   if (count == 0)\n     return true;\n \n   f1ap_drb_to_setup_t *drbs = *out = calloc_or_fail(count, sizeof(*drbs));\n   for (int i = 0; i < count; ++i) {\n     const F1AP_DRBs_ToBeSetupMod_ItemIEs_t *itie = (const F1AP_DRBs_ToBeSetupMod_ItemIEs_t *)f1ap->list.array[i];\n     _F1_EQ_CHECK_LONG(itie->id, F1AP_ProtocolIE_ID_id_DRBs_ToBeSetupMod_Item);\n     _F1_EQ_CHECK_INT(itie->value.present, F1AP_DRBs_ToBeSetupMod_ItemIEs__value_PR_DRBs_ToBeSetupMod_Item);\n     const F1AP_DRBs_ToBeSetupMod_Item_t *it = &itie->value.choice.DRBs_ToBeSetupMod_Item;\n \n     f1ap_drb_to_setup_t *drb = &drbs[i];\n     drb->id = it->dRBID;\n \n     _F1_EQ_CHECK_INT(it->qoSInformation.present, F1AP_QoSInformation_PR_choice_extension);\n     const F1AP_QoSInformation_ExtIEs_t *qos_ext = (F1AP_QoSInformation_ExtIEs_t *)it->qoSInformation.choice.choice_extension;\n     _F1_EQ_CHECK_LONG(qos_ext->id, F1AP_ProtocolIE_ID_id_DRB_Information);\n     _F1_EQ_CHECK_INT(qos_ext->value.present, F1AP_QoSInformation_ExtIEs__value_PR_DRB_Information);\n     drb->qos_choice = F1AP_QOS_CHOICE_NR;\n     _F1_CHECK_EXP(decode_drb_info_nr(&qos_ext->value.choice.DRB_Information, &drb->nr));\n \n",
+        "reason": "Primary compiler cluster [unknown_type_name]: unknown type name ‘F1AP_ProtocolExtensionContainer_10696P82_t’"
+      },
+      {
+        "function_name": "encode_drbs_to_setupmod",
+        "file_path": "openair2/F1AP/lib/f1ap_ue_context.c",
+        "relevance_score": 1.0,
+        "source": "compiler_ground_truth_primary",
+        "code_snippet": "     asn1cSequenceAdd(ext->list, F1AP_DRBs_ToBeSetup_ItemExtIEs_t, ext_ie);\n     ext_ie->id = F1AP_ProtocolIE_ID_id_DLPDCPSNLength;\n     ext_ie->criticality = F1AP_Criticality_ignore;\n     ext_ie->extensionValue.present = F1AP_DRBs_ToBeSetup_ItemExtIEs__extensionValue_PR_PDCPSNLength;\n     AssertFatal(drb->dl_pdcp_sn_len != NULL, \"dl_pdcp_sn_len required for setup\\n\");\n     ext_ie->extensionValue.choice.PDCPSNLength = *drb->dl_pdcp_sn_len;\n \n     if (drb->ul_pdcp_sn_len) {\n       asn1cSequenceAdd(ext->list, F1AP_DRBs_ToBeSetup_ItemExtIEs_t, ext_ie);\n       ext_ie->id = F1AP_ProtocolIE_ID_id_ULPDCPSNLength;\n       ext_ie->criticality = F1AP_Criticality_ignore;\n       ext_ie->extensionValue.present = F1AP_DRBs_ToBeSetup_ItemExtIEs__extensionValue_PR_PDCPSNLength_1;\n       ext_ie->extensionValue.choice.PDCPSNLength_1 = *drb->ul_pdcp_sn_len;\n     }\n   }\n   return list;\n }\n \n /* Encode a DRBs_ToBeSetupMod list for UE Context Modification Request, from\n  * f1ap_drb_to_setup_t. The ToBeSetup/ToBeSetupMod lists are almost the same\n  * (with the exception that one field is optional in the latter), so that we\n  * can reuse the internal types, but the asn1c types are different. */\n static F1AP_DRBs_ToBeSetupMod_List_t encode_drbs_to_setupmod(int n, const f1ap_drb_to_setup_t *drbs)\n {\n   F1AP_DRBs_ToBeSetupMod_List_t list = {0};\n   for (int i = 0; i < n; ++i) {\n     const f1ap_drb_to_setup_t *drb = &drbs[i];\n     asn1cSequenceAdd(list, F1AP_DRBs_ToBeSetupMod_ItemIEs_t, itie);\n     itie->id = F1AP_ProtocolIE_ID_id_DRBs_ToBeSetupMod_Item;\n     itie->criticality = F1AP_Criticality_reject;\n     itie->value.present = F1AP_DRBs_ToBeSetupMod_ItemIEs__value_PR_DRBs_ToBeSetupMod_Item;\n \n     F1AP_DRBs_ToBeSetupMod_Item_t *it = &itie->value.choice.DRBs_ToBeSetupMod_Item;\n     it->dRBID = drb->id;\n     AssertFatal(drb->qos_choice == F1AP_QOS_CHOICE_NR, \"only NR QoS choice implemented\\n\");\n     it->qoSInformation.present = F1AP_QoSInformation_PR_choice_extension;\n     F1AP_QoSInformation_ExtIEs_t *qos_ext_ie = calloc_or_fail(1, sizeof(*qos_ext_ie));\n     it->qoSInformation.choice.choice_extension = (struct F1AP_ProtocolIE_SingleContainer *)qos_ext_ie;\n     qos_ext_ie->id = F1AP_ProtocolIE_ID_id_DRB_Information;\n     qos_ext_ie->criticality = F1AP_Criticality_reject;\n     qos_ext_ie->value.present = F1AP_QoSInformation_ExtIEs__value_PR_DRB_Information;\n     qos_ext_ie->value.choice.DRB_Information = encode_drb_info_nr(&drb->nr);\n \n     /* 12.1.3 uLUPTNLInformation_ToBeSetupMod_List */\n     for (int j = 0; j < drb->up_ul_tnl_len; j++) {\n       DevAssert(drb->up_ul_tnl[j].teid > 0);\n       asn1cSequenceAdd(it->uLUPTNLInformation_ToBeSetup_List.list, F1AP_ULUPTNLInformation_ToBeSetup_Item_t, tnl_it);\n       tnl_it->uLUPTNLInformation = encode_up_tnl(&drb->up_ul_tnl[j]);\n     }\n \n     it->rLCMode = rlc_mode_to_asn1(drb->rlc_mode);\n \n     if (!drb->dl_pdcp_sn_len && !drb->ul_pdcp_sn_len)\n       continue;\n \n     F1AP_ProtocolExtensionContainer_19016P83_t *ext = calloc_or_fail(1, sizeof(*ext));\n     it->iE_Extensions = (struct F1AP_ProtocolExtensionContainer *)ext;\n     if (drb->dl_pdcp_sn_len) {\n       asn1cSequenceAdd(ext->list, F1AP_DRBs_ToBeSetupMod_ItemExtIEs_t, ext_ie);\n       ext_ie->id = F1AP_ProtocolIE_ID_id_DLPDCPSNLength;\n       ext_ie->criticality = F1AP_Criticality_ignore;\n       ext_ie->extensionValue.present = F1AP_DRBs_ToBeSetupMod_ItemExtIEs__extensionValue_PR_PDCPSNLength;\n       ext_ie->extensionValue.choice.PDCPSNLength = *drb->dl_pdcp_sn_len;\n     }\n \n     if (drb->ul_pdcp_sn_len) {\n       asn1cSequenceAdd(ext->list, F1AP_DRBs_ToBeSetupMod_ItemExtIEs_t, ext_ie);\n       ext_ie->id = F1AP_ProtocolIE_ID_id_ULPDCPSNLength;\n       ext_ie->criticality = F1AP_Criticality_ignore;\n       ext_ie->extensionValue.present = F1AP_DRBs_ToBeSetupMod_ItemExtIEs__extensionValue_PR_PDCPSNLength_1;\n       ext_ie->extensionValue.choice.PDCPSNLength_1 = *drb->ul_pdcp_sn_len;\n     }\n   }\n   return list;\n }\n \n /* \\brief Decode DRBS-ToBeSetup list from UE Context Setup request, into\n  * f1ap_drb_to_setup_t. */\n static bool decode_drbs_to_setup(const F1AP_DRBs_ToBeSetup_List_t *f1ap, int *n, f1ap_drb_to_setup_t **out)\n {\n   DevAssert(out != NULL);\n   *out = NULL;\n   int count = *n = f1ap->list.count;\n   if (count == 0)\n     return true;\n \n   f1ap_drb_to_setup_t *drbs = *out = calloc_or_fail(count, sizeof(*drbs));\n   for (int i = 0; i < count; ++i) {\n     const F1AP_DRBs_ToBeSetup_ItemIEs_t *itie = (const F1AP_DRBs_ToBeSetup_ItemIEs_t *)f1ap->list.array[i];\n     _F1_EQ_CHECK_LONG(itie->id, F1AP_ProtocolIE_ID_id_DRBs_ToBeSetup_Item);\n     _F1_EQ_CHECK_INT(itie->value.present, F1AP_DRBs_ToBeSetup_ItemIEs__value_PR_DRBs_ToBeSetup_Item);\n     const F1AP_DRBs_ToBeSetup_Item_t *it = &itie->value.choice.DRBs_ToBeSetup_Item;\n \n     f1ap_drb_to_setup_t *drb = &drbs[i];\n     drb->id = it->dRBID;\n \n     _F1_EQ_CHECK_INT(it->qoSInformation.present, F1AP_QoSInformation_PR_choice_extension);\n     const F1AP_QoSInformation_ExtIEs_t *qos_ext = (F1AP_QoSInformation_ExtIEs_t *)it->qoSInformation.choice.choice_extension;\n     _F1_EQ_CHECK_LONG(qos_ext->id, F1AP_ProtocolIE_ID_id_DRB_Information);\n     _F1_EQ_CHECK_INT(qos_ext->value.present, F1AP_QoSInformation_ExtIEs__value_PR_DRB_Information);\n     drb->qos_choice = F1AP_QOS_CHOICE_NR;\n     _F1_CHECK_EXP(decode_drb_info_nr(&qos_ext->value.choice.DRB_Information, &drb->nr));\n \n     drb->up_ul_tnl_len = it->uLUPTNLInformation_ToBeSetup_List.list.count;\n     _F1_EQ_CHECK_GENERIC(drb->up_ul_tnl_len > 0 && drb->up_ul_tnl_len <= 2, \"%d\", drb->up_ul_tnl_len, 1);\n     for (int j = 0; j < drb->up_ul_tnl_len; ++j) {\n       const F1AP_ULUPTNLInformation_ToBeSetup_Item_t *it_tnl = it->uLUPTNLInformation_ToBeSetup_List.list.array[j];\n       _F1_CHECK_EXP(decode_up_tnl(&it_tnl->uLUPTNLInformation, &drb->up_ul_tnl[j]));\n     }\n \n",
+        "reason": "Primary compiler cluster [unknown_type_name]: unknown type name ‘F1AP_ProtocolExtensionContainer_10696P83_t’; did you mean ‘F1AP_ProtocolExtensionContainer_19016P83_t’?"
+      },
+      {
+        "function_name": "decode_drbs_to_setupmod",
+        "file_path": "openair2/F1AP/lib/f1ap_ue_context.c",
+        "relevance_score": 1.0,
+        "source": "compiler_ground_truth_primary",
+        "code_snippet": "           break;\n         case F1AP_ProtocolIE_ID_id_ULPDCPSNLength:\n           _F1_EQ_CHECK_INT(ie->extensionValue.present, F1AP_DRBs_ToBeSetup_ItemExtIEs__extensionValue_PR_PDCPSNLength_1);\n           _F1_MALLOC(drb->ul_pdcp_sn_len, ie->extensionValue.choice.PDCPSNLength_1);\n           break;\n         default:\n           PRINT_ERROR(\"F1AP_ProtocolIE_ID_id %ld unknown, skipping\\n\", ie->id);\n           break;\n       }\n     }\n   }\n \n   return true;\n }\n \n /* \\brief Decode DRBS-ToBeSetupMod list from UE Context Modification Request, into\n  * f1ap_drb_to_setup_t. The ToBeSetup/ToBeSetupMod lists are almost the same\n  * (except for some optional types in the latter), so we reuse the internal\n  * representation, but  the asn1c types are different. */\n static bool decode_drbs_to_setupmod(const F1AP_DRBs_ToBeSetupMod_List_t *f1ap, int *n, f1ap_drb_to_setup_t **out)\n {\n   DevAssert(out != NULL);\n   *out = NULL;\n   int count = *n = f1ap->list.count;\n   if (count == 0)\n     return true;\n \n   f1ap_drb_to_setup_t *drbs = *out = calloc_or_fail(count, sizeof(*drbs));\n   for (int i = 0; i < count; ++i) {\n     const F1AP_DRBs_ToBeSetupMod_ItemIEs_t *itie = (const F1AP_DRBs_ToBeSetupMod_ItemIEs_t *)f1ap->list.array[i];\n     _F1_EQ_CHECK_LONG(itie->id, F1AP_ProtocolIE_ID_id_DRBs_ToBeSetupMod_Item);\n     _F1_EQ_CHECK_INT(itie->value.present, F1AP_DRBs_ToBeSetupMod_ItemIEs__value_PR_DRBs_ToBeSetupMod_Item);\n     const F1AP_DRBs_ToBeSetupMod_Item_t *it = &itie->value.choice.DRBs_ToBeSetupMod_Item;\n \n     f1ap_drb_to_setup_t *drb = &drbs[i];\n     drb->id = it->dRBID;\n \n     _F1_EQ_CHECK_INT(it->qoSInformation.present, F1AP_QoSInformation_PR_choice_extension);\n     const F1AP_QoSInformation_ExtIEs_t *qos_ext = (F1AP_QoSInformation_ExtIEs_t *)it->qoSInformation.choice.choice_extension;\n     _F1_EQ_CHECK_LONG(qos_ext->id, F1AP_ProtocolIE_ID_id_DRB_Information);\n     _F1_EQ_CHECK_INT(qos_ext->value.present, F1AP_QoSInformation_ExtIEs__value_PR_DRB_Information);\n     drb->qos_choice = F1AP_QOS_CHOICE_NR;\n     _F1_CHECK_EXP(decode_drb_info_nr(&qos_ext->value.choice.DRB_Information, &drb->nr));\n \n     drb->up_ul_tnl_len = it->uLUPTNLInformation_ToBeSetup_List.list.count;\n     _F1_EQ_CHECK_GENERIC(drb->up_ul_tnl_len > 0 && drb->up_ul_tnl_len <= 2, \"%d\", drb->up_ul_tnl_len, 1);\n     for (int j = 0; j < drb->up_ul_tnl_len; ++j) {\n       const F1AP_ULUPTNLInformation_ToBeSetup_Item_t *it_tnl = it->uLUPTNLInformation_ToBeSetup_List.list.array[j];\n       _F1_CHECK_EXP(decode_up_tnl(&it_tnl->uLUPTNLInformation, &drb->up_ul_tnl[j]));\n     }\n \n     _F1_CHECK_EXP(rlc_mode_from_asn1(it->rLCMode, &drb->rlc_mode));\n \n     if (!it->iE_Extensions)\n       continue;\n     const F1AP_ProtocolExtensionContainer_19016P83_t *ext = (const F1AP_ProtocolExtensionContainer_19016P83_t *)it->iE_Extensions;\n     const F1AP_DRBs_ToBeSetupMod_ItemExtIEs_t *ie;\n \n     for (int j = 0; j < ext->list.count; ++j) {\n       ie = ext->list.array[j];\n       AssertError(ie != NULL, return false, \"ext->list.array[j] is NULL\");\n       switch (ie->id) {\n         case F1AP_ProtocolIE_ID_id_DLPDCPSNLength:\n           _F1_EQ_CHECK_INT(ie->extensionValue.present, F1AP_DRBs_ToBeSetupMod_ItemExtIEs__extensionValue_PR_PDCPSNLength);\n           _F1_MALLOC(drb->dl_pdcp_sn_len, ie->extensionValue.choice.PDCPSNLength);\n           break;\n         case F1AP_ProtocolIE_ID_id_ULPDCPSNLength:\n           _F1_EQ_CHECK_INT(ie->extensionValue.present, F1AP_DRBs_ToBeSetupMod_ItemExtIEs__extensionValue_PR_PDCPSNLength_1);\n           _F1_MALLOC(drb->ul_pdcp_sn_len, ie->extensionValue.choice.PDCPSNLength_1);\n           break;\n         default:\n           PRINT_ERROR(\"F1AP_ProtocolIE_ID_id %ld unknown, skipping\\n\", ie->id);\n           break;\n       }\n     }\n   }\n \n   return true;\n }\n \n static f1ap_drb_to_setup_t cp_drb_to_setup(const f1ap_drb_to_setup_t *orig)\n {\n   f1ap_drb_to_setup_t cp = {\n     .id = orig->id,\n     .qos_choice = orig->qos_choice,\n     // nr below\n     .up_ul_tnl_len = orig->up_ul_tnl_len,\n     .up_ul_tnl[0] = cp_up_tnl(&orig->up_ul_tnl[0]),\n     .up_ul_tnl[1] = cp_up_tnl(&orig->up_ul_tnl[1]),\n     .rlc_mode = orig->rlc_mode,\n     // dl_pdcp_sn_len below\n     // ul_pdcp_sn_len below\n   };\n   AssertFatal(cp.qos_choice == F1AP_QOS_CHOICE_NR, \"only NR QoS choice implemented\\n\");\n   if (orig->qos_choice == F1AP_QOS_CHOICE_NR)\n     cp.nr = cp_drb_info_nr(&orig->nr);\n   if (orig->dl_pdcp_sn_len) {\n     _F1_MALLOC(cp.dl_pdcp_sn_len, *orig->dl_pdcp_sn_len);\n   }\n   if (orig->ul_pdcp_sn_len) {\n     _F1_MALLOC(cp.ul_pdcp_sn_len, *orig->ul_pdcp_sn_len);\n   }\n   return cp;\n }\n \n static bool eq_drb_to_setup(const f1ap_drb_to_setup_t *a, const f1ap_drb_to_setup_t *b)\n {\n   _F1_EQ_CHECK_INT(a->id, b->id);\n   _F1_EQ_CHECK_INT(a->qos_choice, b->qos_choice);\n   AssertFatal(a->qos_choice == F1AP_QOS_CHOICE_NR, \"only NR QoS choice implemented\\n\");\n",
+        "reason": "Primary compiler cluster [unknown_type_name]: unknown type name ‘F1AP_ProtocolExtensionContainer_10696P83_t’"
+      }
+    ],
+    "suspected_configs": [],
+    "deployment_context": {
+      "role": "CU",
+      "active_configs": [],
+      "network_params": {
+        "gnb_ipv4": null,
+        "amf_ipv4": null,
+        "ngap_port": null,
+        "assoc_state": "UNKNOWN"
+      },
+      "log_anchors": [
+        "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c:61:6: error: unknown type name ‘F1AP_ProtocolExtensionContainer_10696P60_t’; did you mean ‘F1AP_ProtocolExtensionContainer_19016P60_t’?",
+        "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c:63:24: error: request for member ‘list’ in something not a structure or union",
+        "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c:92:12: error: unknown type name ‘F1AP_ProtocolExtensionContainer_10696P60_t’",
+        "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c:92:69: error: unknown type name ‘F1AP_ProtocolExtensionContainer_10696P60_t’",
+        "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c:93:29: error: request for member ‘list’ in something not a structure or union",
+        "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c:94:70: error: request for member ‘list’ in something not a structure or union",
+        "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c:669:6: error: unknown type name ‘F1AP_ProtocolExtensionContainer_10696P82_t’; did you mean ‘F1AP_ProtocolExtensionContainer_19016P82_t’?",
+        "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c:671:26: error: request for member ‘list’ in something not a structure or union",
+        "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c:679:28: error: request for member ‘list’ in something not a structure or union",
+        "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c:726:6: error: unknown type name ‘F1AP_ProtocolExtensionContainer_10696P83_t’; did you mean ‘F1AP_ProtocolExtensionContainer_19016P83_t’?",
+        "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c:729:28: error: request for member ‘list’ in something not a structure or union",
+        "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c:737:28: error: request for member ‘list’ in something not a structure or union",
+        "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c:784:12: error: unknown type name ‘F1AP_ProtocolExtensionContainer_10696P82_t’",
+        "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c:784:69: error: unknown type name ‘F1AP_ProtocolExtensionContainer_10696P82_t’",
+        "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c:786:65: error: request for member ‘list’ in something not a structure or union",
+        "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c:788:29: error: request for member ‘list’ in something not a structure or union",
+        "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c:789:16: error: request for member ‘list’ in something not a structure or union",
+        "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c:850:12: error: unknown type name ‘F1AP_ProtocolExtensionContainer_10696P83_t’",
+        "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c:850:69: error: unknown type name ‘F1AP_ProtocolExtensionContainer_10696P83_t’",
+        "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c:853:29: error: request for member ‘list’ in something not a structure or union"
+      ],
+      "detailed_log_context": {
+        "total_lines": 192,
+        "error_sequences": [
+          {
+            "error_line": "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c:61:6: error: unknown type name ‘F1AP_ProtocolExtensionContainer_10696P60_t’; did you mean ‘F1AP_ProtocolExtensionContainer_19016P60_t’?",
+            "line_number": 32,
+            "context": [
+              "     [ 53%] Built target T",
+              "     Consolidate compiler generated dependencies of target asn1_nr_rrc",
+              "     Consolidate compiler generated dependencies of target utils",
+              "     [ 53%] Built target utils",
+              "     /home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c: In function ‘encode_cu_to_du_rrc_info’:",
+              " >>> /home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c:61:6: error: unknown type name ‘F1AP_ProtocolExtensionContainer_10696P60_t’; did you mean ‘F1AP_ProtocolExtensionContainer_19016P60_t’?",
+              "     61 |      F1AP_ProtocolExtensionContainer_10696P60_t *p = calloc_or_fail(1, sizeof(*p));",
+              "     |      ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~",
+              "     |      F1AP_ProtocolExtensionContainer_19016P60_t",
+              "     In file included from /home/tcs/Downloads/OAI-CU/cmake_targets/ran_build/build/openair2/F1AP/MESSAGES/F1AP_ProtocolIE-Container.h:15,",
+              "     from /home/tcs/Downloads/OAI-CU/cmake_targets/ran_build/build/openair2/F1AP/MESSAGES/F1AP_InitialULRRCMessageTransfer.h:15,"
+            ]
+          },
+          {
+            "error_line": "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c:63:24: error: request for member ‘list’ in something not a structure or union",
+            "line_number": 40,
+            "context": [
+              "     |      F1AP_ProtocolExtensionContainer_19016P60_t",
+              "     In file included from /home/tcs/Downloads/OAI-CU/cmake_targets/ran_build/build/openair2/F1AP/MESSAGES/F1AP_ProtocolIE-Container.h:15,",
+              "     from /home/tcs/Downloads/OAI-CU/cmake_targets/ran_build/build/openair2/F1AP/MESSAGES/F1AP_InitialULRRCMessageTransfer.h:15,",
+              "     from /home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_lib_includes.h:26,",
+              "     from /home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c:25:",
+              " >>> /home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c:63:24: error: request for member ‘list’ in something not a structure or union",
+              "     63 |      asn1cSequenceAdd(p->list, F1AP_CUtoDURRCInformation_ExtIEs_t, ie_ext);",
+              "     |                        ^~",
+              "     /home/tcs/Downloads/OAI-CU/cmake_targets/ran_build/build/openair2/F1AP/MESSAGES/asn_SEQUENCE_OF.h:22:27: note: in definition of macro ‘ASN_SEQUENCE_ADD’",
+              "     22 |         asn_sequence_add((headptr), (ptr))",
+              "     |                           ^~~~~~~"
+            ]
+          },
+          {
+            "error_line": "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c:92:12: error: unknown type name ‘F1AP_ProtocolExtensionContainer_10696P60_t’",
+            "line_number": 52,
+            "context": [
+              "     |   ^~~~~~~~~~~",
+              "     /home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c:63:6: note: in expansion of macro ‘asn1cSequenceAdd’",
+              "     63 |      asn1cSequenceAdd(p->list, F1AP_CUtoDURRCInformation_ExtIEs_t, ie_ext);",
+              "     |      ^~~~~~~~~~~~~~~~",
+              "     /home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c: In function ‘decode_cu_to_du_rrc_info’:",
+              " >>> /home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c:92:12: error: unknown type name ‘F1AP_ProtocolExtensionContainer_10696P60_t’",
+              "     92 |      const F1AP_ProtocolExtensionContainer_10696P60_t *ext = (const F1AP_ProtocolExtensionContainer_10696P60_t *)cu2du->iE_Extensions;",
+              "     |            ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~",
+              "     /home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c:92:69: error: unknown type name ‘F1AP_ProtocolExtensionContainer_10696P60_t’",
+              "     92 |      const F1AP_ProtocolExtensionContainer_10696P60_t *ext = (const F1AP_ProtocolExtensionContainer_10696P60_t *)cu2du->iE_Extensions;",
+              "     |                                                                     ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+            ]
+          },
+          {
+            "error_line": "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c:92:69: error: unknown type name ‘F1AP_ProtocolExtensionContainer_10696P60_t’",
+            "line_number": 55,
+            "context": [
+              "     |      ^~~~~~~~~~~~~~~~",
+              "     /home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c: In function ‘decode_cu_to_du_rrc_info’:",
+              "     /home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c:92:12: error: unknown type name ‘F1AP_ProtocolExtensionContainer_10696P60_t’",
+              "     92 |      const F1AP_ProtocolExtensionContainer_10696P60_t *ext = (const F1AP_ProtocolExtensionContainer_10696P60_t *)cu2du->iE_Extensions;",
+              "     |            ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~",
+              " >>> /home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c:92:69: error: unknown type name ‘F1AP_ProtocolExtensionContainer_10696P60_t’",
+              "     92 |      const F1AP_ProtocolExtensionContainer_10696P60_t *ext = (const F1AP_ProtocolExtensionContainer_10696P60_t *)cu2du->iE_Extensions;",
+              "     |                                                                     ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~",
+              "     /home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c:93:29: error: request for member ‘list’ in something not a structure or union",
+              "     93 |      for (int i = 0; i < ext->list.count; ++i) {",
+              "     |                             ^~"
+            ]
+          },
+          {
+            "error_line": "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c:93:29: error: request for member ‘list’ in something not a structure or union",
+            "line_number": 58,
+            "context": [
+              "     92 |      const F1AP_ProtocolExtensionContainer_10696P60_t *ext = (const F1AP_ProtocolExtensionContainer_10696P60_t *)cu2du->iE_Extensions;",
+              "     |            ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~",
+              "     /home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c:92:69: error: unknown type name ‘F1AP_ProtocolExtensionContainer_10696P60_t’",
+              "     92 |      const F1AP_ProtocolExtensionContainer_10696P60_t *ext = (const F1AP_ProtocolExtensionContainer_10696P60_t *)cu2du->iE_Extensions;",
+              "     |                                                                     ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~",
+              " >>> /home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c:93:29: error: request for member ‘list’ in something not a structure or union",
+              "     93 |      for (int i = 0; i < ext->list.count; ++i) {",
+              "     |                             ^~",
+              "     /home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c:94:70: error: request for member ‘list’ in something not a structure or union",
+              "     94 |        const F1AP_CUtoDURRCInformation_ExtIEs_t *cu2du_info_ext = ext->list.array[i];",
+              "     |                                                                      ^~"
+            ]
+          },
+          {
+            "error_line": "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c:94:70: error: request for member ‘list’ in something not a structure or union",
+            "line_number": 61,
+            "context": [
+              "     92 |      const F1AP_ProtocolExtensionContainer_10696P60_t *ext = (const F1AP_ProtocolExtensionContainer_10696P60_t *)cu2du->iE_Extensions;",
+              "     |                                                                     ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~",
+              "     /home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c:93:29: error: request for member ‘list’ in something not a structure or union",
+              "     93 |      for (int i = 0; i < ext->list.count; ++i) {",
+              "     |                             ^~",
+              " >>> /home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c:94:70: error: request for member ‘list’ in something not a structure or union",
+              "     94 |        const F1AP_CUtoDURRCInformation_ExtIEs_t *cu2du_info_ext = ext->list.array[i];",
+              "     |                                                                      ^~",
+              "     Consolidate compiler generated dependencies of target UTIL",
+              "     [ 53%] Built target UTIL",
+              "     Consolidate compiler generated dependencies of target CONFIG_LIB"
+            ]
+          },
+          {
+            "error_line": "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c:669:6: error: unknown type name ‘F1AP_ProtocolExtensionContainer_10696P82_t’; did you mean ‘F1AP_ProtocolExtensionContainer_19016P82_t’?",
+            "line_number": 68,
+            "context": [
+              "     |                                                                      ^~",
+              "     Consolidate compiler generated dependencies of target UTIL",
+              "     [ 53%] Built target UTIL",
+              "     Consolidate compiler generated dependencies of target CONFIG_LIB",
+              "     /home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c: In function ‘encode_drbs_to_setup’:",
+              " >>> /home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c:669:6: error: unknown type name ‘F1AP_ProtocolExtensionContainer_10696P82_t’; did you mean ‘F1AP_ProtocolExtensionContainer_19016P82_t’?",
+              "     669 |      F1AP_ProtocolExtensionContainer_10696P82_t *ext = calloc_or_fail(1, sizeof(*ext));",
+              "     |      ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~",
+              "     |      F1AP_ProtocolExtensionContainer_19016P82_t",
+              "     In file included from /home/tcs/Downloads/OAI-CU/cmake_targets/ran_build/build/openair2/F1AP/MESSAGES/F1AP_ProtocolIE-Container.h:15,",
+              "     from /home/tcs/Downloads/OAI-CU/cmake_targets/ran_build/build/openair2/F1AP/MESSAGES/F1AP_InitialULRRCMessageTransfer.h:15,"
+            ]
+          },
+          {
+            "error_line": "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c:671:26: error: request for member ‘list’ in something not a structure or union",
+            "line_number": 76,
+            "context": [
+              "     |      F1AP_ProtocolExtensionContainer_19016P82_t",
+              "     In file included from /home/tcs/Downloads/OAI-CU/cmake_targets/ran_build/build/openair2/F1AP/MESSAGES/F1AP_ProtocolIE-Container.h:15,",
+              "     from /home/tcs/Downloads/OAI-CU/cmake_targets/ran_build/build/openair2/F1AP/MESSAGES/F1AP_InitialULRRCMessageTransfer.h:15,",
+              "     from /home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_lib_includes.h:26,",
+              "     from /home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c:25:",
+              " >>> /home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c:671:26: error: request for member ‘list’ in something not a structure or union",
+              "     671 |      asn1cSequenceAdd(ext->list, F1AP_DRBs_ToBeSetup_ItemExtIEs_t, ext_ie);",
+              "     |                          ^~",
+              "     /home/tcs/Downloads/OAI-CU/cmake_targets/ran_build/build/openair2/F1AP/MESSAGES/asn_SEQUENCE_OF.h:22:27: note: in definition of macro ‘ASN_SEQUENCE_ADD’",
+              "     22 |         asn_sequence_add((headptr), (ptr))",
+              "     |                           ^~~~~~~"
+            ]
+          },
+          {
+            "error_line": "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c:679:28: error: request for member ‘list’ in something not a structure or union",
+            "line_number": 88,
+            "context": [
+              "     224 |   asn1cSeqAdd(&VaR,lOcPtr)",
+              "     |   ^~~~~~~~~~~",
+              "     /home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c:671:6: note: in expansion of macro ‘asn1cSequenceAdd’",
+              "     671 |      asn1cSequenceAdd(ext->list, F1AP_DRBs_ToBeSetup_ItemExtIEs_t, ext_ie);",
+              "     |      ^~~~~~~~~~~~~~~~",
+              " >>> /home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c:679:28: error: request for member ‘list’ in something not a structure or union",
+              "     679 |        asn1cSequenceAdd(ext->list, F1AP_DRBs_ToBeSetup_ItemExtIEs_t, ext_ie);",
+              "     |                            ^~",
+              "     /home/tcs/Downloads/OAI-CU/cmake_targets/ran_build/build/openair2/F1AP/MESSAGES/asn_SEQUENCE_OF.h:22:27: note: in definition of macro ‘ASN_SEQUENCE_ADD’",
+              "     22 |         asn_sequence_add((headptr), (ptr))",
+              "     |                           ^~~~~~~"
+            ]
+          },
+          {
+            "error_line": "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c:726:6: error: unknown type name ‘F1AP_ProtocolExtensionContainer_10696P83_t’; did you mean ‘F1AP_ProtocolExtensionContainer_19016P83_t’?",
+            "line_number": 100,
+            "context": [
+              "     679 |        asn1cSequenceAdd(ext->list, F1AP_DRBs_ToBeSetup_ItemExtIEs_t, ext_ie);",
+              "     |        ^~~~~~~~~~~~~~~~",
+              "     [ 53%] Built target CONFIG_LIB",
+              "     Consolidate compiler generated dependencies of target shlib_loader",
+              "     /home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c: In function ‘encode_drbs_to_setupmod’:",
+              " >>> /home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c:726:6: error: unknown type name ‘F1AP_ProtocolExtensionContainer_10696P83_t’; did you mean ‘F1AP_ProtocolExtensionContainer_19016P83_t’?",
+              "     726 |      F1AP_ProtocolExtensionContainer_10696P83_t *ext = calloc_or_fail(1, sizeof(*ext));",
+              "     |      ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~",
+              "     |      F1AP_ProtocolExtensionContainer_19016P83_t",
+              "     In file included from /home/tcs/Downloads/OAI-CU/cmake_targets/ran_build/build/openair2/F1AP/MESSAGES/F1AP_ProtocolIE-Container.h:15,",
+              "     from /home/tcs/Downloads/OAI-CU/cmake_targets/ran_build/build/openair2/F1AP/MESSAGES/F1AP_InitialULRRCMessageTransfer.h:15,"
+            ]
+          },
+          {
+            "error_line": "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c:729:28: error: request for member ‘list’ in something not a structure or union",
+            "line_number": 108,
+            "context": [
+              "     |      F1AP_ProtocolExtensionContainer_19016P83_t",
+              "     In file included from /home/tcs/Downloads/OAI-CU/cmake_targets/ran_build/build/openair2/F1AP/MESSAGES/F1AP_ProtocolIE-Container.h:15,",
+              "     from /home/tcs/Downloads/OAI-CU/cmake_targets/ran_build/build/openair2/F1AP/MESSAGES/F1AP_InitialULRRCMessageTransfer.h:15,",
+              "     from /home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_lib_includes.h:26,",
+              "     from /home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c:25:",
+              " >>> /home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c:729:28: error: request for member ‘list’ in something not a structure or union",
+              "     729 |        asn1cSequenceAdd(ext->list, F1AP_DRBs_ToBeSetupMod_ItemExtIEs_t, ext_ie);",
+              "     |                            ^~",
+              "     /home/tcs/Downloads/OAI-CU/cmake_targets/ran_build/build/openair2/F1AP/MESSAGES/asn_SEQUENCE_OF.h:22:27: note: in definition of macro ‘ASN_SEQUENCE_ADD’",
+              "     22 |         asn_sequence_add((headptr), (ptr))",
+              "     |                           ^~~~~~~"
+            ]
+          },
+          {
+            "error_line": "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c:737:28: error: request for member ‘list’ in something not a structure or union",
+            "line_number": 120,
+            "context": [
+              "     224 |   asn1cSeqAdd(&VaR,lOcPtr)",
+              "     |   ^~~~~~~~~~~",
+              "     /home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c:729:8: note: in expansion of macro ‘asn1cSequenceAdd’",
+              "     729 |        asn1cSequenceAdd(ext->list, F1AP_DRBs_ToBeSetupMod_ItemExtIEs_t, ext_ie);",
+              "     |        ^~~~~~~~~~~~~~~~",
+              " >>> /home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c:737:28: error: request for member ‘list’ in something not a structure or union",
+              "     737 |        asn1cSequenceAdd(ext->list, F1AP_DRBs_ToBeSetupMod_ItemExtIEs_t, ext_ie);",
+              "     |                            ^~",
+              "     /home/tcs/Downloads/OAI-CU/cmake_targets/ran_build/build/openair2/F1AP/MESSAGES/asn_SEQUENCE_OF.h:22:27: note: in definition of macro ‘ASN_SEQUENCE_ADD’",
+              "     22 |         asn_sequence_add((headptr), (ptr))",
+              "     |                           ^~~~~~~"
+            ]
+          },
+          {
+            "error_line": "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c:784:12: error: unknown type name ‘F1AP_ProtocolExtensionContainer_10696P82_t’",
+            "line_number": 132,
+            "context": [
+              "     |   ^~~~~~~~~~~",
+              "     /home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c:737:8: note: in expansion of macro ‘asn1cSequenceAdd’",
+              "     737 |        asn1cSequenceAdd(ext->list, F1AP_DRBs_ToBeSetupMod_ItemExtIEs_t, ext_ie);",
+              "     |        ^~~~~~~~~~~~~~~~",
+              "     /home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c: In function ‘decode_drbs_to_setup’:",
+              " >>> /home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c:784:12: error: unknown type name ‘F1AP_ProtocolExtensionContainer_10696P82_t’",
+              "     784 |      const F1AP_ProtocolExtensionContainer_10696P82_t *ext = (const F1AP_ProtocolExtensionContainer_10696P82_t *)it->iE_Extensions;",
+              "     |            ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~",
+              "     /home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c:784:69: error: unknown type name ‘F1AP_ProtocolExtensionContainer_10696P82_t’",
+              "     784 |      const F1AP_ProtocolExtensionContainer_10696P82_t *ext = (const F1AP_ProtocolExtensionContainer_10696P82_t *)it->iE_Extensions;",
+              "     |                                                                     ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+            ]
+          },
+          {
+            "error_line": "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c:784:69: error: unknown type name ‘F1AP_ProtocolExtensionContainer_10696P82_t’",
+            "line_number": 135,
+            "context": [
+              "     |        ^~~~~~~~~~~~~~~~",
+              "     /home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c: In function ‘decode_drbs_to_setup’:",
+              "     /home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c:784:12: error: unknown type name ‘F1AP_ProtocolExtensionContainer_10696P82_t’",
+              "     784 |      const F1AP_ProtocolExtensionContainer_10696P82_t *ext = (const F1AP_ProtocolExtensionContainer_10696P82_t *)it->iE_Extensions;",
+              "     |            ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~",
+              " >>> /home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c:784:69: error: unknown type name ‘F1AP_ProtocolExtensionContainer_10696P82_t’",
+              "     784 |      const F1AP_ProtocolExtensionContainer_10696P82_t *ext = (const F1AP_ProtocolExtensionContainer_10696P82_t *)it->iE_Extensions;",
+              "     |                                                                     ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~",
+              "     In file included from /home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c:24:",
+              "     /home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c:786:65: error: request for member ‘list’ in something not a structure or union",
+              "     786 |      F1AP_LIB_FIND_IE(F1AP_DRBs_ToBeSetup_ItemExtIEs_t, ie, &ext->list, F1AP_ProtocolIE_ID_id_DLPDCPSNLength, true);"
+            ]
+          },
+          {
+            "error_line": "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c:786:65: error: request for member ‘list’ in something not a structure or union",
+            "line_number": 139,
+            "context": [
+              "     |            ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~",
+              "     /home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c:784:69: error: unknown type name ‘F1AP_ProtocolExtensionContainer_10696P82_t’",
+              "     784 |      const F1AP_ProtocolExtensionContainer_10696P82_t *ext = (const F1AP_ProtocolExtensionContainer_10696P82_t *)it->iE_Extensions;",
+              "     |                                                                     ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~",
+              "     In file included from /home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c:24:",
+              " >>> /home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c:786:65: error: request for member ‘list’ in something not a structure or union",
+              "     786 |      F1AP_LIB_FIND_IE(F1AP_DRBs_ToBeSetup_ItemExtIEs_t, ie, &ext->list, F1AP_ProtocolIE_ID_id_DLPDCPSNLength, true);",
+              "     |                                                                 ^~",
+              "     /home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_lib_common.h:74:27: note: in definition of macro ‘F1AP_LIB_FIND_IE’",
+              "     74 |     for (IE_TYPE **ptr = (IE_LIST)->array; ptr < &(IE_LIST)->array[(IE_LIST)->count]; ptr++) {       \\",
+              "     |                           ^~~~~~~"
+            ]
+          },
+          {
+            "error_line": "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c:786:65: error: request for member ‘list’ in something not a structure or union",
+            "line_number": 145,
+            "context": [
+              "     786 |      F1AP_LIB_FIND_IE(F1AP_DRBs_ToBeSetup_ItemExtIEs_t, ie, &ext->list, F1AP_ProtocolIE_ID_id_DLPDCPSNLength, true);",
+              "     |                                                                 ^~",
+              "     /home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_lib_common.h:74:27: note: in definition of macro ‘F1AP_LIB_FIND_IE’",
+              "     74 |     for (IE_TYPE **ptr = (IE_LIST)->array; ptr < &(IE_LIST)->array[(IE_LIST)->count]; ptr++) {       \\",
+              "     |                           ^~~~~~~",
+              " >>> /home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c:786:65: error: request for member ‘list’ in something not a structure or union",
+              "     786 |      F1AP_LIB_FIND_IE(F1AP_DRBs_ToBeSetup_ItemExtIEs_t, ie, &ext->list, F1AP_ProtocolIE_ID_id_DLPDCPSNLength, true);",
+              "     |                                                                 ^~",
+              "     /home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_lib_common.h:74:52: note: in definition of macro ‘F1AP_LIB_FIND_IE’",
+              "     74 |     for (IE_TYPE **ptr = (IE_LIST)->array; ptr < &(IE_LIST)->array[(IE_LIST)->count]; ptr++) {       \\",
+              "     |                                                    ^~~~~~~"
+            ]
+          },
+          {
+            "error_line": "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c:786:65: error: request for member ‘list’ in something not a structure or union",
+            "line_number": 151,
+            "context": [
+              "     786 |      F1AP_LIB_FIND_IE(F1AP_DRBs_ToBeSetup_ItemExtIEs_t, ie, &ext->list, F1AP_ProtocolIE_ID_id_DLPDCPSNLength, true);",
+              "     |                                                                 ^~",
+              "     /home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_lib_common.h:74:52: note: in definition of macro ‘F1AP_LIB_FIND_IE’",
+              "     74 |     for (IE_TYPE **ptr = (IE_LIST)->array; ptr < &(IE_LIST)->array[(IE_LIST)->count]; ptr++) {       \\",
+              "     |                                                    ^~~~~~~",
+              " >>> /home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c:786:65: error: request for member ‘list’ in something not a structure or union",
+              "     786 |      F1AP_LIB_FIND_IE(F1AP_DRBs_ToBeSetup_ItemExtIEs_t, ie, &ext->list, F1AP_ProtocolIE_ID_id_DLPDCPSNLength, true);",
+              "     |                                                                 ^~",
+              "     /home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_lib_common.h:74:69: note: in definition of macro ‘F1AP_LIB_FIND_IE’",
+              "     74 |     for (IE_TYPE **ptr = (IE_LIST)->array; ptr < &(IE_LIST)->array[(IE_LIST)->count]; ptr++) {       \\",
+              "     |                                                                     ^~~~~~~"
+            ]
+          },
+          {
+            "error_line": "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c:788:29: error: request for member ‘list’ in something not a structure or union",
+            "line_number": 157,
+            "context": [
+              "     786 |      F1AP_LIB_FIND_IE(F1AP_DRBs_ToBeSetup_ItemExtIEs_t, ie, &ext->list, F1AP_ProtocolIE_ID_id_DLPDCPSNLength, true);",
+              "     |                                                                 ^~",
+              "     /home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_lib_common.h:74:69: note: in definition of macro ‘F1AP_LIB_FIND_IE’",
+              "     74 |     for (IE_TYPE **ptr = (IE_LIST)->array; ptr < &(IE_LIST)->array[(IE_LIST)->count]; ptr++) {       \\",
+              "     |                                                                     ^~~~~~~",
+              " >>> /home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c:788:29: error: request for member ‘list’ in something not a structure or union",
+              "     788 |      for (int j = 0; j < ext->list.count; ++j) {",
+              "     |                             ^~",
+              "     /home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c:789:16: error: request for member ‘list’ in something not a structure or union",
+              "     789 |        ie = ext->list.array[j];",
+              "     |                ^~"
+            ]
+          },
+          {
+            "error_line": "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c:789:16: error: request for member ‘list’ in something not a structure or union",
+            "line_number": 160,
+            "context": [
+              "     74 |     for (IE_TYPE **ptr = (IE_LIST)->array; ptr < &(IE_LIST)->array[(IE_LIST)->count]; ptr++) {       \\",
+              "     |                                                                     ^~~~~~~",
+              "     /home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c:788:29: error: request for member ‘list’ in something not a structure or union",
+              "     788 |      for (int j = 0; j < ext->list.count; ++j) {",
+              "     |                             ^~",
+              " >>> /home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c:789:16: error: request for member ‘list’ in something not a structure or union",
+              "     789 |        ie = ext->list.array[j];",
+              "     |                ^~",
+              "     /home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c: In function ‘decode_drbs_to_setupmod’:",
+              "     /home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c:850:12: error: unknown type name ‘F1AP_ProtocolExtensionContainer_10696P83_t’",
+              "     850 |      const F1AP_ProtocolExtensionContainer_10696P83_t *ext = (const F1AP_ProtocolExtensionContainer_10696P83_t *)it->iE_Extensions;"
+            ]
+          },
+          {
+            "error_line": "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c:850:12: error: unknown type name ‘F1AP_ProtocolExtensionContainer_10696P83_t’",
+            "line_number": 164,
+            "context": [
+              "     |                             ^~",
+              "     /home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c:789:16: error: request for member ‘list’ in something not a structure or union",
+              "     789 |        ie = ext->list.array[j];",
+              "     |                ^~",
+              "     /home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c: In function ‘decode_drbs_to_setupmod’:",
+              " >>> /home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c:850:12: error: unknown type name ‘F1AP_ProtocolExtensionContainer_10696P83_t’",
+              "     850 |      const F1AP_ProtocolExtensionContainer_10696P83_t *ext = (const F1AP_ProtocolExtensionContainer_10696P83_t *)it->iE_Extensions;",
+              "     |            ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~",
+              "     /home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c:850:69: error: unknown type name ‘F1AP_ProtocolExtensionContainer_10696P83_t’",
+              "     850 |      const F1AP_ProtocolExtensionContainer_10696P83_t *ext = (const F1AP_ProtocolExtensionContainer_10696P83_t *)it->iE_Extensions;",
+              "     |                                                                     ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+            ]
+          },
+          {
+            "error_line": "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c:850:69: error: unknown type name ‘F1AP_ProtocolExtensionContainer_10696P83_t’",
+            "line_number": 167,
+            "context": [
+              "     |                ^~",
+              "     /home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c: In function ‘decode_drbs_to_setupmod’:",
+              "     /home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c:850:12: error: unknown type name ‘F1AP_ProtocolExtensionContainer_10696P83_t’",
+              "     850 |      const F1AP_ProtocolExtensionContainer_10696P83_t *ext = (const F1AP_ProtocolExtensionContainer_10696P83_t *)it->iE_Extensions;",
+              "     |            ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~",
+              " >>> /home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c:850:69: error: unknown type name ‘F1AP_ProtocolExtensionContainer_10696P83_t’",
+              "     850 |      const F1AP_ProtocolExtensionContainer_10696P83_t *ext = (const F1AP_ProtocolExtensionContainer_10696P83_t *)it->iE_Extensions;",
+              "     |                                                                     ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~",
+              "     /home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c:853:29: error: request for member ‘list’ in something not a structure or union",
+              "     853 |      for (int j = 0; j < ext->list.count; ++j) {",
+              "     |                             ^~"
+            ]
+          },
+          {
+            "error_line": "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c:853:29: error: request for member ‘list’ in something not a structure or union",
+            "line_number": 170,
+            "context": [
+              "     850 |      const F1AP_ProtocolExtensionContainer_10696P83_t *ext = (const F1AP_ProtocolExtensionContainer_10696P83_t *)it->iE_Extensions;",
+              "     |            ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~",
+              "     /home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c:850:69: error: unknown type name ‘F1AP_ProtocolExtensionContainer_10696P83_t’",
+              "     850 |      const F1AP_ProtocolExtensionContainer_10696P83_t *ext = (const F1AP_ProtocolExtensionContainer_10696P83_t *)it->iE_Extensions;",
+              "     |                                                                     ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~",
+              " >>> /home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c:853:29: error: request for member ‘list’ in something not a structure or union",
+              "     853 |      for (int j = 0; j < ext->list.count; ++j) {",
+              "     |                             ^~",
+              "     /home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c:854:16: error: request for member ‘list’ in something not a structure or union",
+              "     854 |        ie = ext->list.array[j];",
+              "     |                ^~"
+            ]
+          },
+          {
+            "error_line": "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c:854:16: error: request for member ‘list’ in something not a structure or union",
+            "line_number": 173,
+            "context": [
+              "     850 |      const F1AP_ProtocolExtensionContainer_10696P83_t *ext = (const F1AP_ProtocolExtensionContainer_10696P83_t *)it->iE_Extensions;",
+              "     |                                                                     ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~",
+              "     /home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c:853:29: error: request for member ‘list’ in something not a structure or union",
+              "     853 |      for (int j = 0; j < ext->list.count; ++j) {",
+              "     |                             ^~",
+              " >>> /home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c:854:16: error: request for member ‘list’ in something not a structure or union",
+              "     854 |        ie = ext->list.array[j];",
+              "     |                ^~",
+              "     [ 53%] Built target shlib_loader",
+              "     Consolidate compiler generated dependencies of target SCHED_NR_LIB",
+              "     [ 53%] Built target SCHED_NR_LIB"
+            ]
+          },
+          {
+            "error_line": "gmake[3]: *** [openair2/F1AP/lib/CMakeFiles/f1ap_lib.dir/build.make:118: openair2/F1AP/lib/CMakeFiles/f1ap_lib.dir/f1ap_ue_context.c.o] Error 1",
+            "line_number": 180,
+            "context": [
+              "     |                ^~",
+              "     [ 53%] Built target shlib_loader",
+              "     Consolidate compiler generated dependencies of target SCHED_NR_LIB",
+              "     [ 53%] Built target SCHED_NR_LIB",
+              "     [ 77%] Built target asn1_lte_rrc",
+              " >>> gmake[3]: *** [openair2/F1AP/lib/CMakeFiles/f1ap_lib.dir/build.make:118: openair2/F1AP/lib/CMakeFiles/f1ap_lib.dir/f1ap_ue_context.c.o] Error 1",
+              "     gmake[2]: *** [CMakeFiles/Makefile2:7109: openair2/F1AP/lib/CMakeFiles/f1ap_lib.dir/all] Error 2",
+              "     gmake[2]: *** Waiting for unfinished jobs....",
+              "     Consolidate compiler generated dependencies of target NFAPI_USER_LIB",
+              "     [ 77%] Built target NFAPI_USER_LIB",
+              "     Consolidate compiler generated dependencies of target PHY_COMMON"
+            ]
+          },
+          {
+            "error_line": "gmake[2]: *** [CMakeFiles/Makefile2:7109: openair2/F1AP/lib/CMakeFiles/f1ap_lib.dir/all] Error 2",
+            "line_number": 181,
+            "context": [
+              "     [ 53%] Built target shlib_loader",
+              "     Consolidate compiler generated dependencies of target SCHED_NR_LIB",
+              "     [ 53%] Built target SCHED_NR_LIB",
+              "     [ 77%] Built target asn1_lte_rrc",
+              "     gmake[3]: *** [openair2/F1AP/lib/CMakeFiles/f1ap_lib.dir/build.make:118: openair2/F1AP/lib/CMakeFiles/f1ap_lib.dir/f1ap_ue_context.c.o] Error 1",
+              " >>> gmake[2]: *** [CMakeFiles/Makefile2:7109: openair2/F1AP/lib/CMakeFiles/f1ap_lib.dir/all] Error 2",
+              "     gmake[2]: *** Waiting for unfinished jobs....",
+              "     Consolidate compiler generated dependencies of target NFAPI_USER_LIB",
+              "     [ 77%] Built target NFAPI_USER_LIB",
+              "     Consolidate compiler generated dependencies of target PHY_COMMON",
+              "     [ 77%] Built target PHY_COMMON"
+            ]
+          },
+          {
+            "error_line": "gmake[1]: *** [CMakeFiles/Makefile2:3840: CMakeFiles/nr-softmodem.dir/rule] Error 2",
+            "line_number": 188,
+            "context": [
+              "     Consolidate compiler generated dependencies of target NFAPI_USER_LIB",
+              "     [ 77%] Built target NFAPI_USER_LIB",
+              "     Consolidate compiler generated dependencies of target PHY_COMMON",
+              "     [ 77%] Built target PHY_COMMON",
+              "     [100%] Built target asn1_nr_rrc",
+              " >>> gmake[1]: *** [CMakeFiles/Makefile2:3840: CMakeFiles/nr-softmodem.dir/rule] Error 2",
+              "     gmake: *** [Makefile:891: nr-softmodem] Error 2",
+              "     ERROR: 23 error. See /home/tcs/Downloads/OAI-CU/cmake_targets/log/all.txt",
+              "     compilation of  nr-softmodem nr-cuup params_libconfig coding rfsimulator dfts params_yaml vrtsim failed",
+              "     build have failed"
+            ]
+          },
+          {
+            "error_line": "gmake: *** [Makefile:891: nr-softmodem] Error 2",
+            "line_number": 189,
+            "context": [
+              "     [ 77%] Built target NFAPI_USER_LIB",
+              "     Consolidate compiler generated dependencies of target PHY_COMMON",
+              "     [ 77%] Built target PHY_COMMON",
+              "     [100%] Built target asn1_nr_rrc",
+              "     gmake[1]: *** [CMakeFiles/Makefile2:3840: CMakeFiles/nr-softmodem.dir/rule] Error 2",
+              " >>> gmake: *** [Makefile:891: nr-softmodem] Error 2",
+              "     ERROR: 23 error. See /home/tcs/Downloads/OAI-CU/cmake_targets/log/all.txt",
+              "     compilation of  nr-softmodem nr-cuup params_libconfig coding rfsimulator dfts params_yaml vrtsim failed",
+              "     build have failed"
+            ]
+          },
+          {
+            "error_line": "ERROR: 23 error. See /home/tcs/Downloads/OAI-CU/cmake_targets/log/all.txt",
+            "line_number": 190,
+            "context": [
+              "     Consolidate compiler generated dependencies of target PHY_COMMON",
+              "     [ 77%] Built target PHY_COMMON",
+              "     [100%] Built target asn1_nr_rrc",
+              "     gmake[1]: *** [CMakeFiles/Makefile2:3840: CMakeFiles/nr-softmodem.dir/rule] Error 2",
+              "     gmake: *** [Makefile:891: nr-softmodem] Error 2",
+              " >>> ERROR: 23 error. See /home/tcs/Downloads/OAI-CU/cmake_targets/log/all.txt",
+              "     compilation of  nr-softmodem nr-cuup params_libconfig coding rfsimulator dfts params_yaml vrtsim failed",
+              "     build have failed"
+            ]
+          },
+          {
+            "error_line": "compilation of  nr-softmodem nr-cuup params_libconfig coding rfsimulator dfts params_yaml vrtsim failed",
+            "line_number": 191,
+            "context": [
+              "     [ 77%] Built target PHY_COMMON",
+              "     [100%] Built target asn1_nr_rrc",
+              "     gmake[1]: *** [CMakeFiles/Makefile2:3840: CMakeFiles/nr-softmodem.dir/rule] Error 2",
+              "     gmake: *** [Makefile:891: nr-softmodem] Error 2",
+              "     ERROR: 23 error. See /home/tcs/Downloads/OAI-CU/cmake_targets/log/all.txt",
+              " >>> compilation of  nr-softmodem nr-cuup params_libconfig coding rfsimulator dfts params_yaml vrtsim failed",
+              "     build have failed"
+            ]
+          },
+          {
+            "error_line": "build have failed",
+            "line_number": 192,
+            "context": [
+              "     [100%] Built target asn1_nr_rrc",
+              "     gmake[1]: *** [CMakeFiles/Makefile2:3840: CMakeFiles/nr-softmodem.dir/rule] Error 2",
+              "     gmake: *** [Makefile:891: nr-softmodem] Error 2",
+              "     ERROR: 23 error. See /home/tcs/Downloads/OAI-CU/cmake_targets/log/all.txt",
+              "     compilation of  nr-softmodem nr-cuup params_libconfig coding rfsimulator dfts params_yaml vrtsim failed",
+              " >>> build have failed"
+            ]
+          }
+        ],
+        "debug_values": {},
+        "relevant_sections": []
+      },
+      "compiler_ground_truth_errors": [
+        {
+          "file_path": "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c",
+          "line_number": 61,
+          "column_number": 6,
+          "function_name": "encode_cu_to_du_rrc_info",
+          "error_text": "unknown type name ‘F1AP_ProtocolExtensionContainer_10696P60_t’; did you mean ‘F1AP_ProtocolExtensionContainer_19016P60_t’?",
+          "error_code_category": "unknown_type_name",
+          "symbol_candidates": [
+            "F1AP_ProtocolExtensionContainer_10696P60_t",
+            "F1AP_ProtocolExtensionContainer_19016P60_t"
+          ],
+          "confidence": 1.0,
+          "priority_score": 1.0,
+          "source": "compiler_ground_truth"
+        },
+        {
+          "file_path": "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c",
+          "line_number": 63,
+          "column_number": 24,
+          "function_name": "encode_cu_to_du_rrc_info",
+          "error_text": "request for member ‘list’ in something not a structure or union",
+          "error_code_category": "member_access_on_non_struct",
+          "symbol_candidates": [
+            "list"
+          ],
+          "confidence": 1.0,
+          "priority_score": 1.0,
+          "source": "compiler_ground_truth"
+        },
+        {
+          "file_path": "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c",
+          "line_number": 92,
+          "column_number": 12,
+          "function_name": "decode_cu_to_du_rrc_info",
+          "error_text": "unknown type name ‘F1AP_ProtocolExtensionContainer_10696P60_t’",
+          "error_code_category": "unknown_type_name",
+          "symbol_candidates": [
+            "F1AP_ProtocolExtensionContainer_10696P60_t"
+          ],
+          "confidence": 1.0,
+          "priority_score": 1.0,
+          "source": "compiler_ground_truth"
+        },
+        {
+          "file_path": "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c",
+          "line_number": 92,
+          "column_number": 69,
+          "function_name": "decode_cu_to_du_rrc_info",
+          "error_text": "unknown type name ‘F1AP_ProtocolExtensionContainer_10696P60_t’",
+          "error_code_category": "unknown_type_name",
+          "symbol_candidates": [
+            "F1AP_ProtocolExtensionContainer_10696P60_t"
+          ],
+          "confidence": 1.0,
+          "priority_score": 1.0,
+          "source": "compiler_ground_truth"
+        },
+        {
+          "file_path": "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c",
+          "line_number": 93,
+          "column_number": 29,
+          "function_name": "decode_cu_to_du_rrc_info",
+          "error_text": "request for member ‘list’ in something not a structure or union",
+          "error_code_category": "member_access_on_non_struct",
+          "symbol_candidates": [
+            "list"
+          ],
+          "confidence": 1.0,
+          "priority_score": 1.0,
+          "source": "compiler_ground_truth"
+        },
+        {
+          "file_path": "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c",
+          "line_number": 94,
+          "column_number": 70,
+          "function_name": "decode_cu_to_du_rrc_info",
+          "error_text": "request for member ‘list’ in something not a structure or union",
+          "error_code_category": "member_access_on_non_struct",
+          "symbol_candidates": [
+            "list"
+          ],
+          "confidence": 1.0,
+          "priority_score": 1.0,
+          "source": "compiler_ground_truth"
+        },
+        {
+          "file_path": "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c",
+          "line_number": 669,
+          "column_number": 6,
+          "function_name": "encode_drbs_to_setup",
+          "error_text": "unknown type name ‘F1AP_ProtocolExtensionContainer_10696P82_t’; did you mean ‘F1AP_ProtocolExtensionContainer_19016P82_t’?",
+          "error_code_category": "unknown_type_name",
+          "symbol_candidates": [
+            "F1AP_ProtocolExtensionContainer_10696P82_t",
+            "F1AP_ProtocolExtensionContainer_19016P82_t"
+          ],
+          "confidence": 1.0,
+          "priority_score": 1.0,
+          "source": "compiler_ground_truth"
+        },
+        {
+          "file_path": "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c",
+          "line_number": 671,
+          "column_number": 26,
+          "function_name": "encode_drbs_to_setup",
+          "error_text": "request for member ‘list’ in something not a structure or union",
+          "error_code_category": "member_access_on_non_struct",
+          "symbol_candidates": [
+            "list"
+          ],
+          "confidence": 1.0,
+          "priority_score": 1.0,
+          "source": "compiler_ground_truth"
+        },
+        {
+          "file_path": "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c",
+          "line_number": 679,
+          "column_number": 28,
+          "function_name": "encode_drbs_to_setup",
+          "error_text": "request for member ‘list’ in something not a structure or union",
+          "error_code_category": "member_access_on_non_struct",
+          "symbol_candidates": [
+            "list"
+          ],
+          "confidence": 1.0,
+          "priority_score": 1.0,
+          "source": "compiler_ground_truth"
+        },
+        {
+          "file_path": "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c",
+          "line_number": 726,
+          "column_number": 6,
+          "function_name": "encode_drbs_to_setupmod",
+          "error_text": "unknown type name ‘F1AP_ProtocolExtensionContainer_10696P83_t’; did you mean ‘F1AP_ProtocolExtensionContainer_19016P83_t’?",
+          "error_code_category": "unknown_type_name",
+          "symbol_candidates": [
+            "F1AP_ProtocolExtensionContainer_10696P83_t",
+            "F1AP_ProtocolExtensionContainer_19016P83_t"
+          ],
+          "confidence": 1.0,
+          "priority_score": 1.0,
+          "source": "compiler_ground_truth"
+        },
+        {
+          "file_path": "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c",
+          "line_number": 729,
+          "column_number": 28,
+          "function_name": "encode_drbs_to_setupmod",
+          "error_text": "request for member ‘list’ in something not a structure or union",
+          "error_code_category": "member_access_on_non_struct",
+          "symbol_candidates": [
+            "list"
+          ],
+          "confidence": 1.0,
+          "priority_score": 1.0,
+          "source": "compiler_ground_truth"
+        },
+        {
+          "file_path": "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c",
+          "line_number": 737,
+          "column_number": 28,
+          "function_name": "encode_drbs_to_setupmod",
+          "error_text": "request for member ‘list’ in something not a structure or union",
+          "error_code_category": "member_access_on_non_struct",
+          "symbol_candidates": [
+            "list"
+          ],
+          "confidence": 1.0,
+          "priority_score": 1.0,
+          "source": "compiler_ground_truth"
+        },
+        {
+          "file_path": "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c",
+          "line_number": 784,
+          "column_number": 12,
+          "function_name": "decode_drbs_to_setup",
+          "error_text": "unknown type name ‘F1AP_ProtocolExtensionContainer_10696P82_t’",
+          "error_code_category": "unknown_type_name",
+          "symbol_candidates": [
+            "F1AP_ProtocolExtensionContainer_10696P82_t"
+          ],
+          "confidence": 1.0,
+          "priority_score": 1.0,
+          "source": "compiler_ground_truth"
+        },
+        {
+          "file_path": "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c",
+          "line_number": 784,
+          "column_number": 69,
+          "function_name": "decode_drbs_to_setup",
+          "error_text": "unknown type name ‘F1AP_ProtocolExtensionContainer_10696P82_t’",
+          "error_code_category": "unknown_type_name",
+          "symbol_candidates": [
+            "F1AP_ProtocolExtensionContainer_10696P82_t"
+          ],
+          "confidence": 1.0,
+          "priority_score": 1.0,
+          "source": "compiler_ground_truth"
+        },
+        {
+          "file_path": "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c",
+          "line_number": 786,
+          "column_number": 65,
+          "function_name": "decode_drbs_to_setup",
+          "error_text": "request for member ‘list’ in something not a structure or union",
+          "error_code_category": "member_access_on_non_struct",
+          "symbol_candidates": [
+            "list"
+          ],
+          "confidence": 1.0,
+          "priority_score": 1.0,
+          "source": "compiler_ground_truth"
+        },
+        {
+          "file_path": "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c",
+          "line_number": 786,
+          "column_number": 65,
+          "function_name": "decode_drbs_to_setup",
+          "error_text": "request for member ‘list’ in something not a structure or union",
+          "error_code_category": "member_access_on_non_struct",
+          "symbol_candidates": [
+            "list"
+          ],
+          "confidence": 1.0,
+          "priority_score": 1.0,
+          "source": "compiler_ground_truth"
+        },
+        {
+          "file_path": "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c",
+          "line_number": 786,
+          "column_number": 65,
+          "function_name": "decode_drbs_to_setup",
+          "error_text": "request for member ‘list’ in something not a structure or union",
+          "error_code_category": "member_access_on_non_struct",
+          "symbol_candidates": [
+            "list"
+          ],
+          "confidence": 1.0,
+          "priority_score": 1.0,
+          "source": "compiler_ground_truth"
+        },
+        {
+          "file_path": "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c",
+          "line_number": 788,
+          "column_number": 29,
+          "function_name": "decode_drbs_to_setup",
+          "error_text": "request for member ‘list’ in something not a structure or union",
+          "error_code_category": "member_access_on_non_struct",
+          "symbol_candidates": [
+            "list"
+          ],
+          "confidence": 1.0,
+          "priority_score": 1.0,
+          "source": "compiler_ground_truth"
+        },
+        {
+          "file_path": "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c",
+          "line_number": 789,
+          "column_number": 16,
+          "function_name": "decode_drbs_to_setup",
+          "error_text": "request for member ‘list’ in something not a structure or union",
+          "error_code_category": "member_access_on_non_struct",
+          "symbol_candidates": [
+            "list"
+          ],
+          "confidence": 1.0,
+          "priority_score": 1.0,
+          "source": "compiler_ground_truth"
+        },
+        {
+          "file_path": "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c",
+          "line_number": 850,
+          "column_number": 12,
+          "function_name": "decode_drbs_to_setupmod",
+          "error_text": "unknown type name ‘F1AP_ProtocolExtensionContainer_10696P83_t’",
+          "error_code_category": "unknown_type_name",
+          "symbol_candidates": [
+            "F1AP_ProtocolExtensionContainer_10696P83_t"
+          ],
+          "confidence": 1.0,
+          "priority_score": 1.0,
+          "source": "compiler_ground_truth"
+        },
+        {
+          "file_path": "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c",
+          "line_number": 850,
+          "column_number": 69,
+          "function_name": "decode_drbs_to_setupmod",
+          "error_text": "unknown type name ‘F1AP_ProtocolExtensionContainer_10696P83_t’",
+          "error_code_category": "unknown_type_name",
+          "symbol_candidates": [
+            "F1AP_ProtocolExtensionContainer_10696P83_t"
+          ],
+          "confidence": 1.0,
+          "priority_score": 1.0,
+          "source": "compiler_ground_truth"
+        },
+        {
+          "file_path": "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c",
+          "line_number": 853,
+          "column_number": 29,
+          "function_name": "decode_drbs_to_setupmod",
+          "error_text": "request for member ‘list’ in something not a structure or union",
+          "error_code_category": "member_access_on_non_struct",
+          "symbol_candidates": [
+            "list"
+          ],
+          "confidence": 1.0,
+          "priority_score": 1.0,
+          "source": "compiler_ground_truth"
+        },
+        {
+          "file_path": "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c",
+          "line_number": 854,
+          "column_number": 16,
+          "function_name": "decode_drbs_to_setupmod",
+          "error_text": "request for member ‘list’ in something not a structure or union",
+          "error_code_category": "member_access_on_non_struct",
+          "symbol_candidates": [
+            "list"
+          ],
+          "confidence": 1.0,
+          "priority_score": 1.0,
+          "source": "compiler_ground_truth"
+        }
+      ],
+      "cu_ip_address": "10.138.77.131",
+      "du_ip_address": "10.138.77.131",
+      "gnb_ip_address": "10.138.77.131",
+      "amf_ip_address": "192.168.70.132",
+      "core_network_machine_ip": "10.138.77.217",
+      "local_s_portc": "501",
+      "local_s_portd": "2152",
+      "remote_s_portc": "500",
+      "remote_s_portd": "2152",
+      "dnn": "oai",
+      "nssai_sst": "1",
+      "nssai_sd": "0xc",
+      "Deploy_command_cu_gnb_conf": "sudo RFSIMULATOR=server ./nr-softmodem -O ../../../targets/PROJECTS/GENERIC-NR-5GC/CONF/cu_gnb.conf --sa",
+      "Deploy_command_du_gnb_conf": "sudo RFSIMULATOR=server ./nr-softmodem -O ../../../targets/PROJECTS/GENERIC-NR-5GC/CONF/du_gnb.conf --sa",
+      "log_error_kind_raw": "build",
+      "log_error_kind": "build",
+      "build_log_mode": true,
+      "runtime_log_mode": false,
+      "other_log_mode": false,
+      "cmake_build_system_mode": false,
+      "dependency_advice_mode": false,
+      "compiler_cluster_analysis": {
+        "clusters": [
+          {
+            "cluster_id": "c0",
+            "cluster_key": "unknown_type_name|/home/tcs/downloads/oai-cu/openair2/f1ap/lib/f1ap_ue_context.c|F1AP_ProtocolExtensionContainer_10696P60_t",
+            "category": "unknown_type_name",
+            "file_path": "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c",
+            "function_names": [
+              "decode_cu_to_du_rrc_info",
+              "encode_cu_to_du_rrc_info"
+            ],
+            "error_count": 3,
+            "min_line": 61,
+            "errors": [
+              {
+                "file_path": "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c",
+                "line_number": 61,
+                "column_number": 6,
+                "function_name": "encode_cu_to_du_rrc_info",
+                "error_text": "unknown type name ‘F1AP_ProtocolExtensionContainer_10696P60_t’; did you mean ‘F1AP_ProtocolExtensionContainer_19016P60_t’?",
+                "error_code_category": "unknown_type_name",
+                "symbol_candidates": [
+                  "F1AP_ProtocolExtensionContainer_10696P60_t",
+                  "F1AP_ProtocolExtensionContainer_19016P60_t"
+                ],
+                "confidence": 1.0,
+                "priority_score": 1.0,
+                "source": "compiler_ground_truth"
+              },
+              {
+                "file_path": "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c",
+                "line_number": 92,
+                "column_number": 12,
+                "function_name": "decode_cu_to_du_rrc_info",
+                "error_text": "unknown type name ‘F1AP_ProtocolExtensionContainer_10696P60_t’",
+                "error_code_category": "unknown_type_name",
+                "symbol_candidates": [
+                  "F1AP_ProtocolExtensionContainer_10696P60_t"
+                ],
+                "confidence": 1.0,
+                "priority_score": 1.0,
+                "source": "compiler_ground_truth"
+              },
+              {
+                "file_path": "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c",
+                "line_number": 92,
+                "column_number": 69,
+                "function_name": "decode_cu_to_du_rrc_info",
+                "error_text": "unknown type name ‘F1AP_ProtocolExtensionContainer_10696P60_t’",
+                "error_code_category": "unknown_type_name",
+                "symbol_candidates": [
+                  "F1AP_ProtocolExtensionContainer_10696P60_t"
+                ],
+                "confidence": 1.0,
+                "priority_score": 1.0,
+                "source": "compiler_ground_truth"
+              }
+            ],
+            "role": "primary",
+            "likely_resolved_by": []
+          },
+          {
+            "cluster_id": "c1",
+            "cluster_key": "member_access_on_non_struct|/home/tcs/downloads/oai-cu/openair2/f1ap/lib/f1ap_ue_context.c|encode_cu_to_du_rrc_info|list",
+            "category": "member_access_on_non_struct",
+            "file_path": "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c",
+            "function_names": [
+              "encode_cu_to_du_rrc_info"
+            ],
+            "error_count": 1,
+            "min_line": 63,
+            "errors": [
+              {
+                "file_path": "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c",
+                "line_number": 63,
+                "column_number": 24,
+                "function_name": "encode_cu_to_du_rrc_info",
+                "error_text": "request for member ‘list’ in something not a structure or union",
+                "error_code_category": "member_access_on_non_struct",
+                "symbol_candidates": [
+                  "list"
+                ],
+                "confidence": 1.0,
+                "priority_score": 1.0,
+                "source": "compiler_ground_truth"
+              }
+            ],
+            "role": "secondary",
+            "likely_resolved_by": [
+              "c0"
+            ]
+          },
+          {
+            "cluster_id": "c2",
+            "cluster_key": "member_access_on_non_struct|/home/tcs/downloads/oai-cu/openair2/f1ap/lib/f1ap_ue_context.c|decode_cu_to_du_rrc_info|list",
+            "category": "member_access_on_non_struct",
+            "file_path": "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c",
+            "function_names": [
+              "decode_cu_to_du_rrc_info"
+            ],
+            "error_count": 2,
+            "min_line": 93,
+            "errors": [
+              {
+                "file_path": "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c",
+                "line_number": 93,
+                "column_number": 29,
+                "function_name": "decode_cu_to_du_rrc_info",
+                "error_text": "request for member ‘list’ in something not a structure or union",
+                "error_code_category": "member_access_on_non_struct",
+                "symbol_candidates": [
+                  "list"
+                ],
+                "confidence": 1.0,
+                "priority_score": 1.0,
+                "source": "compiler_ground_truth"
+              },
+              {
+                "file_path": "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c",
+                "line_number": 94,
+                "column_number": 70,
+                "function_name": "decode_cu_to_du_rrc_info",
+                "error_text": "request for member ‘list’ in something not a structure or union",
+                "error_code_category": "member_access_on_non_struct",
+                "symbol_candidates": [
+                  "list"
+                ],
+                "confidence": 1.0,
+                "priority_score": 1.0,
+                "source": "compiler_ground_truth"
+              }
+            ],
+            "role": "secondary",
+            "likely_resolved_by": [
+              "c0"
+            ]
+          },
+          {
+            "cluster_id": "c3",
+            "cluster_key": "unknown_type_name|/home/tcs/downloads/oai-cu/openair2/f1ap/lib/f1ap_ue_context.c|F1AP_ProtocolExtensionContainer_10696P82_t",
+            "category": "unknown_type_name",
+            "file_path": "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c",
+            "function_names": [
+              "decode_drbs_to_setup",
+              "encode_drbs_to_setup"
+            ],
+            "error_count": 3,
+            "min_line": 669,
+            "errors": [
+              {
+                "file_path": "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c",
+                "line_number": 669,
+                "column_number": 6,
+                "function_name": "encode_drbs_to_setup",
+                "error_text": "unknown type name ‘F1AP_ProtocolExtensionContainer_10696P82_t’; did you mean ‘F1AP_ProtocolExtensionContainer_19016P82_t’?",
+                "error_code_category": "unknown_type_name",
+                "symbol_candidates": [
+                  "F1AP_ProtocolExtensionContainer_10696P82_t",
+                  "F1AP_ProtocolExtensionContainer_19016P82_t"
+                ],
+                "confidence": 1.0,
+                "priority_score": 1.0,
+                "source": "compiler_ground_truth"
+              },
+              {
+                "file_path": "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c",
+                "line_number": 784,
+                "column_number": 12,
+                "function_name": "decode_drbs_to_setup",
+                "error_text": "unknown type name ‘F1AP_ProtocolExtensionContainer_10696P82_t’",
+                "error_code_category": "unknown_type_name",
+                "symbol_candidates": [
+                  "F1AP_ProtocolExtensionContainer_10696P82_t"
+                ],
+                "confidence": 1.0,
+                "priority_score": 1.0,
+                "source": "compiler_ground_truth"
+              },
+              {
+                "file_path": "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c",
+                "line_number": 784,
+                "column_number": 69,
+                "function_name": "decode_drbs_to_setup",
+                "error_text": "unknown type name ‘F1AP_ProtocolExtensionContainer_10696P82_t’",
+                "error_code_category": "unknown_type_name",
+                "symbol_candidates": [
+                  "F1AP_ProtocolExtensionContainer_10696P82_t"
+                ],
+                "confidence": 1.0,
+                "priority_score": 1.0,
+                "source": "compiler_ground_truth"
+              }
+            ],
+            "role": "primary",
+            "likely_resolved_by": []
+          },
+          {
+            "cluster_id": "c4",
+            "cluster_key": "member_access_on_non_struct|/home/tcs/downloads/oai-cu/openair2/f1ap/lib/f1ap_ue_context.c|encode_drbs_to_setup|list",
+            "category": "member_access_on_non_struct",
+            "file_path": "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c",
+            "function_names": [
+              "encode_drbs_to_setup"
+            ],
+            "error_count": 2,
+            "min_line": 671,
+            "errors": [
+              {
+                "file_path": "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c",
+                "line_number": 671,
+                "column_number": 26,
+                "function_name": "encode_drbs_to_setup",
+                "error_text": "request for member ‘list’ in something not a structure or union",
+                "error_code_category": "member_access_on_non_struct",
+                "symbol_candidates": [
+                  "list"
+                ],
+                "confidence": 1.0,
+                "priority_score": 1.0,
+                "source": "compiler_ground_truth"
+              },
+              {
+                "file_path": "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c",
+                "line_number": 679,
+                "column_number": 28,
+                "function_name": "encode_drbs_to_setup",
+                "error_text": "request for member ‘list’ in something not a structure or union",
+                "error_code_category": "member_access_on_non_struct",
+                "symbol_candidates": [
+                  "list"
+                ],
+                "confidence": 1.0,
+                "priority_score": 1.0,
+                "source": "compiler_ground_truth"
+              }
+            ],
+            "role": "secondary",
+            "likely_resolved_by": [
+              "c3"
+            ]
+          },
+          {
+            "cluster_id": "c5",
+            "cluster_key": "unknown_type_name|/home/tcs/downloads/oai-cu/openair2/f1ap/lib/f1ap_ue_context.c|F1AP_ProtocolExtensionContainer_10696P83_t",
+            "category": "unknown_type_name",
+            "file_path": "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c",
+            "function_names": [
+              "decode_drbs_to_setupmod",
+              "encode_drbs_to_setupmod"
+            ],
+            "error_count": 3,
+            "min_line": 726,
+            "errors": [
+              {
+                "file_path": "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c",
+                "line_number": 726,
+                "column_number": 6,
+                "function_name": "encode_drbs_to_setupmod",
+                "error_text": "unknown type name ‘F1AP_ProtocolExtensionContainer_10696P83_t’; did you mean ‘F1AP_ProtocolExtensionContainer_19016P83_t’?",
+                "error_code_category": "unknown_type_name",
+                "symbol_candidates": [
+                  "F1AP_ProtocolExtensionContainer_10696P83_t",
+                  "F1AP_ProtocolExtensionContainer_19016P83_t"
+                ],
+                "confidence": 1.0,
+                "priority_score": 1.0,
+                "source": "compiler_ground_truth"
+              },
+              {
+                "file_path": "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c",
+                "line_number": 850,
+                "column_number": 12,
+                "function_name": "decode_drbs_to_setupmod",
+                "error_text": "unknown type name ‘F1AP_ProtocolExtensionContainer_10696P83_t’",
+                "error_code_category": "unknown_type_name",
+                "symbol_candidates": [
+                  "F1AP_ProtocolExtensionContainer_10696P83_t"
+                ],
+                "confidence": 1.0,
+                "priority_score": 1.0,
+                "source": "compiler_ground_truth"
+              },
+              {
+                "file_path": "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c",
+                "line_number": 850,
+                "column_number": 69,
+                "function_name": "decode_drbs_to_setupmod",
+                "error_text": "unknown type name ‘F1AP_ProtocolExtensionContainer_10696P83_t’",
+                "error_code_category": "unknown_type_name",
+                "symbol_candidates": [
+                  "F1AP_ProtocolExtensionContainer_10696P83_t"
+                ],
+                "confidence": 1.0,
+                "priority_score": 1.0,
+                "source": "compiler_ground_truth"
+              }
+            ],
+            "role": "primary",
+            "likely_resolved_by": []
+          },
+          {
+            "cluster_id": "c6",
+            "cluster_key": "member_access_on_non_struct|/home/tcs/downloads/oai-cu/openair2/f1ap/lib/f1ap_ue_context.c|encode_drbs_to_setupmod|list",
+            "category": "member_access_on_non_struct",
+            "file_path": "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c",
+            "function_names": [
+              "encode_drbs_to_setupmod"
+            ],
+            "error_count": 2,
+            "min_line": 729,
+            "errors": [
+              {
+                "file_path": "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c",
+                "line_number": 729,
+                "column_number": 28,
+                "function_name": "encode_drbs_to_setupmod",
+                "error_text": "request for member ‘list’ in something not a structure or union",
+                "error_code_category": "member_access_on_non_struct",
+                "symbol_candidates": [
+                  "list"
+                ],
+                "confidence": 1.0,
+                "priority_score": 1.0,
+                "source": "compiler_ground_truth"
+              },
+              {
+                "file_path": "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c",
+                "line_number": 737,
+                "column_number": 28,
+                "function_name": "encode_drbs_to_setupmod",
+                "error_text": "request for member ‘list’ in something not a structure or union",
+                "error_code_category": "member_access_on_non_struct",
+                "symbol_candidates": [
+                  "list"
+                ],
+                "confidence": 1.0,
+                "priority_score": 1.0,
+                "source": "compiler_ground_truth"
+              }
+            ],
+            "role": "secondary",
+            "likely_resolved_by": [
+              "c5"
+            ]
+          },
+          {
+            "cluster_id": "c7",
+            "cluster_key": "member_access_on_non_struct|/home/tcs/downloads/oai-cu/openair2/f1ap/lib/f1ap_ue_context.c|decode_drbs_to_setup|list",
+            "category": "member_access_on_non_struct",
+            "file_path": "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c",
+            "function_names": [
+              "decode_drbs_to_setup"
+            ],
+            "error_count": 5,
+            "min_line": 786,
+            "errors": [
+              {
+                "file_path": "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c",
+                "line_number": 786,
+                "column_number": 65,
+                "function_name": "decode_drbs_to_setup",
+                "error_text": "request for member ‘list’ in something not a structure or union",
+                "error_code_category": "member_access_on_non_struct",
+                "symbol_candidates": [
+                  "list"
+                ],
+                "confidence": 1.0,
+                "priority_score": 1.0,
+                "source": "compiler_ground_truth"
+              },
+              {
+                "file_path": "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c",
+                "line_number": 786,
+                "column_number": 65,
+                "function_name": "decode_drbs_to_setup",
+                "error_text": "request for member ‘list’ in something not a structure or union",
+                "error_code_category": "member_access_on_non_struct",
+                "symbol_candidates": [
+                  "list"
+                ],
+                "confidence": 1.0,
+                "priority_score": 1.0,
+                "source": "compiler_ground_truth"
+              },
+              {
+                "file_path": "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c",
+                "line_number": 786,
+                "column_number": 65,
+                "function_name": "decode_drbs_to_setup",
+                "error_text": "request for member ‘list’ in something not a structure or union",
+                "error_code_category": "member_access_on_non_struct",
+                "symbol_candidates": [
+                  "list"
+                ],
+                "confidence": 1.0,
+                "priority_score": 1.0,
+                "source": "compiler_ground_truth"
+              },
+              {
+                "file_path": "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c",
+                "line_number": 788,
+                "column_number": 29,
+                "function_name": "decode_drbs_to_setup",
+                "error_text": "request for member ‘list’ in something not a structure or union",
+                "error_code_category": "member_access_on_non_struct",
+                "symbol_candidates": [
+                  "list"
+                ],
+                "confidence": 1.0,
+                "priority_score": 1.0,
+                "source": "compiler_ground_truth"
+              },
+              {
+                "file_path": "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c",
+                "line_number": 789,
+                "column_number": 16,
+                "function_name": "decode_drbs_to_setup",
+                "error_text": "request for member ‘list’ in something not a structure or union",
+                "error_code_category": "member_access_on_non_struct",
+                "symbol_candidates": [
+                  "list"
+                ],
+                "confidence": 1.0,
+                "priority_score": 1.0,
+                "source": "compiler_ground_truth"
+              }
+            ],
+            "role": "secondary",
+            "likely_resolved_by": [
+              "c3"
+            ]
+          },
+          {
+            "cluster_id": "c8",
+            "cluster_key": "member_access_on_non_struct|/home/tcs/downloads/oai-cu/openair2/f1ap/lib/f1ap_ue_context.c|decode_drbs_to_setupmod|list",
+            "category": "member_access_on_non_struct",
+            "file_path": "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c",
+            "function_names": [
+              "decode_drbs_to_setupmod"
+            ],
+            "error_count": 2,
+            "min_line": 853,
+            "errors": [
+              {
+                "file_path": "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c",
+                "line_number": 853,
+                "column_number": 29,
+                "function_name": "decode_drbs_to_setupmod",
+                "error_text": "request for member ‘list’ in something not a structure or union",
+                "error_code_category": "member_access_on_non_struct",
+                "symbol_candidates": [
+                  "list"
+                ],
+                "confidence": 1.0,
+                "priority_score": 1.0,
+                "source": "compiler_ground_truth"
+              },
+              {
+                "file_path": "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c",
+                "line_number": 854,
+                "column_number": 16,
+                "function_name": "decode_drbs_to_setupmod",
+                "error_text": "request for member ‘list’ in something not a structure or union",
+                "error_code_category": "member_access_on_non_struct",
+                "symbol_candidates": [
+                  "list"
+                ],
+                "confidence": 1.0,
+                "priority_score": 1.0,
+                "source": "compiler_ground_truth"
+              }
+            ],
+            "role": "secondary",
+            "likely_resolved_by": [
+              "c5"
+            ]
+          }
+        ],
+        "primary_cluster_ids": [
+          "c0",
+          "c3",
+          "c5"
+        ],
+        "secondary_cluster_ids": [
+          "c1",
+          "c2",
+          "c4",
+          "c6",
+          "c7",
+          "c8"
+        ]
+      },
+      "build_error_mode": true
+    },
+    "retrieval_method": "compiler_ground_truth_primary_only",
+    "ground_truth_errors": [
+      {
+        "file_path": "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c",
+        "line_number": 61,
+        "column_number": 6,
+        "function_name": "encode_cu_to_du_rrc_info",
+        "error_text": "unknown type name ‘F1AP_ProtocolExtensionContainer_10696P60_t’; did you mean ‘F1AP_ProtocolExtensionContainer_19016P60_t’?",
+        "error_code_category": "unknown_type_name",
+        "symbol_candidates": [
+          "F1AP_ProtocolExtensionContainer_10696P60_t",
+          "F1AP_ProtocolExtensionContainer_19016P60_t"
+        ],
+        "confidence": 1.0,
+        "priority_score": 1.0,
+        "source": "compiler_ground_truth"
+      },
+      {
+        "file_path": "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c",
+        "line_number": 63,
+        "column_number": 24,
+        "function_name": "encode_cu_to_du_rrc_info",
+        "error_text": "request for member ‘list’ in something not a structure or union",
+        "error_code_category": "member_access_on_non_struct",
+        "symbol_candidates": [
+          "list"
+        ],
+        "confidence": 1.0,
+        "priority_score": 1.0,
+        "source": "compiler_ground_truth"
+      },
+      {
+        "file_path": "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c",
+        "line_number": 92,
+        "column_number": 12,
+        "function_name": "decode_cu_to_du_rrc_info",
+        "error_text": "unknown type name ‘F1AP_ProtocolExtensionContainer_10696P60_t’",
+        "error_code_category": "unknown_type_name",
+        "symbol_candidates": [
+          "F1AP_ProtocolExtensionContainer_10696P60_t"
+        ],
+        "confidence": 1.0,
+        "priority_score": 1.0,
+        "source": "compiler_ground_truth"
+      },
+      {
+        "file_path": "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c",
+        "line_number": 92,
+        "column_number": 69,
+        "function_name": "decode_cu_to_du_rrc_info",
+        "error_text": "unknown type name ‘F1AP_ProtocolExtensionContainer_10696P60_t’",
+        "error_code_category": "unknown_type_name",
+        "symbol_candidates": [
+          "F1AP_ProtocolExtensionContainer_10696P60_t"
+        ],
+        "confidence": 1.0,
+        "priority_score": 1.0,
+        "source": "compiler_ground_truth"
+      },
+      {
+        "file_path": "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c",
+        "line_number": 93,
+        "column_number": 29,
+        "function_name": "decode_cu_to_du_rrc_info",
+        "error_text": "request for member ‘list’ in something not a structure or union",
+        "error_code_category": "member_access_on_non_struct",
+        "symbol_candidates": [
+          "list"
+        ],
+        "confidence": 1.0,
+        "priority_score": 1.0,
+        "source": "compiler_ground_truth"
+      },
+      {
+        "file_path": "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c",
+        "line_number": 94,
+        "column_number": 70,
+        "function_name": "decode_cu_to_du_rrc_info",
+        "error_text": "request for member ‘list’ in something not a structure or union",
+        "error_code_category": "member_access_on_non_struct",
+        "symbol_candidates": [
+          "list"
+        ],
+        "confidence": 1.0,
+        "priority_score": 1.0,
+        "source": "compiler_ground_truth"
+      },
+      {
+        "file_path": "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c",
+        "line_number": 669,
+        "column_number": 6,
+        "function_name": "encode_drbs_to_setup",
+        "error_text": "unknown type name ‘F1AP_ProtocolExtensionContainer_10696P82_t’; did you mean ‘F1AP_ProtocolExtensionContainer_19016P82_t’?",
+        "error_code_category": "unknown_type_name",
+        "symbol_candidates": [
+          "F1AP_ProtocolExtensionContainer_10696P82_t",
+          "F1AP_ProtocolExtensionContainer_19016P82_t"
+        ],
+        "confidence": 1.0,
+        "priority_score": 1.0,
+        "source": "compiler_ground_truth"
+      },
+      {
+        "file_path": "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c",
+        "line_number": 671,
+        "column_number": 26,
+        "function_name": "encode_drbs_to_setup",
+        "error_text": "request for member ‘list’ in something not a structure or union",
+        "error_code_category": "member_access_on_non_struct",
+        "symbol_candidates": [
+          "list"
+        ],
+        "confidence": 1.0,
+        "priority_score": 1.0,
+        "source": "compiler_ground_truth"
+      },
+      {
+        "file_path": "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c",
+        "line_number": 679,
+        "column_number": 28,
+        "function_name": "encode_drbs_to_setup",
+        "error_text": "request for member ‘list’ in something not a structure or union",
+        "error_code_category": "member_access_on_non_struct",
+        "symbol_candidates": [
+          "list"
+        ],
+        "confidence": 1.0,
+        "priority_score": 1.0,
+        "source": "compiler_ground_truth"
+      },
+      {
+        "file_path": "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c",
+        "line_number": 726,
+        "column_number": 6,
+        "function_name": "encode_drbs_to_setupmod",
+        "error_text": "unknown type name ‘F1AP_ProtocolExtensionContainer_10696P83_t’; did you mean ‘F1AP_ProtocolExtensionContainer_19016P83_t’?",
+        "error_code_category": "unknown_type_name",
+        "symbol_candidates": [
+          "F1AP_ProtocolExtensionContainer_10696P83_t",
+          "F1AP_ProtocolExtensionContainer_19016P83_t"
+        ],
+        "confidence": 1.0,
+        "priority_score": 1.0,
+        "source": "compiler_ground_truth"
+      },
+      {
+        "file_path": "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c",
+        "line_number": 729,
+        "column_number": 28,
+        "function_name": "encode_drbs_to_setupmod",
+        "error_text": "request for member ‘list’ in something not a structure or union",
+        "error_code_category": "member_access_on_non_struct",
+        "symbol_candidates": [
+          "list"
+        ],
+        "confidence": 1.0,
+        "priority_score": 1.0,
+        "source": "compiler_ground_truth"
+      },
+      {
+        "file_path": "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c",
+        "line_number": 737,
+        "column_number": 28,
+        "function_name": "encode_drbs_to_setupmod",
+        "error_text": "request for member ‘list’ in something not a structure or union",
+        "error_code_category": "member_access_on_non_struct",
+        "symbol_candidates": [
+          "list"
+        ],
+        "confidence": 1.0,
+        "priority_score": 1.0,
+        "source": "compiler_ground_truth"
+      },
+      {
+        "file_path": "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c",
+        "line_number": 784,
+        "column_number": 12,
+        "function_name": "decode_drbs_to_setup",
+        "error_text": "unknown type name ‘F1AP_ProtocolExtensionContainer_10696P82_t’",
+        "error_code_category": "unknown_type_name",
+        "symbol_candidates": [
+          "F1AP_ProtocolExtensionContainer_10696P82_t"
+        ],
+        "confidence": 1.0,
+        "priority_score": 1.0,
+        "source": "compiler_ground_truth"
+      },
+      {
+        "file_path": "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c",
+        "line_number": 784,
+        "column_number": 69,
+        "function_name": "decode_drbs_to_setup",
+        "error_text": "unknown type name ‘F1AP_ProtocolExtensionContainer_10696P82_t’",
+        "error_code_category": "unknown_type_name",
+        "symbol_candidates": [
+          "F1AP_ProtocolExtensionContainer_10696P82_t"
+        ],
+        "confidence": 1.0,
+        "priority_score": 1.0,
+        "source": "compiler_ground_truth"
+      },
+      {
+        "file_path": "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c",
+        "line_number": 786,
+        "column_number": 65,
+        "function_name": "decode_drbs_to_setup",
+        "error_text": "request for member ‘list’ in something not a structure or union",
+        "error_code_category": "member_access_on_non_struct",
+        "symbol_candidates": [
+          "list"
+        ],
+        "confidence": 1.0,
+        "priority_score": 1.0,
+        "source": "compiler_ground_truth"
+      },
+      {
+        "file_path": "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c",
+        "line_number": 786,
+        "column_number": 65,
+        "function_name": "decode_drbs_to_setup",
+        "error_text": "request for member ‘list’ in something not a structure or union",
+        "error_code_category": "member_access_on_non_struct",
+        "symbol_candidates": [
+          "list"
+        ],
+        "confidence": 1.0,
+        "priority_score": 1.0,
+        "source": "compiler_ground_truth"
+      },
+      {
+        "file_path": "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c",
+        "line_number": 786,
+        "column_number": 65,
+        "function_name": "decode_drbs_to_setup",
+        "error_text": "request for member ‘list’ in something not a structure or union",
+        "error_code_category": "member_access_on_non_struct",
+        "symbol_candidates": [
+          "list"
+        ],
+        "confidence": 1.0,
+        "priority_score": 1.0,
+        "source": "compiler_ground_truth"
+      },
+      {
+        "file_path": "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c",
+        "line_number": 788,
+        "column_number": 29,
+        "function_name": "decode_drbs_to_setup",
+        "error_text": "request for member ‘list’ in something not a structure or union",
+        "error_code_category": "member_access_on_non_struct",
+        "symbol_candidates": [
+          "list"
+        ],
+        "confidence": 1.0,
+        "priority_score": 1.0,
+        "source": "compiler_ground_truth"
+      },
+      {
+        "file_path": "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c",
+        "line_number": 789,
+        "column_number": 16,
+        "function_name": "decode_drbs_to_setup",
+        "error_text": "request for member ‘list’ in something not a structure or union",
+        "error_code_category": "member_access_on_non_struct",
+        "symbol_candidates": [
+          "list"
+        ],
+        "confidence": 1.0,
+        "priority_score": 1.0,
+        "source": "compiler_ground_truth"
+      },
+      {
+        "file_path": "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c",
+        "line_number": 850,
+        "column_number": 12,
+        "function_name": "decode_drbs_to_setupmod",
+        "error_text": "unknown type name ‘F1AP_ProtocolExtensionContainer_10696P83_t’",
+        "error_code_category": "unknown_type_name",
+        "symbol_candidates": [
+          "F1AP_ProtocolExtensionContainer_10696P83_t"
+        ],
+        "confidence": 1.0,
+        "priority_score": 1.0,
+        "source": "compiler_ground_truth"
+      },
+      {
+        "file_path": "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c",
+        "line_number": 850,
+        "column_number": 69,
+        "function_name": "decode_drbs_to_setupmod",
+        "error_text": "unknown type name ‘F1AP_ProtocolExtensionContainer_10696P83_t’",
+        "error_code_category": "unknown_type_name",
+        "symbol_candidates": [
+          "F1AP_ProtocolExtensionContainer_10696P83_t"
+        ],
+        "confidence": 1.0,
+        "priority_score": 1.0,
+        "source": "compiler_ground_truth"
+      },
+      {
+        "file_path": "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c",
+        "line_number": 853,
+        "column_number": 29,
+        "function_name": "decode_drbs_to_setupmod",
+        "error_text": "request for member ‘list’ in something not a structure or union",
+        "error_code_category": "member_access_on_non_struct",
+        "symbol_candidates": [
+          "list"
+        ],
+        "confidence": 1.0,
+        "priority_score": 1.0,
+        "source": "compiler_ground_truth"
+      },
+      {
+        "file_path": "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c",
+        "line_number": 854,
+        "column_number": 16,
+        "function_name": "decode_drbs_to_setupmod",
+        "error_text": "request for member ‘list’ in something not a structure or union",
+        "error_code_category": "member_access_on_non_struct",
+        "symbol_candidates": [
+          "list"
+        ],
+        "confidence": 1.0,
+        "priority_score": 1.0,
+        "source": "compiler_ground_truth"
+      }
+    ],
+    "compiler_cluster_analysis": {
+      "clusters": [
+        {
+          "cluster_id": "c0",
+          "cluster_key": "unknown_type_name|/home/tcs/downloads/oai-cu/openair2/f1ap/lib/f1ap_ue_context.c|F1AP_ProtocolExtensionContainer_10696P60_t",
+          "category": "unknown_type_name",
+          "file_path": "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c",
+          "function_names": [
+            "decode_cu_to_du_rrc_info",
+            "encode_cu_to_du_rrc_info"
+          ],
+          "error_count": 3,
+          "min_line": 61,
+          "errors": [
+            {
+              "file_path": "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c",
+              "line_number": 61,
+              "column_number": 6,
+              "function_name": "encode_cu_to_du_rrc_info",
+              "error_text": "unknown type name ‘F1AP_ProtocolExtensionContainer_10696P60_t’; did you mean ‘F1AP_ProtocolExtensionContainer_19016P60_t’?",
+              "error_code_category": "unknown_type_name",
+              "symbol_candidates": [
+                "F1AP_ProtocolExtensionContainer_10696P60_t",
+                "F1AP_ProtocolExtensionContainer_19016P60_t"
+              ],
+              "confidence": 1.0,
+              "priority_score": 1.0,
+              "source": "compiler_ground_truth"
+            },
+            {
+              "file_path": "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c",
+              "line_number": 92,
+              "column_number": 12,
+              "function_name": "decode_cu_to_du_rrc_info",
+              "error_text": "unknown type name ‘F1AP_ProtocolExtensionContainer_10696P60_t’",
+              "error_code_category": "unknown_type_name",
+              "symbol_candidates": [
+                "F1AP_ProtocolExtensionContainer_10696P60_t"
+              ],
+              "confidence": 1.0,
+              "priority_score": 1.0,
+              "source": "compiler_ground_truth"
+            },
+            {
+              "file_path": "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c",
+              "line_number": 92,
+              "column_number": 69,
+              "function_name": "decode_cu_to_du_rrc_info",
+              "error_text": "unknown type name ‘F1AP_ProtocolExtensionContainer_10696P60_t’",
+              "error_code_category": "unknown_type_name",
+              "symbol_candidates": [
+                "F1AP_ProtocolExtensionContainer_10696P60_t"
+              ],
+              "confidence": 1.0,
+              "priority_score": 1.0,
+              "source": "compiler_ground_truth"
+            }
+          ],
+          "role": "primary",
+          "likely_resolved_by": []
+        },
+        {
+          "cluster_id": "c1",
+          "cluster_key": "member_access_on_non_struct|/home/tcs/downloads/oai-cu/openair2/f1ap/lib/f1ap_ue_context.c|encode_cu_to_du_rrc_info|list",
+          "category": "member_access_on_non_struct",
+          "file_path": "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c",
+          "function_names": [
+            "encode_cu_to_du_rrc_info"
+          ],
+          "error_count": 1,
+          "min_line": 63,
+          "errors": [
+            {
+              "file_path": "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c",
+              "line_number": 63,
+              "column_number": 24,
+              "function_name": "encode_cu_to_du_rrc_info",
+              "error_text": "request for member ‘list’ in something not a structure or union",
+              "error_code_category": "member_access_on_non_struct",
+              "symbol_candidates": [
+                "list"
+              ],
+              "confidence": 1.0,
+              "priority_score": 1.0,
+              "source": "compiler_ground_truth"
+            }
+          ],
+          "role": "secondary",
+          "likely_resolved_by": [
+            "c0"
+          ]
+        },
+        {
+          "cluster_id": "c2",
+          "cluster_key": "member_access_on_non_struct|/home/tcs/downloads/oai-cu/openair2/f1ap/lib/f1ap_ue_context.c|decode_cu_to_du_rrc_info|list",
+          "category": "member_access_on_non_struct",
+          "file_path": "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c",
+          "function_names": [
+            "decode_cu_to_du_rrc_info"
+          ],
+          "error_count": 2,
+          "min_line": 93,
+          "errors": [
+            {
+              "file_path": "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c",
+              "line_number": 93,
+              "column_number": 29,
+              "function_name": "decode_cu_to_du_rrc_info",
+              "error_text": "request for member ‘list’ in something not a structure or union",
+              "error_code_category": "member_access_on_non_struct",
+              "symbol_candidates": [
+                "list"
+              ],
+              "confidence": 1.0,
+              "priority_score": 1.0,
+              "source": "compiler_ground_truth"
+            },
+            {
+              "file_path": "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c",
+              "line_number": 94,
+              "column_number": 70,
+              "function_name": "decode_cu_to_du_rrc_info",
+              "error_text": "request for member ‘list’ in something not a structure or union",
+              "error_code_category": "member_access_on_non_struct",
+              "symbol_candidates": [
+                "list"
+              ],
+              "confidence": 1.0,
+              "priority_score": 1.0,
+              "source": "compiler_ground_truth"
+            }
+          ],
+          "role": "secondary",
+          "likely_resolved_by": [
+            "c0"
+          ]
+        },
+        {
+          "cluster_id": "c3",
+          "cluster_key": "unknown_type_name|/home/tcs/downloads/oai-cu/openair2/f1ap/lib/f1ap_ue_context.c|F1AP_ProtocolExtensionContainer_10696P82_t",
+          "category": "unknown_type_name",
+          "file_path": "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c",
+          "function_names": [
+            "decode_drbs_to_setup",
+            "encode_drbs_to_setup"
+          ],
+          "error_count": 3,
+          "min_line": 669,
+          "errors": [
+            {
+              "file_path": "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c",
+              "line_number": 669,
+              "column_number": 6,
+              "function_name": "encode_drbs_to_setup",
+              "error_text": "unknown type name ‘F1AP_ProtocolExtensionContainer_10696P82_t’; did you mean ‘F1AP_ProtocolExtensionContainer_19016P82_t’?",
+              "error_code_category": "unknown_type_name",
+              "symbol_candidates": [
+                "F1AP_ProtocolExtensionContainer_10696P82_t",
+                "F1AP_ProtocolExtensionContainer_19016P82_t"
+              ],
+              "confidence": 1.0,
+              "priority_score": 1.0,
+              "source": "compiler_ground_truth"
+            },
+            {
+              "file_path": "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c",
+              "line_number": 784,
+              "column_number": 12,
+              "function_name": "decode_drbs_to_setup",
+              "error_text": "unknown type name ‘F1AP_ProtocolExtensionContainer_10696P82_t’",
+              "error_code_category": "unknown_type_name",
+              "symbol_candidates": [
+                "F1AP_ProtocolExtensionContainer_10696P82_t"
+              ],
+              "confidence": 1.0,
+              "priority_score": 1.0,
+              "source": "compiler_ground_truth"
+            },
+            {
+              "file_path": "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c",
+              "line_number": 784,
+              "column_number": 69,
+              "function_name": "decode_drbs_to_setup",
+              "error_text": "unknown type name ‘F1AP_ProtocolExtensionContainer_10696P82_t’",
+              "error_code_category": "unknown_type_name",
+              "symbol_candidates": [
+                "F1AP_ProtocolExtensionContainer_10696P82_t"
+              ],
+              "confidence": 1.0,
+              "priority_score": 1.0,
+              "source": "compiler_ground_truth"
+            }
+          ],
+          "role": "primary",
+          "likely_resolved_by": []
+        },
+        {
+          "cluster_id": "c4",
+          "cluster_key": "member_access_on_non_struct|/home/tcs/downloads/oai-cu/openair2/f1ap/lib/f1ap_ue_context.c|encode_drbs_to_setup|list",
+          "category": "member_access_on_non_struct",
+          "file_path": "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c",
+          "function_names": [
+            "encode_drbs_to_setup"
+          ],
+          "error_count": 2,
+          "min_line": 671,
+          "errors": [
+            {
+              "file_path": "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c",
+              "line_number": 671,
+              "column_number": 26,
+              "function_name": "encode_drbs_to_setup",
+              "error_text": "request for member ‘list’ in something not a structure or union",
+              "error_code_category": "member_access_on_non_struct",
+              "symbol_candidates": [
+                "list"
+              ],
+              "confidence": 1.0,
+              "priority_score": 1.0,
+              "source": "compiler_ground_truth"
+            },
+            {
+              "file_path": "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c",
+              "line_number": 679,
+              "column_number": 28,
+              "function_name": "encode_drbs_to_setup",
+              "error_text": "request for member ‘list’ in something not a structure or union",
+              "error_code_category": "member_access_on_non_struct",
+              "symbol_candidates": [
+                "list"
+              ],
+              "confidence": 1.0,
+              "priority_score": 1.0,
+              "source": "compiler_ground_truth"
+            }
+          ],
+          "role": "secondary",
+          "likely_resolved_by": [
+            "c3"
+          ]
+        },
+        {
+          "cluster_id": "c5",
+          "cluster_key": "unknown_type_name|/home/tcs/downloads/oai-cu/openair2/f1ap/lib/f1ap_ue_context.c|F1AP_ProtocolExtensionContainer_10696P83_t",
+          "category": "unknown_type_name",
+          "file_path": "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c",
+          "function_names": [
+            "decode_drbs_to_setupmod",
+            "encode_drbs_to_setupmod"
+          ],
+          "error_count": 3,
+          "min_line": 726,
+          "errors": [
+            {
+              "file_path": "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c",
+              "line_number": 726,
+              "column_number": 6,
+              "function_name": "encode_drbs_to_setupmod",
+              "error_text": "unknown type name ‘F1AP_ProtocolExtensionContainer_10696P83_t’; did you mean ‘F1AP_ProtocolExtensionContainer_19016P83_t’?",
+              "error_code_category": "unknown_type_name",
+              "symbol_candidates": [
+                "F1AP_ProtocolExtensionContainer_10696P83_t",
+                "F1AP_ProtocolExtensionContainer_19016P83_t"
+              ],
+              "confidence": 1.0,
+              "priority_score": 1.0,
+              "source": "compiler_ground_truth"
+            },
+            {
+              "file_path": "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c",
+              "line_number": 850,
+              "column_number": 12,
+              "function_name": "decode_drbs_to_setupmod",
+              "error_text": "unknown type name ‘F1AP_ProtocolExtensionContainer_10696P83_t’",
+              "error_code_category": "unknown_type_name",
+              "symbol_candidates": [
+                "F1AP_ProtocolExtensionContainer_10696P83_t"
+              ],
+              "confidence": 1.0,
+              "priority_score": 1.0,
+              "source": "compiler_ground_truth"
+            },
+            {
+              "file_path": "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c",
+              "line_number": 850,
+              "column_number": 69,
+              "function_name": "decode_drbs_to_setupmod",
+              "error_text": "unknown type name ‘F1AP_ProtocolExtensionContainer_10696P83_t’",
+              "error_code_category": "unknown_type_name",
+              "symbol_candidates": [
+                "F1AP_ProtocolExtensionContainer_10696P83_t"
+              ],
+              "confidence": 1.0,
+              "priority_score": 1.0,
+              "source": "compiler_ground_truth"
+            }
+          ],
+          "role": "primary",
+          "likely_resolved_by": []
+        },
+        {
+          "cluster_id": "c6",
+          "cluster_key": "member_access_on_non_struct|/home/tcs/downloads/oai-cu/openair2/f1ap/lib/f1ap_ue_context.c|encode_drbs_to_setupmod|list",
+          "category": "member_access_on_non_struct",
+          "file_path": "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c",
+          "function_names": [
+            "encode_drbs_to_setupmod"
+          ],
+          "error_count": 2,
+          "min_line": 729,
+          "errors": [
+            {
+              "file_path": "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c",
+              "line_number": 729,
+              "column_number": 28,
+              "function_name": "encode_drbs_to_setupmod",
+              "error_text": "request for member ‘list’ in something not a structure or union",
+              "error_code_category": "member_access_on_non_struct",
+              "symbol_candidates": [
+                "list"
+              ],
+              "confidence": 1.0,
+              "priority_score": 1.0,
+              "source": "compiler_ground_truth"
+            },
+            {
+              "file_path": "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c",
+              "line_number": 737,
+              "column_number": 28,
+              "function_name": "encode_drbs_to_setupmod",
+              "error_text": "request for member ‘list’ in something not a structure or union",
+              "error_code_category": "member_access_on_non_struct",
+              "symbol_candidates": [
+                "list"
+              ],
+              "confidence": 1.0,
+              "priority_score": 1.0,
+              "source": "compiler_ground_truth"
+            }
+          ],
+          "role": "secondary",
+          "likely_resolved_by": [
+            "c5"
+          ]
+        },
+        {
+          "cluster_id": "c7",
+          "cluster_key": "member_access_on_non_struct|/home/tcs/downloads/oai-cu/openair2/f1ap/lib/f1ap_ue_context.c|decode_drbs_to_setup|list",
+          "category": "member_access_on_non_struct",
+          "file_path": "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c",
+          "function_names": [
+            "decode_drbs_to_setup"
+          ],
+          "error_count": 5,
+          "min_line": 786,
+          "errors": [
+            {
+              "file_path": "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c",
+              "line_number": 786,
+              "column_number": 65,
+              "function_name": "decode_drbs_to_setup",
+              "error_text": "request for member ‘list’ in something not a structure or union",
+              "error_code_category": "member_access_on_non_struct",
+              "symbol_candidates": [
+                "list"
+              ],
+              "confidence": 1.0,
+              "priority_score": 1.0,
+              "source": "compiler_ground_truth"
+            },
+            {
+              "file_path": "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c",
+              "line_number": 786,
+              "column_number": 65,
+              "function_name": "decode_drbs_to_setup",
+              "error_text": "request for member ‘list’ in something not a structure or union",
+              "error_code_category": "member_access_on_non_struct",
+              "symbol_candidates": [
+                "list"
+              ],
+              "confidence": 1.0,
+              "priority_score": 1.0,
+              "source": "compiler_ground_truth"
+            },
+            {
+              "file_path": "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c",
+              "line_number": 786,
+              "column_number": 65,
+              "function_name": "decode_drbs_to_setup",
+              "error_text": "request for member ‘list’ in something not a structure or union",
+              "error_code_category": "member_access_on_non_struct",
+              "symbol_candidates": [
+                "list"
+              ],
+              "confidence": 1.0,
+              "priority_score": 1.0,
+              "source": "compiler_ground_truth"
+            },
+            {
+              "file_path": "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c",
+              "line_number": 788,
+              "column_number": 29,
+              "function_name": "decode_drbs_to_setup",
+              "error_text": "request for member ‘list’ in something not a structure or union",
+              "error_code_category": "member_access_on_non_struct",
+              "symbol_candidates": [
+                "list"
+              ],
+              "confidence": 1.0,
+              "priority_score": 1.0,
+              "source": "compiler_ground_truth"
+            },
+            {
+              "file_path": "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c",
+              "line_number": 789,
+              "column_number": 16,
+              "function_name": "decode_drbs_to_setup",
+              "error_text": "request for member ‘list’ in something not a structure or union",
+              "error_code_category": "member_access_on_non_struct",
+              "symbol_candidates": [
+                "list"
+              ],
+              "confidence": 1.0,
+              "priority_score": 1.0,
+              "source": "compiler_ground_truth"
+            }
+          ],
+          "role": "secondary",
+          "likely_resolved_by": [
+            "c3"
+          ]
+        },
+        {
+          "cluster_id": "c8",
+          "cluster_key": "member_access_on_non_struct|/home/tcs/downloads/oai-cu/openair2/f1ap/lib/f1ap_ue_context.c|decode_drbs_to_setupmod|list",
+          "category": "member_access_on_non_struct",
+          "file_path": "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c",
+          "function_names": [
+            "decode_drbs_to_setupmod"
+          ],
+          "error_count": 2,
+          "min_line": 853,
+          "errors": [
+            {
+              "file_path": "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c",
+              "line_number": 853,
+              "column_number": 29,
+              "function_name": "decode_drbs_to_setupmod",
+              "error_text": "request for member ‘list’ in something not a structure or union",
+              "error_code_category": "member_access_on_non_struct",
+              "symbol_candidates": [
+                "list"
+              ],
+              "confidence": 1.0,
+              "priority_score": 1.0,
+              "source": "compiler_ground_truth"
+            },
+            {
+              "file_path": "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c",
+              "line_number": 854,
+              "column_number": 16,
+              "function_name": "decode_drbs_to_setupmod",
+              "error_text": "request for member ‘list’ in something not a structure or union",
+              "error_code_category": "member_access_on_non_struct",
+              "symbol_candidates": [
+                "list"
+              ],
+              "confidence": 1.0,
+              "priority_score": 1.0,
+              "source": "compiler_ground_truth"
+            }
+          ],
+          "role": "secondary",
+          "likely_resolved_by": [
+            "c5"
+          ]
+        }
+      ],
+      "primary_cluster_ids": [
+        "c0",
+        "c3",
+        "c5"
+      ],
+      "secondary_cluster_ids": [
+        "c1",
+        "c2",
+        "c4",
+        "c6",
+        "c7",
+        "c8"
+      ]
+    },
+    "build_error_mode": true,
+    "narrow_compiler_phase2": true,
+    "log_error_kind": "build",
+    "top_ground_truth_clusters": [
+      {
+        "file_path": "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c",
+        "function_name": "decode_drbs_to_setup",
+        "error_count": 7,
+        "priority_reason": "direct_compiler_error",
+        "top_errors": [
+          {
+            "line_number": 784,
+            "error_code_category": "unknown_type_name",
+            "error_text": "unknown type name ‘F1AP_ProtocolExtensionContainer_10696P82_t’"
+          },
+          {
+            "line_number": 784,
+            "error_code_category": "unknown_type_name",
+            "error_text": "unknown type name ‘F1AP_ProtocolExtensionContainer_10696P82_t’"
+          },
+          {
+            "line_number": 786,
+            "error_code_category": "member_access_on_non_struct",
+            "error_text": "request for member ‘list’ in something not a structure or union"
+          },
+          {
+            "line_number": 786,
+            "error_code_category": "member_access_on_non_struct",
+            "error_text": "request for member ‘list’ in something not a structure or union"
+          }
+        ]
+      },
+      {
+        "file_path": "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c",
+        "function_name": "decode_cu_to_du_rrc_info",
+        "error_count": 4,
+        "priority_reason": "direct_compiler_error",
+        "top_errors": [
+          {
+            "line_number": 92,
+            "error_code_category": "unknown_type_name",
+            "error_text": "unknown type name ‘F1AP_ProtocolExtensionContainer_10696P60_t’"
+          },
+          {
+            "line_number": 92,
+            "error_code_category": "unknown_type_name",
+            "error_text": "unknown type name ‘F1AP_ProtocolExtensionContainer_10696P60_t’"
+          },
+          {
+            "line_number": 93,
+            "error_code_category": "member_access_on_non_struct",
+            "error_text": "request for member ‘list’ in something not a structure or union"
+          },
+          {
+            "line_number": 94,
+            "error_code_category": "member_access_on_non_struct",
+            "error_text": "request for member ‘list’ in something not a structure or union"
+          }
+        ]
+      },
+      {
+        "file_path": "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c",
+        "function_name": "decode_drbs_to_setupmod",
+        "error_count": 4,
+        "priority_reason": "direct_compiler_error",
+        "top_errors": [
+          {
+            "line_number": 850,
+            "error_code_category": "unknown_type_name",
+            "error_text": "unknown type name ‘F1AP_ProtocolExtensionContainer_10696P83_t’"
+          },
+          {
+            "line_number": 850,
+            "error_code_category": "unknown_type_name",
+            "error_text": "unknown type name ‘F1AP_ProtocolExtensionContainer_10696P83_t’"
+          },
+          {
+            "line_number": 853,
+            "error_code_category": "member_access_on_non_struct",
+            "error_text": "request for member ‘list’ in something not a structure or union"
+          },
+          {
+            "line_number": 854,
+            "error_code_category": "member_access_on_non_struct",
+            "error_text": "request for member ‘list’ in something not a structure or union"
+          }
+        ]
+      },
+      {
+        "file_path": "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c",
+        "function_name": "encode_drbs_to_setup",
+        "error_count": 3,
+        "priority_reason": "direct_compiler_error",
+        "top_errors": [
+          {
+            "line_number": 669,
+            "error_code_category": "unknown_type_name",
+            "error_text": "unknown type name ‘F1AP_ProtocolExtensionContainer_10696P82_t’; did you mean ‘F1AP_ProtocolExtensionContainer_19016P82_t’?"
+          },
+          {
+            "line_number": 671,
+            "error_code_category": "member_access_on_non_struct",
+            "error_text": "request for member ‘list’ in something not a structure or union"
+          },
+          {
+            "line_number": 679,
+            "error_code_category": "member_access_on_non_struct",
+            "error_text": "request for member ‘list’ in something not a structure or union"
+          }
+        ]
+      },
+      {
+        "file_path": "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c",
+        "function_name": "encode_drbs_to_setupmod",
+        "error_count": 3,
+        "priority_reason": "direct_compiler_error",
+        "top_errors": [
+          {
+            "line_number": 726,
+            "error_code_category": "unknown_type_name",
+            "error_text": "unknown type name ‘F1AP_ProtocolExtensionContainer_10696P83_t’; did you mean ‘F1AP_ProtocolExtensionContainer_19016P83_t’?"
+          },
+          {
+            "line_number": 729,
+            "error_code_category": "member_access_on_non_struct",
+            "error_text": "request for member ‘list’ in something not a structure or union"
+          },
+          {
+            "line_number": 737,
+            "error_code_category": "member_access_on_non_struct",
+            "error_text": "request for member ‘list’ in something not a structure or union"
+          }
+        ]
+      },
+      {
+        "file_path": "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c",
+        "function_name": "encode_cu_to_du_rrc_info",
+        "error_count": 2,
+        "priority_reason": "direct_compiler_error",
+        "top_errors": [
+          {
+            "line_number": 61,
+            "error_code_category": "unknown_type_name",
+            "error_text": "unknown type name ‘F1AP_ProtocolExtensionContainer_10696P60_t’; did you mean ‘F1AP_ProtocolExtensionContainer_19016P60_t’?"
+          },
+          {
+            "line_number": 63,
+            "error_code_category": "member_access_on_non_struct",
+            "error_text": "request for member ‘list’ in something not a structure or union"
+          }
+        ]
+      }
+    ],
+    "coverage_stats": {
+      "total_compiler_errors_parsed": 23,
+      "ground_truth_with_function_name": 23,
+      "ground_truth_with_file_path": 23
+    }
+  },
+  "summary": {
+    "total_functions_analyzed": 6,
+    "total_configs_analyzed": 0,
+    "deployment_context_used": true,
+    "retrieval_method": "compiler_ground_truth_primary_only"
+  }
+}

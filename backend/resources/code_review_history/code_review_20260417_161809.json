@@ -1,0 +1,76 @@
+{
+  "success": true,
+  "run_id": "code_review_20260417_161809",
+  "analysis_filename": "bug_analysis_20260417_153913.json",
+  "code_dir": "c:/Users/JayasviBattu/Documents/Unified_Platform/openairinterface5g-develop",
+  "selected_layers": [
+    1,
+    2,
+    3,
+    4
+  ],
+  "selected_code_patches": [],
+  "selected_config_patches": [
+    "amf_ip_address (cu_gnb.conf)",
+    "GNB_IPV4_ADDRESS_FOR_NG_AMF (cu_gnb.conf)"
+  ],
+  "selected_code_patch_count": 0,
+  "selected_config_patch_count": 2,
+  "warnings": [],
+  "layer_results": [
+    {
+      "layer": 1,
+      "status": "success",
+      "label": "Layer 1: Syntax & Structural Validation",
+      "output_lines": [
+        "Layer 1: Syntax & Structural Validation",
+        "  \u26a0\ufe0f No code patches selected \u2013 skipping syntax validation.",
+        "",
+        "Config Patch Validation",
+        "  \u2192 amf_ip_address",
+        "    \u274c File not found: C:\\Users\\JayasviBattu\\Documents\\Unified_Platform\\openairinterface5g-develop\\targets\\PROJECTS\\GENERIC-NR-5GC\\CONF\\cu_gnb.conf",
+        "  \u2192 GNB_IPV4_ADDRESS_FOR_NG_AMF",
+        "    \u274c File not found: C:\\Users\\JayasviBattu\\Documents\\Unified_Platform\\openairinterface5g-develop\\targets\\PROJECTS\\GENERIC-NR-5GC\\CONF\\cu_gnb.conf",
+        "",
+        "  Summary (Config): 0 passed, 2 failed, 0 skipped.",
+        "",
+        "  Overall Summary: 0 passed, 2 failed, 0 skipped (total 2)."
+      ]
+    },
+    {
+      "layer": 2,
+      "status": "warning",
+      "label": "Layer 2: 3GPP Spec Reference Analysis",
+      "output_lines": [
+        "Layer 2: 3GPP Spec Reference Analysis",
+        "  \u26a0\ufe0f Specification context is degraded due to missing embeddings.",
+        "  Context snippet: - No 3GPP specification context found (embeddings file missing)"
+      ],
+      "warnings": [
+        "3GPP embeddings/spec retrieval appears unavailable; context is degraded."
+      ]
+    },
+    {
+      "layer": 3,
+      "status": "success",
+      "label": "Layer 3: LLM as Judge",
+      "verdict": "PASS",
+      "output_lines": [
+        "Layer 3: LLM as Judge",
+        "  \u2705 Review quality gate passed (reasoning + root-cause + actionable patches).",
+        "  Heuristic score: 3/3"
+      ]
+    },
+    {
+      "layer": 4,
+      "status": "success",
+      "label": "Layer 4: Variable Impact Analysis",
+      "output_lines": [
+        "Layer 4: Variable Impact Analysis",
+        "  \u26a0\ufe0f No code patches selected \u2013 skipping variable impact analysis."
+      ],
+      "structured_results": []
+    }
+  ],
+  "created_at": "2026-04-17T16:18:09.601166"
+}

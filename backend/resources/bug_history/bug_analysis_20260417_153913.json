@@ -1,0 +1,75 @@
+{
+  "error_message": "ERROR MESSAGE: \"No AMF is associated to the gNB\" (logged by NGAP module)",
+  "log_file": "your_uploaded_log_file_name.log",
+  "log_path": "c:/Users/JayasviBattu/Documents/Unified_Platform/backend/resources/rca_logs/your_saved_log_file.log",
+  "code_dir": "c:/Users/JayasviBattu/Documents/Unified_Platform/openairinterface5g-develop",
+  "timestamp": "2026-04-17T15:39:13.140926",
+  "results": {
+    "phase3_fixes": {
+      "error_text": "ERROR MESSAGE: \"No AMF is associated to the gNB\" (logged by NGAP module)",
+      "fix_suggestion": {
+        "suspected_functions": [
+          "select_amf",
+          "ngap_gNB_handle_nas_first_req",
+          "ngap_gNB_nnsf_select_amf",
+          "ngap_gNB_nnsf_select_amf_by_amf_setid",
+          "ngap_gNB_nnsf_select_amf_by_guami"
+        ],
+        "suspected_configs": [
+          "amf_ip_address",
+          "GNB_IPV4_ADDRESS_FOR_NG_AMF"
+        ],
+        "reason": "The error 'No AMF is associated to the gNB' occurs because the gNB fails to find any AMF association during the initial NAS request processing.",
+        "config_fix": "Update cu_gnb.conf to set amf_ip_address and GNB_IPV4_ADDRESS_FOR_NG_AMF to deployment-matching values.",
+        "code_patches": [],
+        "config_patches": [
+          {
+            "config_name": "amf_ip_address",
+            "file_path": "openairinterface5g-develop/targets/PROJECTS/GENERIC-NR-5GC/CONF/cu_gnb.conf",
+            "patch_type": "set_value",
+            "current_value": "({ ipv4 = \"192.168.69.131\"; })",
+            "new_value": "({ ipv4 = \"192.168.70.132\"; })",
+            "line_number": "40"
+          },
+          {
+            "config_name": "GNB_IPV4_ADDRESS_FOR_NG_AMF",
+            "file_path": "openairinterface5g-develop/targets/PROJECTS/GENERIC-NR-5GC/CONF/cu_gnb.conf",
+            "patch_type": "set_value",
+            "current_value": "\"192.168.18.207\"",
+            "new_value": "\"10.138.77.131\"",
+            "line_number": "45"
+          }
+        ],
+        "root_cause_analysis": "Network configuration mismatch prevents AMF association.",
+        "investigation_steps": [
+          "Verify AMF IP in cu_gnb.conf.",
+          "Verify gNB NG interface IP in cu_gnb.conf.",
+          "Check NGAP association logs."
+        ],
+        "specification_context": "- No 3GPP specification context found (embeddings file missing)"
+      },
+      "context_summary": {
+        "candidate_functions_count": 30,
+        "candidate_configs_count": 8,
+        "call_graph_entries": 18,
+        "pattern_matched": false
+      }
+    },
+    "phase4_commands": {
+      "terminal_commands": [
+        {
+          "command": "ping 192.168.70.132",
+          "explanation": "Test basic connectivity from gNB to AMF IP"
+        },
+        {
+          "command": "ip route add 192.168.70.132 via 10.138.77.217 dev eth0",
+          "explanation": "Add static route to reach AMF IP via core network IP on interface eth0"
+        }
+      ]
+    }
+  },
+  "history_file": "C:\\Users\\JayasviBattu\\Documents\\Unified_Platform\\backend\\resources\\bug_history\\bug_analysis_20260417_153913.json",
+  "source": "rca_analysis",
+  "from_git_history": false,
+  "git_metadata": null
+}

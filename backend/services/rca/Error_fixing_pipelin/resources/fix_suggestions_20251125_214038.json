@@ -1,0 +1,33 @@
+{
+  "code_dir": "C:\\Users\\JayasviBattu\\Desktop\\RCA_Electron_fastapi_new\\Backend\\app\\services\\Error_fixing_pipelin\\openairinterface5g-test",
+  "fix_suggestion": {
+    "code_dir": "C:\\Users\\JayasviBattu\\Desktop\\RCA_Electron_fastapi_new\\Backend\\app\\services\\Error_fixing_pipelin\\openairinterface5g-test",
+    "code_patches": [],
+    "config_patches": [
+      {
+        "parameter_name": "GNB_IPV4_ADDRESS_FOR_NG_AMF",
+        "config_name": "GNB_IPV4_ADDRESS_FOR_NG_AMF",
+        "file_path": "Error_fixing_pipelin/openairinterface5g-test/targets/PROJECTS/GENERIC-NR-5GC/CONF/cu_gnb.conf",
+        "current_value": "192.168.18.207",
+        "new_value": "10.138.77.131",
+        "suggested_value": "10.138.77.131",
+        "description": "From commit e6a97149d5d742ca5c4dff9589507859639e8f82: Fix gNB configuration issue",
+        "commit_hash": "e6a97149d5d742ca5c4dff9589507859639e8f82",
+        "confidence": "medium-high",
+        "similarity_score": 0.6681820154190063
+      },
+      {
+        "parameter_name": "amf_ip_address",
+        "config_name": "amf_ip_address",
+        "file_path": "Error_fixing_pipelin/openairinterface5g-test/targets/PROJECTS/GENERIC-NR-5GC/CONF/cu_gnb.conf",
+        "current_value": "881.168.69.191",
+        "new_value": "192.168.70.132",
+        "suggested_value": "192.168.70.132",
+        "description": "From commit e6a97149d5d742ca5c4dff9589507859639e8f82: Fix gNB configuration issue",
+        "commit_hash": "e6a97149d5d742ca5c4dff9589507859639e8f82",
+        "confidence": "medium-high",
+        "similarity_score": 0.6681820154190063
+      }
+    ]
+  }
+}

@@ -1,0 +1,316 @@
+{
+  "Feature_ID": "INTER_GNB_DU_LTM_HANDOVER_PROCEDURE",
+  "Feature_Name": "Inter-gNB DU LTM Handover Procedure",
+  "Release": "Rel-18",
+  "3GPP_Reference": {
+    "Spec": "TS 38.401",
+    "Title": "NG-RAN; Architecture description",
+    "Section": "8.2.1.5 (TS 38.401), 8.2.1.6 (TS 38.401)"
+  },
+  "Feature_Description": [
+    "This procedure is used for the case when the UE moves from one gNB-DU to another gNB-DU within the same gNB-CU during NR operation for LTM."
+  ],
+  "Feature_Objectives": [
+    "To enable a UE to move from one gNB-DU to another gNB-DU within the same gNB-CU while maintaining NR operation for LTM.",
+    "To configure LTM parameters in candidate gNB-DUs.",
+    "To establish UE context and setup data bearers in the target gNB-DU for LTM."
+  ],
+  "Design_Details": {
+    "Protocol_Layers": [
+      "F1AP",
+      "RRC"
+    ],
+    "Protocol_Interfaces": [
+      "F1-C",
+      "F1-U"
+    ]
+  },
+  "Feature_Implementation_Steps": [],
+  "Call_Flow": [
+    {
+      "Message": "UE CONTEXT SETUP REQUEST",
+      "Actors": [
+        "gNB-CU",
+        "Candidate gNB-DU"
+      ],
+      "From": "gNB-CU",
+      "To": "Candidate gNB-DU"
+    },
+    {
+      "Message": "UE CONTEXT SETUP RESPONSE",
+      "Actors": [
+        "Candidate gNB-DU",
+        "gNB-CU"
+      ],
+      "From": "Candidate gNB-DU",
+      "To": "gNB-CU"
+    }
+  ],
+  "Procedure_Implementation_Steps": [
+    "1. The UE sends a MeasurementReport message (L3 measurement result) to the source gNB-DU containing measurements of neighbouring cells. The source gNB-DU sends an UL RRC MESSAGE TRANSFER message conveying the received MeasurementReport message to the gNB-CU.",
+    "2. The gNB-CU determines to initiate LTM configuration.",
+    "3. The gNB-CU sends a UE CONTEXT SETUP REQUEST message to the candidate gNB-DU(s) for each candidate cell, containing one candidate cell ID and the CSI resource configuration for subsequent LTM. The gNB-CU may provide the LTM configuration ID mapping list to the candidate gNB-DU(s). The gNB-CU may request PRACH resources from the candidate gNB-DU(s). The gNB-CU may request the candidate gNB-DU(s) to provide the lower layer configuration for the purpose of generating the reference configuration or provide the lower layer part of the reference configuration to the candidate gNB-DU(s).",
+    "4. If the candidate gNB-DU accepts the request of LTM configuration, it responds with a UE CONTEXT SETUP RESPONSE message including the generated lower layer RRC configurations for the accepted target candidate cell.",
+    "5. The gNB-CU sends a UE CONTEXT MODIFICATION REQUEST message to the source gNB-DU including the information related to early sync and the LTM configuration ID mapping list for the accepted target candidate cell(s). The gNB-CU may send the updated CSI resource configuration to the source gNB-DU. The gNB-CU may inform the source gNB-DU about intra-DU L2 reset configuration.",
+    "6. The source gNB-DU responds with a UE CONTEXT MODIFICATION RESPONSE message which includes an updated lower layer configuration, e.g., containing the updated CSI report configuration of the source cell.",
+    "7. The gNB-CU may send a UE CONTEXT MODIFICATION REQUEST message for each candidate cell accepted in the candidate gNB-DU(s), containing the information for subsequent LTM or for updating the configurations of candidate cells. The gNB-CU may also provide the lower layer part of the reference configuration to the candidate gNB-DU(s). The gNB-CU may inform the candidate gNB-DU(s) about intra-DU L2 reset configuration.",
+    "8. The candidate gNB-DU responds with a UE CONTEXT MODIFICATION RESPONSE message including the updated lower layer configuration, e.g., containing the updated CSI report configuration of the requested candidate cell.",
+    "9. The gNB-CU sends a DL RRC MESSAGE TRANSFER message to the source gNB-DU, which includes the generated RRCReconfiguration message with the LTM configuration.",
+    "10. The source gNB-DU forwards the received RRCReconfiguration message to the UE.",
+    "11. The UE responds to the source gNB-DU with an RRCReconfigurationComplete message.",
+    "12. The source gNB-DU forwards the RRCReconfigurationComplete message to the gNB-CU via UL RRC MESSAGE TRANSFER message.",
+    "12a. If LTM is triggered based on L3 measurement, gNB-CU-CP sends a CU-DU MOBILITY INITIATION REQUEST message to the gNB-DU to trigger early synchronization and/or cell switch.",
+    "13. Early TA acquisition is performed at the candidate gNB-DU.",
+    "14. The candidate gNB-DU sends a DU-CU TA INFORMATION TRANSFER message to the gNB-CU.",
+    "15. The gNB-CU sends a CU-DU TA INFORMATION TRANSFER message to the source gNB-DU.",
+    "16. The UE sends an L1 measurement report to the source gNB-DU.",
+    "17. The source gNB-DU decides to execute LTM to a target cell.",
+    "18. The source gNB-DU sends a Cell Switch Command to the UE.",
+    "19. The source gNB-DU sends a DU-CU CELL SWITCH NOTIFICATION message to the gNB-CU with the selected target cell ID and TCI State ID.",
+    "20. The gNB-CU forwards the selected target cell ID and TCI State ID to the candidate gNB-DU via CU-DU CELL SWITCH NOTIFICATION message.",
+    "21. The gNB-DU detects the UE access.",
+    "22. The target gNB-DU sends an ACCESS SUCCESS message to the gNB-CU with the target cell ID.",
+    "23. The UE sends an RRCReconfigurationComplete message to the target gNB-DU.",
+    "24. The target gNB-DU forwards the RRCReconfigurationComplete message to the gNB-CU via UL RRC MESSAGE TRANSFER message.",
+    "25. The gNB-CU sends a UE CONTEXT RELEASE COMMAND message to the source gNB-DU, indicating prepared cells to be released.",
+    "26. The source gNB-DU responds with a UE CONTEXT RELEASE COMPLETE message."
+  ],
+  "Code_Artifacts": [
+    {
+      "Codebase_Name": "OpenAirInterface 5G",
+      "Code_Instructions": [
+        {
+          "type": "data_structure",
+          "struct_name": "f1ap_ue_context_setup_req_s",
+          "file_path": "openair2\\COMMON\\f1ap_messages_types.h",
+          "line_start": 544,
+          "description": "Data structure defining the format of the F1AP UE Context Setup Request message, essential for constructing or parsing this message.",
+          "uses_structs": []
+        },
+        {
+          "type": "data_structure",
+          "struct_name": "f1ap_ue_context_setup_resp_s",
+          "file_path": "openair2\\COMMON\\f1ap_messages_types.h",
+          "line_start": 570,
+          "description": "Data structure defining the format of the F1AP UE Context Setup Response message, essential for constructing or parsing this message.",
+          "uses_structs": []
+        },
+        {
+          "type": "helper_function",
+          "function_name": "rrc_gNB_generate_UeContextSetupRequest",
+          "file_path": "openair2\\RRC\\NR\\rrc_gNB.c",
+          "line_start": 3032,
+          "line_end": 3032,
+          "description": "Helper function responsible for generating the RRC message content that will be encapsulated within the F1AP UE Context Setup Request.",
+          "called_functions": [],
+          "calling_functions": [],
+          "uses_structs": []
+        },
+        {
+          "type": "helper_function",
+          "function_name": "ue_context_setup_request_f1ap",
+          "file_path": "openair2\\RRC\\NR\\mac_rrc_dl_f1ap.c",
+          "line_start": 79,
+          "line_end": 79,
+          "description": "A utility or helper function involved in the preparation or construction of the F1AP UE Context Setup Request message, likely handling RRC-F1AP interface specifics.",
+          "called_functions": [],
+          "calling_functions": [],
+          "uses_structs": []
+        },
+        {
+          "type": "helper_function",
+          "function_name": "derive_skgNB",
+          "file_path": "openair3\\SECU\\key_nas_deriver.c",
+          "line_start": 278,
+          "line_end": 278,
+          "description": "Utility function for deriving the security key (skgNB) for the gNB, which is a crucial step in establishing the UE's security context during setup or handover.",
+          "called_functions": [],
+          "calling_functions": [],
+          "uses_structs": []
+        }
+      ]
+    }
+  ],
+  "ASN_IES_File_Path": [
+    {
+      "ASN_Name": "F1AP",
+      "File_Path": "",
+      "File_Name": ""
+    },
+    {
+      "ASN_Name": "RRC",
+      "File_Path": "",
+      "File_Name": ""
+    }
+  ],
+  "ASN_IES_C_Structures_Path": [
+    {
+      "ASN_Name": "F1AP",
+      "File_Path": ""
+    },
+    {
+      "ASN_Name": "RRC",
+      "File_Path": ""
+    }
+  ],
+  "Information_Elements": [
+    {
+      "IE_Name": "UEContextSetupRequestIEs",
+      "IE_Definition": "UEContextSetupRequestIEs F1AP-PROTOCOL-IES ::= {\n    { ID id-LTMConfigurationIDMappingList         CRITICALITY reject   TYPE LTMConfigurationIDMappingList         PRESENCE optional },\n    { ID id-CSIResourceConfigurationforLTM      CRITICALITY reject   TYPE CSIResourceConfigurationforLTM      PRESENCE optional },\n    { ID id-CandidateCellID                      CRITICALITY reject   TYPE CellID                              PRESENCE mandatory },\n    { ID id-PRACHResources                       CRITICALITY reject   TYPE PRACHResources                      PRESENCE optional },\n    { ID id-LowerLayerConfiguration              CRITICALITY reject   TYPE LowerLayerConfiguration             PRESENCE optional }\n}",
+      "IE_Category": "F1AP IE"
+    },
+    {
+      "IE_Name": "LTMConfigurationIDMappingList",
+      "IE_Definition": "LTMConfigurationIDMappingList ::= SEQUENCE (SIZE(1..maxnoofLTMConfigID)) OF LTMConfigurationIDMappingItem",
+      "IE_Category": "F1AP IE"
+    },
+    {
+      "IE_Name": "LTMConfigurationIDMappingItem",
+      "IE_Definition": "LTMConfigurationIDMappingItem ::= SEQUENCE {\n    lTMConfigurationID        LTMConfigurationID,\n    lTMConfigurationIDMapping LTMConfigurationIDMapping\n}",
+      "IE_Category": "F1AP IE"
+    },
+    {
+      "IE_Name": "LTMConfigurationID",
+      "IE_Definition": "LTMConfigurationID ::= INTEGER (0..maxLTMConfigID)",
+      "IE_Category": "F1AP IE"
+    },
+    {
+      "IE_Name": "LTMConfigurationIDMapping",
+      "IE_Definition": "LTMConfigurationIDMapping ::= INTEGER (0..maxLTMConfigID)",
+      "IE_Category": "F1AP IE"
+    },
+    {
+      "IE_Name": "CSIResourceConfigurationforLTM",
+      "IE_Definition": "CSIResourceConfigurationforLTM ::= SEQUENCE {\n    csi-RS-ResourceConfigId   CSI-RS-ResourceConfigId,\n    csi-RS-ResourceConfig     CSI-RS-ResourceConfig\n}",
+      "IE_Category": "F1AP IE"
+    },
+    {
+      "IE_Name": "CSI-RS-ResourceConfigId",
+      "IE_Definition": "CSI-RS-ResourceConfigId ::= INTEGER (0..maxCSI-RS-ResourceConfigId)",
+      "IE_Category": "F1AP IE"
+    },
+    {
+      "IE_Name": "CSI-RS-ResourceConfig",
+      "IE_Definition": "CSI-RS-ResourceConfig ::= OCTET STRING (SIZE(1..maxCSI-RS-ResourceConfigSize))",
+      "IE_Category": "F1AP IE"
+    },
+    {
+      "IE_Name": "CellID",
+      "IE_Definition": "CellID ::= OCTET STRING (SIZE(4))",
+      "IE_Category": "F1AP IE"
+    },
+    {
+      "IE_Name": "PRACHResources",
+      "IE_Definition": "PRACHResources ::= SEQUENCE {\n    prach-ConfigurationIndex  PRACH-ConfigurationIndex,\n    prach-FrequencyOffset     PRACH-FrequencyOffset\n}",
+      "IE_Category": "F1AP IE"
+    },
+    {
+      "IE_Name": "PRACH-ConfigurationIndex",
+      "IE_Definition": "PRACH-ConfigurationIndex ::= INTEGER (0..255)",
+      "IE_Category": "F1AP IE"
+    },
+    {
+      "IE_Name": "PRACH-FrequencyOffset",
+      "IE_Definition": "PRACH-FrequencyOffset ::= INTEGER (0..2047)",
+      "IE_Category": "F1AP IE"
+    },
+    {
+      "IE_Name": "LowerLayerConfiguration",
+      "IE_Definition": "LowerLayerConfiguration ::= OCTET STRING (SIZE(1..maxLowerLayerConfigSize))",
+      "IE_Category": "F1AP IE"
+    },
+    {
+      "IE_Name": "UEContextSetupResponseIEs",
+      "IE_Definition": "UEContextSetupResponseIEs F1AP-PROTOCOL-IES ::= {\n    { ID id-GeneratedLowerLayerRRCConfigurations CRITICALITY reject   TYPE GeneratedLowerLayerRRCConfigurations PRESENCE optional },\n    { ID id-AcceptedTargetCellID                  CRITICALITY reject   TYPE CellID                               PRESENCE mandatory }\n}",
+      "IE_Category": "F1AP IE"
+    },
+    {
+      "IE_Name": "GeneratedLowerLayerRRCConfigurations",
+      "IE_Definition": "GeneratedLowerLayerRRCConfigurations ::= OCTET STRING (SIZE(1..maxRRCConfigSize))",
+      "IE_Category": "F1AP IE"
+    },
+    {
+      "IE_Name": "AcceptedTargetCellID",
+      "IE_Definition": "AcceptedTargetCellID ::= CellID",
+      "IE_Category": "F1AP IE"
+    }
+  ],
+  "Piggy_Backed_IES_Info": "Not applicable for the scoped messages in this procedure.",
+  "Piggy_Backed_IES_Mapping": [
+    {
+      "Piggy_Backed_IE_Name": "N/A",
+      "Piggy_Backed_IE_Type": "N/A",
+      "Carrier_Message": "N/A",
+      "Source_IE_Name": "",
+      "Source_IE_Type": ""
+    }
+  ],
+  "Codebase_Metadata": {
+    "Code_Language": "C",
+    "Build_System": "CMake",
+    "Repo_Path": ".",
+    "Code_Output_Type": "Library/Executable",
+    "Execution_Mode": "Runtime",
+    "CI_Pipeline": "",
+    "Version_Control": "Git"
+  },
+  "Knowledge_Hints": [
+    "8.2.1.4 (ts_138401v180600p): Intra-gNB-DU LTM",
+    "8.2.1 (ts_138401v180600p): Intra-NR Mobility",
+    "8.2.1.5 (ts_138401v180600p): Inter-gNB-DU LTM",
+    "8.2.1.3 (ts_138401v180600p): Inter-gNB-DU Conditional Handover or Conditional PSCell Change or subsequent CPAC",
+    "8.2.1.1 (ts_138401v180600p): Inter-gNB-DU Mobility",
+    "8.2.1.2 (ts_138401v180600p): Intra-gNB-DU handover",
+    "8.2.1.6 (ts_138401v180600p): LTM with gNB-CU-UP change",
+    "8.19.4.2 (ts_138401v180600p): Intra-gNB-DU switch from direct to indirect path",
+    "8.2 (ts_138401v180600p): Intra-gNB-CU Mobility",
+    "8.2.2 (ts_138401v180600p): EN-DC Mobility",
+    "8.2.3 (ts_138401v180600p): Intra-CU topology adaptation procedure",
+    "8.2.5 (ts_138401v180600p): Intra-CU Backhaul RLF recovery for IAB-nodes in SA mode",
+    "8.2.4 (ts_138401v180600p): Intra-CU topological redundancy procedure",
+    "8.15.2 (ts_138401v180600p): Mobility procedure for Multicast",
+    "8.2.2.2 (ts_138401v180600p): Inter-gNB-DU Mobility using SCG SRB (SRB3)",
+    "8.14.1.1 (ts_138401v180600p): Signalling of RLF information from gNB-CU to gNB-DU",
+    "8.2.2.3 (ts_138401v180600p): Inter-gNB-DU Conditional PSCell Change using MCG SRB without MN negotiation",
+    "8.2.2.1 (ts_138401v180600p): Inter-gNB-DU Mobility using MCG SRB",
+    "8.16.1 (ts_138401v180600p): MN initiated Conditional PSCell Addition",
+    "8.4.1.1 (ts_138401v180600p): EN-DC",
+    "6.2.2 (ts_138401v180600p): gNB-DU ID",
+    "8.4.2.1 (ts_138401v180600p): EN-DC",
+    "8.3.1 (ts_138401v180600p): Centralized Retransmission in Intra gNB-CU Cases",
+    "8.14.1.3 (ts_138401v180600p): Reporting of DL LBT failure information from gNB-DU to gNB-CU",
+    "6.2.5 (ts_138401v180600p): RAN UE ID",
+    "8.19.4.1 (ts_138401v180600p): Inter-gNB-DU switch from direct to indirect path",
+    "8.9.4 (ts_138401v180600p): Inter-gNB handover involving gNB-CU-UP change",
+    "8.9.5 (ts_138401v180600p): Change of gNB-CU-UP",
+    "8.19.4 (ts_138401v180600p): Service Continuity for L2 U2N relay",
+    "8.19.4.3 (ts_138401v180600p): Inter-gNB-CU switch from direct to indirect path",
+    "8.19.2 (ts_138401v180600p): Remote UE RRC Reestablishment",
+    "8.22.1 (ts_138401v180600p): Inter-DU direct path addition on top of indirect path",
+    "8.19.1 (ts_138401v180600p): Remote UE initial access",
+    "8.22.3 (ts_138401v180600p): Intra-DU direct path addition on top of indirect path",
+    "8 (ts_138401v180600p): Overall procedures in gNB-CU/gNB-DU Architecture",
+    "8.11 (ts_138401v180600p): Support of Network Sharing with multiple cell-ID broadcast",
+    "8.22 (ts_138401v180600p): Overall procedures for multi-path support",
+    "8.20 (ts_138401v180600p): Void",
+    "8.9 (ts_138401v180600p): Overall procedures involving E1 and F1",
+    "8.15 (ts_138401v180600p): Overall procedures for NR MBS",
+    "8.24 (ts_138401v180600p): Timing resiliency service",
+    "8.14 (ts_138401v180600p): Self-optimisation",
+    "8.18 (ts_138401v180600p): Overall procedure for Small Data Transmission during RRC Inactive",
+    "8.12 (ts_138401v180600p): IAB-node Integration Procedure",
+    "8.17 (ts_138401v180600p): IAB Inter-CU Topology Management",
+    "8.13 (ts_138401v180600p): Overall procedures for MDT",
+    "8.19 (ts_138401v180600p): Overall procedures for L2 UE-to-Network Relay",
+    "8.5 (ts_138401v180600p): F1 Startup and cells activation",
+    "8.8 (ts_138401v180600p): Multiple TNLAs for F1-C",
+    "8.3 (ts_138401v180600p): Mechanism of centralized retransmission of lost PDUs",
+    "8.16 (ts_138401v180600p): Overall procedures for CPAC",
+    "8.21 (ts_138401v180600p): Overall procedures for Network Controlled Repeater",
+    "8.7 (ts_138401v180600p): RRC connection reestablishment",
+    "8.1 (ts_138401v180600p): UE Initial Access",
+    "8.10 (ts_138401v180600p): Multiple TNLAs for E1",
+    "8.4 (ts_138401v180600p): Multi-Connectivity operation",
+    "8.23 (ts_138401v180600p): Mobile IAB migration procedures"
+  ]
+}

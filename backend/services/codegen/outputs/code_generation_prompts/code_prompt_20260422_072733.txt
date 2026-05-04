@@ -1,0 +1,1847 @@
+---
+## MANDATORY COVERAGE CONTRACT (NON-NEGOTIABLE)
+
+You MUST implement the requested feature with **complete transitive coverage** across:
+- All connected Information Elements (IEs) and referenced ASN.1 types
+- All container / parent chain structures that carry those IEs
+- All encoder + decoder paths (producer + consumer)
+- All call-sites and dependent code that uses the decoded/encoded structures
+
+Partial / shallow changes are forbidden. If IE-A implies IE-B (via ASN.1 type reference, container membership, SEQUENCE field, CHOICE alternative, SEQUENCE OF item type, ProtocolIE container, or extension container), you MUST update **both** the representation and all affected encode/decode + consumer code.
+
+### Required phases (you MUST follow in order)
+
+#### Phase 0 — Dependency Closure (Depth-First)
+Before modifying any file, you MUST compute a **Dependency Closure** starting from the message root(s) implied by the user request and the provided template JSON.
+
+You MUST output a machine-checkable JSON object named `dependency_closure_report` containing:
+- `roots`: list of root container(s) (message IE container / top-level PDU / top-level C struct(s) used for this message)
+- `nodes`: list of **all** reachable IEs/types (depth-first), each with:
+  - `name`
+  - `kind`: `IE|ASN_TYPE|C_STRUCT|ENCODER|DECODER|CALLSITE`
+  - `depth`: integer (root is 0)
+  - `parents`: list of parent node names (for traceability)
+- `edges`: list of `{ "from": "...", "to": "...", "reason": "field|choice|list|container|extension|encode|decode|uses|calls" }`
+- `max_depth`
+- `unresolved_symbols`: list (MUST be empty before coding starts; if not empty you MUST keep searching/expanding until it is empty)
+
+Rules:
+- The closure MUST include all connected types/IEs, not only those explicitly listed in the user request.
+- For ASN.1: treat `::=` definitions as authoritative; traverse until primitives.
+- For code: traverse `struct` fields, encode/decode helper usage, and consumer call-sites.
+- You MUST include BOTH directions for code impact: producers (encode/build) AND consumers (decode/use).
+
+#### Phase 1 — Impact Matrix (No Orphans Allowed)
+You MUST output an `impact_matrix` that maps every closure node (except primitives) to concrete code changes:
+- Struct definition locations (.h/.c)
+- Encoder/decoder functions to update
+- Helper/init/copy/free functions to update (as required by project patterns)
+- All consumer/call-site locations that read/write the fields
+
+Hard rule: **No orphan nodes**.
+- If a node is in dependency closure and has no planned code touchpoints, that is a failure: keep searching until you find the right integration points.
+
+#### Phase 2 — Implementation (Propagation Required)
+Implement the feature and propagate changes through:
+- All structs/types from the closure
+- Encode + decode paths
+- All call-sites in each actor that handle or consume the message
+
+Hard rule: For every optional IE you add/change, you MUST implement presence tracking and wire it through encode/decode + consumer logic.
+
+#### Phase 3 — Self-Audit (Coverage Gate)
+After coding, you MUST run a self-audit and output `coverage_gate_report`:
+- `closure_nodes_total`
+- `closure_nodes_covered`
+- `missing_nodes` (MUST be empty)
+- `max_depth_covered` (MUST equal `dependency_closure_report.max_depth`)
+- `evidence`: for each node, cite the exact file + symbol/function touched
+
+If anything is missing, you MUST do another patch round until coverage is complete.
+
+### Prohibited behaviors
+- Do NOT “skip” connected IEs because they seem generic.
+- Do NOT update only encode or only decode.
+- Do NOT update only one actor when multiple actors consume/produce the message.
+- Do NOT stop after updating a single struct if there are downstream consumers.
+
+---
+
+---
+# Role Definition
+
+You are a **Senior Software Engineer with deep domain expertise in 5G NR protocol stack implementation, specifically in F1 Application Protocol (F1AP) and Radio Resource Control (RRC) layers**. You possess comprehensive knowledge of 3GPP Release 18 specifications TS 38.473 and TS 38.401, and are skilled in designing, implementing, and validating production-grade telecom protocol software in C within large-scale, modular codebases such as OpenAirInterface 5G. Your role demands rigorous adherence to protocol specifications, enterprise-level software engineering standards, and full-stack codebase consistency.
+
+---
+
+# Task Overview
+
+You MUST implement the **Inter-gNB DU LTM Handover Procedure focusing on the UE Context Setup messaging** between gNB-CU and candidate gNB-DU. This involves:
+
+- The gNB-CU preparing and sending the **F1AP "UE CONTEXT SETUP REQUEST"** message to the candidate gNB-DU.
+- The candidate gNB-DU responding with the **F1AP "UE CONTEXT SETUP RESPONSE"** message.
+- The gNB-CU handling the response appropriately to support the Inter-gNB DU LTM Handover Procedure.
+
+This implementation MUST be **production-ready, fully integrated, and compliant with 3GPP TS 38.473 and TS 38.401 Release 18**. Partial or incomplete implementations are strictly forbidden. The solution MUST cover all aspects of the message lifecycle, including data structures, encoding/decoding, helper functions, call-site updates, error handling, memory safety, and integration points.
+
+---
+
+# Authoritative Input Context Description
+
+You MUST base your implementation strictly on the provided **filled technical specification JSON** and the referenced **3GPP ASN.1 definitions** for F1AP and RRC messages, specifically:
+
+- **Main Messages:**
+  - UE CONTEXT SETUP REQUEST (from gNB-CU to candidate gNB-DU)
+  - UE CONTEXT SETUP RESPONSE (from candidate gNB-DU to gNB-CU)
+
+- **Relevant 3GPP References:**
+  - TS 38.473 Sections 8.3.1, 8.3.1.1 to 8.3.1.4
+  - TS 38.401 Section 8.2.1.5
+
+- **ASN.1 Files:**
+  - F1AP-PDU-Contents.asn (F1AP protocol IEs)
+  - NR-RRC-Definitions.asn (RRC protocol IEs)
+
+- **Existing Codebase Context:**
+  - OpenAirInterface 5G C codebase
+  - Key data structures: `f1ap_ue_context_setup_req_s`, `f1ap_ue_context_setup_resp_s`
+  - Helper functions: `rrc_gNB_generate_UeContextSetupRequest`, `ue_context_setup_request_f1ap`
+  - Codebase language: C
+  - Build system: CMake
+  - Version control: Git
+
+You MUST treat the ASN.1 definitions as the **single source of truth** for all Information Elements (IEs), types, presence conditions, and constraints.
+
+---
+
+# Actor-Specific Codebase Rules
+
+- Only modify code within the folders and modules corresponding to the **Call Flow actors**:
+  - **gNB-CU**: responsible for generating and sending UE CONTEXT SETUP REQUEST, and handling UE CONTEXT SETUP RESPONSE.
+  - **Candidate gNB-DU**: responsible for receiving UE CONTEXT SETUP REQUEST, processing it, and sending UE CONTEXT SETUP RESPONSE.
+
+- Do NOT modify code outside these actor folders.
+
+- Maintain strict separation of concerns:
+  - gNB-CU handles message construction, encoding, sending, and response processing.
+  - gNB-DU handles message reception, decoding, processing, and response generation.
+
+---
+
+# Type & Struct Alignment Enforcement
+
+- For every ASN.1 IE and type referenced in the UE CONTEXT SETUP REQUEST and RESPONSE messages, you MUST:
+
+  - Perform **full recursive expansion** of all nested IEs and types, including sequences, choices, enumerations, sequences of, and extension containers.
+  
+  - Generate or update **C struct definitions** that exactly match the ASN.1 field names, types, presence rules, and constraints.
+  
+  - Align member names, container shapes (arrays, pointers, lists), and value vs pointer semantics with existing local header files and coding conventions.
+  
+  - Implement presence bitmasks or flags for optional and conditional IEs, ensuring these are wired through all encode/decode and helper functions.
+  
+  - Enforce cardinality and size constraints on lists and sequences at runtime with robust error handling.
+
+- You MUST NOT invent or assume any ASN.1 types or IE names not present in the current ASN.1 definitions or local headers.
+
+- In case of ASN.1 version gaps (e.g., Rel-18 LTM IEs missing in current ASN.1), you MUST:
+
+  - Implement internal C structs and helper functions to model the feature behavior.
+  
+  - Use existing extension hooks or vendor-specific fields without breaking compilation or type safety.
+  
+  - Clearly mark these as TODOs for future ASN.1/codegen upgrades.
+
+---
+
+# Implementation Strategy (Phased Approach)
+
+**Phase 1: Specification Analysis**
+
+- Parse the filled JSON specification to extract:
+
+  - The main root IE containers for UE CONTEXT SETUP REQUEST and RESPONSE messages.
+  
+  - All referenced IEs, types, and constraints.
+  
+  - Actor roles and call flow directions.
+  
+  - Presence and criticality rules.
+  
+  - Piggy-backed IE mappings.
+
+- Locate the exact ASN.1 definitions for these root containers and recursively extract every referenced IE and type, performing a **strict depth-first traversal** until only primitive types remain.
+
+- Cross-check that all IEs mentioned in the JSON are covered in the ASN.1 dependency tree.
+
+**Phase 2: Codebase Integration & Modification Points Identification**
+
+- Identify all existing code locations in the OpenAirInterface 5G codebase where:
+
+  - The relevant data structures (`f1ap_ue_context_setup_req_s`, `f1ap_ue_context_setup_resp_s`) are defined and used.
+  
+  - Encoding and decoding logic for these messages and their IEs exist.
+  
+  - Helper functions for message construction and processing exist.
+  
+  - Call-sites that send, receive, or process these messages exist.
+
+- Map each IE and type from the dependency closure to concrete code touchpoints (files, functions, lines).
+
+- Identify gaps where new structs, encode/decode functions, or helpers must be added or extended.
+
+**Phase 3: Code Generation & Codebase Modifications**
+
+- Implement or update:
+
+  - All C struct definitions for the full ASN.1 IE dependency closure, including nested sequences, choices, enumerations, and extension containers.
+  
+  - Encoding and decoding functions for every IE and type, respecting presence, criticality, and constraints.
+  
+  - Helper functions for message construction, copying, and validation.
+  
+  - Call-site updates in both gNB-CU and candidate gNB-DU actors to integrate the new or updated message handling.
+  
+  - Memory allocation and deallocation logic consistent with the project’s memory management model.
+  
+  - Validation logic enforcing range checks, list sizes, presence conditions, and criticality handling.
+  
+  - Logging and error handling consistent with existing codebase standards.
+
+- Document all changes with clear comments, especially where internal-only implementations are used due to ASN.1 version gaps.
+
+---
+
+# Codebase Modification Identification Process
+
+- For each IE and type in the dependency closure, produce a **Dependency Closure Report** listing:
+
+  - IE/type name
+  
+  - ASN.1 source location
+  
+  - Corresponding C struct(s)
+  
+  - Encoding/decoding functions
+  
+  - Helper functions
+  
+  - Call-sites impacted
+
+- Produce an **Impact Matrix** mapping every closure node to concrete code files and functions.
+
+- Ensure no orphan IEs or types remain unimplemented.
+
+- Identify all files requiring modification or extension, including:
+
+  - Header files for struct definitions
+  
+  - Source files for encode/decode and helper functions
+  
+  - Call-site files for message sending and reception
+
+---
+
+# Mandatory Data Structure Updates
+
+- Update or create C structs for:
+
+  - `UEContextSetupRequestIEs` and all nested IEs such as `LTMInformation-Setup`, `LTMConfigurationIDMappingList`, `EarlySyncInformationRequest`, etc.
+  
+  - `UEContextSetupResponseIEs` and nested IEs such as `RequestedTargetCellID`, `LTMConfiguration`, `EarlySyncInformation`, `CompleteCandidateConfigurationIndicator`, etc.
+
+- Implement presence bitmasks for optional IEs.
+
+- Enforce cardinality constraints on all SEQUENCE OF fields.
+
+- Align all struct member names and types exactly with ASN.1 definitions.
+
+---
+
+# IE / ASN / Encoding Handling Rules
+
+- Perform **full recursive expansion** of all ASN.1 IEs starting from the root IE containers for UE CONTEXT SETUP REQUEST and RESPONSE.
+
+- For each ASN.1 type:
+
+  - **SEQUENCE:** Expand all fields recursively.
+  
+  - **SEQUENCE OF:** Resolve item type and recursively expand.
+  
+  - **CHOICE:** Expand all alternatives recursively.
+  
+  - **ENUMERATED:** Generate enum definitions and ensure all enumerated values are represented.
+  
+  - **INTEGER with range:** Enforce range validation in code.
+  
+  - **BIT STRING with size:** Enforce bit length and mask/flag handling.
+  
+  - **OCTET STRING:** Preserve encoding semantics and size constraints.
+  
+  - **ProtocolIE-SingleContainer / ProtocolIE-Container:** Unwrap inner IE and continue recursion.
+  
+  - **ProtocolExtensionContainer:** Include extension-safe handling and recursive resolution of extension IEs.
+
+- Implement encoding and decoding functions for every IE and nested type, respecting presence, criticality, and optionality.
+
+- Implement presence bitmask flags and ensure they propagate through encode/decode and helper functions.
+
+- Implement robust error handling for encoding/decoding failures and presence violations.
+
+---
+
+# Consumer / Call-Site Update Requirements
+
+- Update all call-sites in gNB-CU and candidate gNB-DU that:
+
+  - Construct and send UE CONTEXT SETUP REQUEST messages.
+  
+  - Receive and decode UE CONTEXT SETUP REQUEST messages.
+  
+  - Construct and send UE CONTEXT SETUP RESPONSE messages.
+  
+  - Receive and decode UE CONTEXT SETUP RESPONSE messages.
+
+- Ensure that all consumers of these messages handle the new or updated IEs correctly, including optional fields and piggy-backed IEs.
+
+- Update or add unit tests and integration tests where applicable to cover the new message flows.
+
+---
+
+# Memory Safety & Resource Management Requirements
+
+- Implement explicit allocation and deallocation logic for all dynamically allocated nested structures and lists.
+
+- Ensure no memory leaks, dangling pointers, or double frees occur.
+
+- Use existing project memory management conventions and APIs.
+
+- Implement deep copy functions for all complex IEs and nested structures.
+
+- Validate all input data sizes and presence before processing to prevent buffer overflows or invalid memory access.
+
+---
+
+# Compilation Safety & Type Resolution Rules
+
+- All new or updated code MUST compile cleanly with the existing OpenAirInterface 5G build system (CMake).
+
+- Use only types and symbols defined in the local actor headers or introduced explicitly in your implementation.
+
+- Do NOT introduce cross-actor type dependencies or violate module boundaries.
+
+- Enforce strict type safety and const-correctness where applicable.
+
+- Avoid any implicit type conversions or unsafe casts.
+
+---
+
+# Code Quality & Naming Standards
+
+- Follow existing OpenAirInterface 5G C coding style and naming conventions.
+
+- Use descriptive, consistent names for structs, functions, and variables matching ASN.1 IE names.
+
+- Document all new code with clear comments referencing 3GPP specification sections.
+
+- Implement comprehensive error checking and logging.
+
+- Ensure performance is optimized for runtime execution without unnecessary overhead.
+
+---
+
+# Error Handling & Validation Rules
+
+- Implement validation checks for:
+
+  - Presence and absence of mandatory and optional IEs.
+  
+  - Range checks on INTEGER fields.
+  
+  - Size and cardinality constraints on SEQUENCE OF fields.
+  
+  - Enum value validity.
+  
+  - Criticality handling as per 3GPP specification (reject, ignore, notify).
+
+- On validation failure, generate appropriate error messages and handle the failure according to protocol rules (e.g., send UE CONTEXT SETUP FAILURE if applicable).
+
+- Ensure error paths clean up allocated resources properly.
+
+---
+
+# Output Format Requirements
+
+You MUST provide:
+
+- Complete C struct definitions for all IEs and nested types.
+
+- Encoding and decoding functions for all IEs.
+
+- Helper functions for message construction, copying, and validation.
+
+- Call-site code updates with exact file paths and function names.
+
+- Dependency Closure Report and Impact Matrix as part of documentation.
+
+- Integration summary with TODOs for ASN.1 version gaps.
+
+- Comprehensive validation and error handling code.
+
+- Memory management code for all dynamic allocations.
+
+---
+
+# Integration Summary Requirements
+
+- Summarize all integration points in the codebase with exact file paths and function names.
+
+- Document any internal-only implementations due to ASN.1 version gaps.
+
+- Provide instructions for testing and validation.
+
+- Include notes on piggy-backed IE handling and mapping.
+
+- Provide guidance for future ASN.1 upgrades and code generation improvements.
+
+---
+
+# Final Engineering Checklist
+
+- [ ] Dependency Closure Report completed with full recursive ASN.1 IE expansion.
+
+- [ ] Impact Matrix mapping all IEs to code touchpoints.
+
+- [ ] All C structs updated or created with exact ASN.1 alignment.
+
+- [ ] Encoding and decoding functions implemented for all IEs.
+
+- [ ] Helper functions for message construction and validation implemented.
+
+- [ ] Call-site code updated in both gNB-CU and candidate gNB-DU actors.
+
+- [ ] Memory management implemented with no leaks or unsafe access.
+
+- [ ] Validation and error handling fully implemented.
+
+- [ ] Code compiles cleanly with no warnings or errors.
+
+- [ ] Code follows OpenAirInterface 5G style and naming conventions.
+
+- [ ] Integration summary and documentation completed.
+
+- [ ] No partial or shallow implementation; full coverage enforced.
+
+---
+
+# Critical Reminders Section
+
+- **Partial implementation is strictly forbidden.** All referenced IEs and types MUST be fully implemented and integrated.
+
+- **ASN.1 definitions are the single source of truth.** Never rely solely on natural language or JSON IE lists.
+
+- **Full recursive ASN.1 expansion is mandatory.** No IE or nested type may be left unresolved.
+
+- **Memory safety and resource management are critical.** No leaks or unsafe accesses allowed.
+
+- **Codebase consistency and actor boundaries MUST be respected.**
+
+- **Piggy-backed IEs require special handling and mapping.**
+
+- **Document all deviations or internal-only implementations due to ASN.1 version gaps.**
+
+---
+
+# Recursive ASN.1 Information Element Expansion Requirements
+
+- Starting from the root IE containers:
+
+  - `UEContextSetupRequestIEs` for UE CONTEXT SETUP REQUEST message.
+  
+  - `UEContextSetupResponseIEs` for UE CONTEXT SETUP RESPONSE message.
+
+- Perform **depth-first recursive traversal** of all ASN.1 types referenced, including:
+
+  - All SEQUENCE fields.
+  
+  - All SEQUENCE OF item types.
+  
+  - All CHOICE alternatives.
+  
+  - All ENUMERATED values.
+  
+  - All nested ProtocolIE containers.
+  
+  - All ProtocolExtensionContainers and extension fields.
+
+- For each IE and type, extract the full ASN.1 definition and generate corresponding C structs and code.
+
+- Enforce all presence, optionality, and criticality rules as defined in ASN.1 and the filled JSON.
+
+- Include piggy-backed IE mappings such as `ReferenceConfigurationInformation` from both `ReferenceConfiguration` and `LTMConfiguration`.
+
+---
+
+# Mandatory Coverage Contract (Dependency Closure + Impact Matrix + Self-Audit Coverage Gate)
+
+You MUST enforce the following **Coverage Contract**:
+
+- **Dependency Closure Report:** Before any code generation, produce a comprehensive depth-first list of all IEs and types required by the UE CONTEXT SETUP REQUEST and RESPONSE messages, including nested and extension IEs.
+
+- **Impact Matrix:** Map each IE/type in the closure to exact codebase files, functions, and data structures that must be created or modified.
+
+- **Complete Implementation:** Implement all identified IEs and types fully, including encode/decode, helper functions, and call-site updates. No orphans or partial coverage allowed.
+
+- **Self-Audit Coverage Gate:** After implementation, perform a self-audit to verify that all closure nodes are covered in code and tests. Patch any missing coverage immediately.
+
+- **Producer and Consumer Paths:** Cover both message production (encoding, sending) and consumption (decoding, processing) code paths for all IEs.
+
+- **Dynamic, Data-Driven IE Traversal:** The IE traversal and implementation MUST be driven by the ASN.1 tree and filled JSON, NOT by hard-coded or shallow IE lists.
+
+- **Strictly forbid shallow or partial ASN expansion.**
+
+---
+
+# MANDATORY ENDING STRUCTURE
+
+1. **Role**  
+Senior engineer persona with domain expertise.
+
+2. **TASK**  
+Implement the Inter-gNB DU LTM Handover Procedure UE Context Setup messaging with the following requirements:
+
+- **CRITICAL REQUIREMENT:**  
+  Implement all code changes exactly within the gNB-CU and candidate gNB-DU actor folders as per the Call Flow. No code outside these actors shall be modified. Changes include data structures, encoding/decoding, helpers, and call-sites.
+
+- **IE NAMING REQUIREMENT:**  
+  All IE names MUST exactly match those defined in the ASN.1 specifications and the filled JSON (e.g., `UEContextSetupRequestIEs`, `LTMInformation-Setup`, `RequestedTargetCellID`, `LTMConfiguration`, etc.).
+
+- **TYPE AND STRUCT DEFINITION ALIGNMENT (PER ACTOR):**  
+  Struct member names, container shapes, and pointer/value semantics MUST align with existing local headers and ASN.1 definitions. Presence bitmasks and optional fields MUST be implemented precisely.
+
+- **CONSUMER / CALL-SITE CODE (PER ACTOR):**  
+  Update all files and functions that consume or produce the UE CONTEXT SETUP REQUEST and RESPONSE messages, ensuring full integration of new or updated IEs and helper functions.
+
+- **ACTOR-SPECIFIC CODEBASE REQUIREMENT:**  
+  Only modify code within folders corresponding to the actors in the Call Flow (`gNB-CU` and `Candidate gNB-DU`).
+
+- **ASN.1 FILES (.asn) - THIRD PARTY:**  
+  Do NOT modify any ASN.1 `.asn` files. Document any internal-only implementations or extensions required due to ASN.1 version gaps.
+
+3. **INPUT CONTEXT**  
+Use the provided filled JSON specification and existing OpenAirInterface 5G codebase context, including:
+
+- ASN.1 definitions from `F1AP-PDU-Contents.asn` and `NR-RRC-Definitions.asn`.
+- Existing data structures and helper functions in `openair2/COMMON/f1ap_messages_types.h` and `openair2/RRC/NR/`.
+- Build system: CMake, language: C.
+
+4. **IMPLEMENTATION STRATEGY**  
+Phased approach:
+
+- **Phase 1:** Specification Analysis  
+  Parse JSON, extract actors, root IEs, ASN.1 definitions, and constraints.
+
+- **Phase 2:** Codebase Integration & Modification Points Identification  
+  Locate actor folders, structs, IE definitions, encode/decode functions, helpers, and call-sites. Map dependency closure to code touchpoints.
+
+- **Phase 3:** Code Generation & Codebase Modifications  
+  Implement data structures, encoding/decoding, helpers, validation, memory management, and call-site updates with full recursive ASN.1 IE coverage.
+
+5. **CODE QUALITY REQUIREMENTS**  
+Adhere to OpenAirInterface 5G coding style, naming conventions, error handling, and performance standards. Ensure compilation safety with strict type resolution from local actor headers only.
+
+6. **OUTPUT FORMAT**  
+Provide:
+
+- Primary function implementations for message construction and handling.
+- Complete data structure modifications and additions.
+- Encoding/decoding function updates.
+- Helper function implementations.
+- Dependency Closure Report and Impact Matrix documentation.
+- Integration summary with actor-specific file paths and labels.
+
+7. **SPECIAL CONSIDERATIONS**  
+Ensure protocol compliance, robust encoding/decoding, state management, concurrency safety, and testing hooks as applicable. Handle piggy-backed IEs and ASN.1 version gaps with documented internal implementations.
+
+8. **FINAL CHECKLIST**  
+- [ ] Implementation location correctness.  
+- [ ] Complete codebase modifications.  
+- [ ] Functional requirements met with exact IE names and optional fields.  
+- [ ] Piggy-backed IE handling implemented.  
+- [ ] Memory safety ensured.  
+- [ ] Code quality standards met.  
+- [ ] Output completeness verified.
+
+9. **Closing reminder**  
+The implementation MUST be complete and fully integrated at the exact locations specified, covering all related components. ASN.1 `.asn` files MUST NOT be modified in the codebase.
+
+---
+
+Here is the template :{
+  "Feature_ID": "INTER_GNB_DU_LTM_HANDOVER_UE_CONTEXT_SETUP",
+  "Feature_Name": "Inter-gNB DU LTM Handover Procedure (UE Context Setup)",
+  "Release": "Release 18",
+  "3GPP_Reference": {
+    "Spec": "TS 38.473, TS 38.401",
+    "Title": "NR; F1 Application Protocol (F1AP), NR; NG-RAN Architecture Description",
+    "Section": "8.3.1 (TS 38.473), 8.3.1.1 (TS 38.473), 8.3.1.2 (TS 38.473), 8.3.1.3 (TS 38.473), 8.3.1.4 (TS 38.473), 8.2.1.5 (TS 38.401)"
+  },
+  "Feature_Description": [
+    "The purpose of the UE Context Setup procedure is to establish the UE Context including, among others, SRB, DRB, BH RLC channel, Uu Relay RLC channel, PC5 Relay RLC channel, and SL DRB configuration. The procedure uses UE-associated signalling.",
+    "This procedure is used for the case when the UE moves from one gNB-DU to another gNB-DU within the same gNB-CU during NR operation for LTM."
+  ],
+  "Feature_Objectives": [
+    "To establish the UE Context for a UE moving from one gNB-DU to another gNB-DU within the same gNB-CU during NR operation for LTM.",
+    "To configure LTM specific information, such as CSI resource configuration and LTM configuration ID mapping, in the candidate gNB-DU.",
+    "To enable the gNB-DU to provide lower layer RRC configurations and early synchronization information for LTM."
+  ],
+  "Design_Details": {
+    "Protocol_Layers": [
+      "F1AP (Application Protocol)",
+      "RRC (Radio Resource Control)"
+    ],
+    "Protocol_Interfaces": [
+      "F1 interface (between gNB-CU and gNB-DU)"
+    ]
+  },
+  "Feature_Implementation_Steps": [
+    "1. The gNB-CU determines to initiate LTM configuration based on L3 measurement reports from the UE.",
+    "2. The gNB-CU sends a UE CONTEXT SETUP REQUEST message to the candidate gNB-DU(s) for each candidate cell, containing one candidate cell ID and the CSI resource configuration for subsequent LTM. The gNB-CU may provide the LTM configuration ID mapping list to the candidate gNB-DU(s). The gNB-CU may request PRACH resources from the candidate gNB-DU(s). The gNB-CU may request the candidate gNB-DU(s) to provide the lower layer configuration for the purpose of generating the reference configuration or provide the lower layer part of the reference configuration to the candidate gNB-DU(s).",
+    "3. If the candidate gNB-DU accepts the request of LTM configuration, it responds with a UE CONTEXT SETUP RESPONSE message including the generated lower layer RRC configurations for the accepted target candidate cell."
+  ],
+  "Call_Flow": [
+    {
+      "Message": "UE CONTEXT SETUP REQUEST",
+      "Actors": [
+        "gNB-CU",
+        "Candidate gNB-DU"
+      ],
+      "From": "gNB-CU",
+      "To": "Candidate gNB-DU"
+    },
+    {
+      "Message": "UE CONTEXT SETUP RESPONSE",
+      "Actors": [
+        "Candidate gNB-DU",
+        "gNB-CU"
+      ],
+      "From": "Candidate gNB-DU",
+      "To": "gNB-CU"
+    }
+  ],
+  "Procedure_Implementation_Steps": [
+    "1. The gNB-CU initiates the UE Context Setup procedure by sending a UE CONTEXT SETUP REQUEST message to the candidate gNB-DU.",
+    "2. If the LTM Indicator IE set to \"true\" is contained in the LTM Information Setup IE included in the UE CONTEXT SETUP REQUEST message, the gNB-DU shall, if supported, consider that the request concerns LTM for the included SpCell ID IE and shall include it as the Requested Target Cell ID IE in the UE CONTEXT SETUP RESPONSE message. The gNB-DU shall regard it as a reconfiguration with sync as defined in TS 38.331 [8].",
+    "3. If the Request for Lower Layer Configuration IE set to \"true\" is contained within the Reference Configuration IE in the LTM Information Setup IE included in the UE CONTEXT SETUP REQUEST message, the gNB-DU shall, if supported, provide the lower layer configuration in the Reference Configuration Information IE in the LTM ConfigurationIE in the UE CONTEXT SETUP RESPONSE message for the gNB-CU to generate the LTM reference configuration.",
+    "4. If the Reference Configuration Information IE is contained within the Reference Configuration IE in the LTM Information Setup IE included in the UE CONTEXT SETUP REQUEST message, the gNB-DU shall, if supported, take it into account for generating the LTM lower layer configuration.",
+    "5. If the CSI Resource Configuration is contained in the LTM Information Setup IE included in the UE CONTEXT SETUP REQUEST message, the gNB-DU shall, if supported, use it to generate the LTM CSI reporting configuration(s) in the CellGroupConfig IE for the requested LTM candidate cell.",
+    "6. If the LTM Configuration ID Mapping List IE is contained in the UE CONTEXT SETUP REQUEST message, the gNB-DU shall, if supported, consider this as the mapping information for the LTM candidate cell(s).",
+    "7. If the Early Sync Information Request IE is included in the UE CONTEXT SETUP REQUEST message, the gNB-DU shall, if supported, include the Early Sync Information IE of the accepted candidate cell for early TA acquisition (early UL synchronisation), in the UE CONTEXT SETUP RESPONSE message.",
+    "8. If the LTM Configuration IE is included in the UE CONTEXT SETUP RESPONSE message, the gNB-CU shall, if supported, consider it as the generated configuration for LTM from the accepted candidate cell in the candidate gNB-DU.",
+    "9. If the Complete Candidate Configuration Indicator IE set to \"complete\" is contained in the LTM Configuration IE included in the UE CONTEXT SETUP RESPONSE message, the gNB-CU shall, if supported, consider that the LTM candidate configuration is a complete candidate configuration.",
+    "10. If the Early UL Sync Configuration IE is included in the UE CONTEXT SETUP RESPONSE message, the gNB-CU shall, if supported, consider it as the generated early UL sync information from the accepted candidate cell in the gNB-DU.",
+    "11. If the Early UL Sync Configuration for SUL IE is included in the UE CONTEXT SETUP RESPONSE message, the gNB-CU shall, if supported, consider it as the generated early UL sync information for SUL from the accepted candidate cell in the gNB-DU.",
+    "12. If the gNB-DU is not able to establish an F1 UE context, or cannot even establish one bearer, it shall consider the procedure as failed and reply with the UE CONTEXT SETUP FAILURE message. If the LTM Indicator IE was included in the UE CONTEXT SETUP REQUEST message, the gNB-DU shall include the received SpCell ID IE as the Requested Target Cell ID IE in the UE CONTEXT SETUP FAILURE message."
+  ],
+  "Code_Artifacts": [
+    {
+      "Codebase_Name": "OpenAirInterface 5G",
+      "Code_Instructions": [
+        {
+          "type": "data_structure",
+          "struct_name": "f1ap_ue_context_setup_req_s",
+          "file_path": "openair2\\COMMON\\f1ap_messages_types.h",
+          "line_start": 544,
+          "description": "Defines the structure for the F1AP UE CONTEXT SETUP REQUEST message, specifying its Information Elements (IEs) and their types. This is a fundamental building block for constructing the request message.",
+          "uses_structs": []
+        },
+        {
+          "type": "data_structure",
+          "struct_name": "f1ap_ue_context_setup_resp_s",
+          "file_path": "openair2\\COMMON\\f1ap_messages_types.h",
+          "line_start": 570,
+          "description": "Defines the structure for the F1AP UE CONTEXT SETUP RESPONSE message, specifying its Information Elements (IEs) and their types. This is a fundamental building block for parsing the response message received from the gNB-DU.",
+          "uses_structs": []
+        },
+        {
+          "type": "helper_function",
+          "function_name": "rrc_gNB_generate_UeContextSetupRequest",
+          "file_path": "openair2\\RRC\\NR\\rrc_gNB.c",
+          "line_start": 3032,
+          "line_end": 3032,
+          "description": "A helper function within the RRC layer of the gNB-CU responsible for populating the content of the F1AP UE CONTEXT SETUP REQUEST message based on RRC context and handover decisions. It prepares the RRC-specific IEs for the F1AP message.",
+          "called_functions": [],
+          "calling_functions": [],
+          "uses_structs": [
+            "f1ap_ue_context_setup_req_s"
+          ]
+        },
+        {
+          "type": "helper_function",
+          "function_name": "ue_context_setup_request_f1ap",
+          "file_path": "openair2\\RRC\\NR\\mac_rrc_dl_f1ap.c",
+          "line_start": 79,
+          "line_end": 79,
+          "description": "This function likely serves as an interface or encoding helper to take the RRC-generated UE Context Setup Request information and format it into the F1AP message structure, potentially handling lower-layer F1AP specific encoding or message construction before transmission.",
+          "called_functions": [],
+          "calling_functions": [],
+          "uses_structs": [
+            "f1ap_ue_context_setup_req_s"
+          ]
+        }
+      ]
+    }
+  ],
+  "ASN_IES_File_Path": [
+    {
+      "ASN_Name": "F1AP",
+      "File_Path": "",
+      "File_Name": "F1AP-PDU-Contents.asn"
+    },
+    {
+      "ASN_Name": "RRC",
+      "File_Path": "",
+      "File_Name": "NR-RRC-Definitions.asn"
+    }
+  ],
+  "ASN_IES_C_Structures_Path": [
+    {
+      "ASN_Name": "F1AP",
+      "File_Path": ""
+    },
+    {
+      "ASN_Name": "RRC",
+      "File_Path": ""
+    }
+  ],
+  "Information_Elements": [
+    {
+      "IE_Name": "UEContextSetupRequestIEs",
+      "IE_Definition": "UEContextSetupRequestIEs F1AP-PROTOCOL-IES ::= {\n    {\n        ID id-LTMInformation-Setup\n        CRITICALITY reject\n        TYPE LTMInformation-Setup\n        PRESENCE optional\n    },\n    {\n        ID id-LTMConfigurationIDMappingList\n        CRITICALITY reject\n        TYPE LTMConfigurationIDMappingList\n        PRESENCE optional\n    },\n    {\n        ID id-EarlySyncInformationRequest\n        CRITICALITY reject\n        TYPE EarlySyncInformationRequest\n        PRESENCE optional\n    },\n    ...\n}",
+      "IE_Category": "F1AP IE"
+    },
+    {
+      "IE_Name": "LTMInformation-Setup",
+      "IE_Definition": "LTMInformation-Setup ::= SEQUENCE {\n    lTMIndicator LTMIndicator,\n    referenceConfiguration ReferenceConfiguration OPTIONAL,\n    cSIResourceConfiguration CSIResourceConfiguration OPTIONAL,\n    ...\n}",
+      "IE_Category": "F1AP IE"
+    },
+    {
+      "IE_Name": "LTMConfigurationIDMappingList",
+      "IE_Definition": "LTMConfigurationIDMappingList   ::= SEQUENCE (SIZE(1..maxnoofLTMCells)) OF LTMConfigurationIDMapping-Item\nLTMConfigurationIDMapping-Item::= SEQUENCE{\n    lTMCellID           NRCGI,\n    lTMConfigurationID  LTMConfigurationID,     \n}\n\nLTMConfiguration ::= SEQUENCE { \n sSBInformation SSBInformation, \n referenceConfigurationInformation ReferenceConfigurationInformation OPTIONAL, \n completeCandidateConfigurationIndicator CompleteCandidateConfigurationIndicator OPTIONAL, \n lTMCFRAResourceConfig LTMCFRAResourceConfig OPTIONAL, \n}\n\nSSBInformation ::= SEQUENCE {\n    sSBInformationList  SSBInformationList\n}",
+      "IE_Category": "F1AP IE"
+    },
+    {
+      "IE_Name": "EarlySyncInformationRequest",
+      "IE_Definition": "EarlySyncInformationRequest ::= ENUMERATED { true, false, ... }",
+      "IE_Category": "F1AP IE"
+    },
+    {
+      "IE_Name": "LTMIndicator",
+      "IE_Definition": "LTMIndicator ::= ENUMERATED { true, false, ... }",
+      "IE_Category": "F1AP IE"
+    },
+    {
+      "IE_Name": "ReferenceConfiguration",
+      "IE_Definition": "ReferenceConfiguration ::= SEQUENCE {\n    requestForLowerLayerConfiguration RequestForLowerLayerConfiguration OPTIONAL,\n    referenceConfigurationInformation ReferenceConfigurationInformation OPTIONAL,\n    ...\n}",
+      "IE_Category": "F1AP IE"
+    },
+    {
+      "IE_Name": "CSIResourceConfiguration",
+      "IE_Definition": "CSIResourceConfiguration ::= SEQUENCE {\n    -- This IE is a container for RRC CSI-RS-ResourceConfig and CSI-IM-ResourceConfig\n    -- Actual ASN.1 definition is complex and truncated in context, represented as a generic SEQUENCE\n    ...\n}",
+      "IE_Category": "F1AP IE"
+    },
+    {
+      "IE_Name": "RequestForLowerLayerConfiguration",
+      "IE_Definition": "RequestForLowerLayerConfiguration ::= ENUMERATED { true, false, ... }",
+      "IE_Category": "F1AP IE"
+    },
+    {
+      "IE_Name": "ReferenceConfigurationInformation",
+      "IE_Definition": "ReferenceConfigurationInformation ::= OCTET STRING (CONTAINING RRC-Container) OPTIONAL",
+      "IE_Category": "F1AP IE"
+    },
+    {
+      "IE_Name": "LTMConfigurationIDMappingItem",
+      "IE_Definition": "LTMConfigurationIDMappingItem ::= SEQUENCE {\n    lTMConfigurationID LTMConfigurationID,\n    sPCellID SpCellID,\n    ...\n}",
+      "IE_Category": "F1AP IE"
+    },
+    {
+      "IE_Name": "LTMConfigurationID",
+      "IE_Definition": "LTMConfigurationID ::= INTEGER (0..maxLTMConfigID)",
+      "IE_Category": "F1AP IE"
+    },
+    {
+      "IE_Name": "SpCellID",
+      "IE_Definition": "SpCellID ::= INTEGER (0..maxCellID)",
+      "IE_Category": "F1AP IE"
+    },
+    {
+      "IE_Name": "UEContextSetupResponseIEs",
+      "IE_Definition": "UEContextSetupResponseIEs F1AP-PROTOCOL-IES ::= {\n    {\n        ID id-RequestedTargetCellID\n        CRITICALITY reject\n        TYPE SpCellID\n        PRESENCE mandatory\n    },\n    {\n        ID id-LTMConfiguration\n        CRITICALITY reject\n        TYPE LTMConfiguration\n        PRESENCE optional\n    },\n    {\n        ID id-EarlySyncInformation\n        CRITICALITY reject\n        TYPE EarlySyncInformation\n        PRESENCE optional\n    },\n    ...\n}",
+      "IE_Category": "F1AP IE"
+    },
+    {
+      "IE_Name": "RequestedTargetCellID",
+      "IE_Definition": "RequestedTargetCellID ::= SpCellID",
+      "IE_Category": "F1AP IE"
+    },
+    {
+      "IE_Name": "LTMConfiguration",
+      "IE_Definition": "LTMConfigurationIDMappingList   ::= SEQUENCE (SIZE(1..maxnoofLTMCells)) OF LTMConfigurationIDMapping-Item\nLTMConfigurationIDMapping-Item::= SEQUENCE{\n    lTMCellID           NRCGI,\n    lTMConfigurationID  LTMConfigurationID,     \n}\n\nLTMConfiguration ::= SEQUENCE { \n sSBInformation SSBInformation, \n referenceConfigurationInformation ReferenceConfigurationInformation OPTIONAL, \n completeCandidateConfigurationIndicator CompleteCandidateConfigurationIndicator OPTIONAL, \n lTMCFRAResourceConfig LTMCFRAResourceConfig OPTIONAL, \n}\n\nSSBInformation ::= SEQUENCE {\n    sSBInformationList  SSBInformationList\n}",
+      "IE_Category": "F1AP IE"
+    },
+    {
+      "IE_Name": "EarlySyncInformation",
+      "IE_Definition": "EarlySyncInformation ::= SEQUENCE {\n    earlyULSyncConfiguration EarlyULSyncConfiguration OPTIONAL,\n    earlyULSyncConfigurationForSUL EarlyULSyncConfigurationForSUL OPTIONAL,\n    ...\n}",
+      "IE_Category": "F1AP IE"
+    },
+    {
+      "IE_Name": "CompleteCandidateConfigurationIndicator",
+      "IE_Definition": "CompleteCandidateConfigurationIndicator ::= ENUMERATED { complete, incomplete, ... }",
+      "IE_Category": "F1AP IE"
+    },
+    {
+      "IE_Name": "EarlyULSyncConfiguration",
+      "IE_Definition": "EarlyULSyncConfiguration ::= SEQUENCE {\n    preambleIndexList PreambleIndexList,\n    ...\n}",
+      "IE_Category": "F1AP IE"
+    },
+    {
+      "IE_Name": "EarlyULSyncConfigurationForSUL",
+      "IE_Definition": "EarlyULSyncConfigurationForSUL ::= EarlyULSyncConfiguration",
+      "IE_Category": "F1AP IE"
+    },
+    {
+      "IE_Name": "PreambleIndexList",
+      "IE_Definition": "PreambleIndexList ::= SEQUENCE (SIZE(1..maxNrOfPreambleIndex)) OF PreambleIndex",
+      "IE_Category": "F1AP IE"
+    },
+    {
+      "IE_Name": "PreambleIndex",
+      "IE_Definition": "PreambleIndex ::= INTEGER (0..maxPreambleIndex)",
+      "IE_Category": "F1AP IE"
+    },
+    {
+      "IE_Name": "F1AP-PROTOCOL-IES",
+      "IE_Definition": "UEContextSetupRequestIEs F1AP-PROTOCOL-IES ::= {\n { ID id-gNB-CU-UE-F1AP-ID      CRITICALITY reject TYPE GNB-CU-UE-F1AP-ID         PRESENCE mandatory }|\n { ID id-gNB-DU-UE-F1AP-ID      CRITICALITY ignore TYPE GNB-DU-UE-F1AP-ID         PRESENCE optional  }|\n { ID id-SpCell-ID        CRITICALITY reject TYPE NRCGI            PRESENCE mandatory }|\n { ID id-ServCellIndex       CRITICALITY reject TYPE ServCellIndex          PRESENCE mandatory }|\n { ID id-SpCellULConfigured      CRITICALITY ignore TYPE CellULConfigured         PRESENCE optional }|\n { ID id-CUtoDURRCInformation     CRITICALITY reject TYPE CUtoDURRCInformation        PRESENCE mandatory}|\n { ID id-Candidate-SpCell-List     CRITICALITY ignore TYPE Candidate-SpCell-List       PRESENCE optional }|\n { ID id-DRXCycle        CRITICALITY ignore TYPE DRXCycle           PRESENCE optional }|\n { ID id-ResourceCoordinationTransferContainer CRITICALITY ignore TYPE ResourceCoordinationTransferContainer  PRESENCE optional  }|\n { ID id-SCell-ToBeSetup-List     CRITICALITY ignore TYPE SCell-ToBeSetup-List        PRESENCE optional }|\n { ID id-SRBs-ToBeSetup-List      CRITICALITY reject TYPE SRBs-ToBeSetup-List        PRESENCE optional }|\n { ID id-DRBs-ToBeSetup-List      CRITICALITY reject TYPE DRBs-ToBeSetup-List        PRESENCE optional }|\n { ID id-InactivityMonitoringRequest    CRITICALITY reject TYPE InactivityMonitoringRequest     PRESENCE optional }|\n { ID id-RAT-FrequencyPriorityInformation  CRITICALITY reject TYPE RAT-FrequencyPriorityInformation    PRESENCE optional }|\n { ID id-RRCContainer       CRITICALITY ignore TYPE RRCContainer          PRESENCE optional }|\n { ID id-MaskedIMEISV       CRITICALITY ignore TYPE MaskedIMEISV          PRESENCE optional }|\n { ID id-ServingPLMN        CRITICALITY ignore TYPE PLMN-Identity          PRESENCE optional }|\n { ID id-GNB-DU-UE-AMBR-UL      CRITICALITY ignore TYPE BitRate           PRESENCE conditional }|\n -- The above IE shall be present only if the DRB to Be Setup List IE is present.\n { ID id-RRCDeliveryStatusRequest    CRITICALITY ignore TYPE RRCDeliveryStatusRequest      PRESENCE optional }|\n { ID id-ResourceCoordinationTransferInformation CRITICALITY ignore TYPE ResourceCoordinationTransferInformation PRESENCE optio nal }|\n { ID id-ServingCellMO       CRITICALITY ignore TYPE ServingCellMO          PRESENCE optional }|\n { ID id-new-gNB-CU-UE-F1AP-ID     CRITICALITY reject TYPE GNB-DU-UE-F1AP-ID         PRESENCE optional }|\n { ID id-RANUEID         CRITICALITY ignore TYPE RANUEID           PRESENCE optional }|\n { ID id-TraceActivation       CRITICALITY ignore TYPE TraceActivation         PRESENCE optional }|\n { ID id-AdditionalRRMPriorityIndex    CRITICALITY ignore TYPE AdditionalRRMPriorityIndex      PRESENCE optional }|\n { ID id-BHChannels-ToBeSetup-List    CRITICALITY reject TYPE BHChannels-ToBeSetup-List      PRESENCE optional }|\n { ID id-ConfiguredBAPAddress     CRITICALITY reject TYPE BAPAddress           PRESENCE optional }|\n { ID id-NRV2XServicesAuthorized     CRITICALITY ignore TYPE NRV2XServicesAuthorized       PRESENCE optional }|\n { ID id-LTEV2XServicesAuthorized    CRITICALITY ignore TYPE LTEV2XServicesAuthorized      PRESENCE optional }|\n { ID id-NRUESidelinkAggregateMaximumBitrate  CRITICALITY ignore TYPE NRUESidelinkAggregateMaximumBitrate   PRESENCE optional }|\n { ID id-LTEUESidelinkAggregateMaximumBitrate CRITICALITY ignore TYPE LTEUESidelinkAggregateMaximumBitrate  PRESENCE optional }|\n { ID id-PC5LinkAMBR        CRITICALITY ignore TYPE BitRate           PRESENCE optional}|\n { ID id-SLDRBs-ToBeSetup-List     CRITICALITY reject TYPE SLDRBs-ToBeSetup-List       PRESENCE optional }|\n { ID id-ConditionalInterDUMobilityInformation CRITICALITY reject TYPE ConditionalInterDUMobilityInformation  PRESENCE optional}|\n { ID id-ManagementBasedMDTPLMNList    CRITICALITY ignore TYPE   MDTPLMNList         PRESENCE optional }|\n { ID id-ServingNID        CRITICALITY reject TYPE NID            PRESENCE optional }|\n { ID id-F1CTransferPath       CRITICALITY reject TYPE F1CTransferPath         PRESENCE optional }|\n { ID id-F1CTransferPathNRDC      CRITICALITY reject TYPE F1CTransferPathNRDC        PRESENCE optional }|\n { ID id-MDTPollutedMeasurementIndicator   CRITICALITY ignore TYPE MDTPollutedMeasurementIndicator    PRESENCE optional }|\n { ID id-SCGActivationRequest     CRITICALITY ignore TYPE SCGActivationRequest        PRESENCE optional }|\n { ID id-CG-SDTSessionInfoOld     CRITICALITY ignore TYPE CG-SDTSessionInfo         PRESENCE optional }|\n { ID id-FiveG-ProSeAuthorized     CRITICALITY ignore TYPE FiveG-ProSeAuthorized       PRESENCE optional }|\n { ID id-FiveG-ProSeUEPC5AggregateMaximumBitrate CRITICALITY ignore TYPE NRUESidelinkAggregateMaximumBitrate   PRESENCE optional }|\n { ID id-FiveG-ProSePC5LinkAMBR     CRITICALITY ignore TYPE BitRate           PRESENCE optional}|\n { ID id-UuRLCChannelToBeSetupList    CRITICALITY reject TYPE UuRLCChannelToBeSetupList      PRESENCE optional}|\n { ID id-PC5RLCChannelToBeSetupList    CRITICALITY reject TYPE PC5RLCChannelToBeSetupList      PRESENCE optional}|\n { ID id-PathSwitchConfiguration     CRITICALITY ignore TYPE PathSwitchConfiguration        PRESENCE optional }|\n { ID id-GNBDUUESliceMaximumBitRateList   CRITICALITY ignore  TYPE GNBDUUESliceMaximumBitRateList     PRESENCE optional }|\n { ID id-MulticastMBSSessionSetupList   CRITICALITY reject TYPE MulticastMBSSessionList       PRESENCE optional }|\n { ID id-UE-MulticastMRBs-ToBeSetup-List   CRITICALITY reject TYPE UE-MulticastMRBs-ToBeSetup-List    PRESENCE optional }|\n { ID id-ServingCellMO-List      CRITICALITY ignore TYPE ServingCellMO-List         PRESENCE optional }|\n { ID id-NetworkControlledRepeaterAuthorized  CRITICALITY ignore TYPE NetworkControlledRepeaterAuthorized   PRESENCE optional }|\n { ID id-SDT-Volume-Threshold      CRITICALITY ignore TYPE SDT-Volume-Threshold        PRESENCE optional  }|\n { ID id-LTMInformation-Setup     CRITICALITY reject TYPE LTMInformation-Setup        PRESENCE optional }|\n { ID id-LTMConfigurationIDMappingList   CRITICALITY reject TYPE LTMConfigurationIDMappingList     PRESENCE optional }|\n { ID id-EarlySyncInformation-Request   CRITICALITY ignore TYPE EarlySyncInformation-Request     PRESENCE optional }|\n { ID id-PathAdditionInformation    CRITICALITY reject TYPE PathAdditionInformation       PRESENCE optional}|\n { ID id-NRA2XServicesAuthorized     CRITICALITY ignore TYPE NRA2XServicesAuthorized       PRESENCE optional }|\n { ID id-LTEA2XServicesAuthorized    CRITICALITY ignore TYPE LTEA2XServicesAuthorized        PRESENCE optional }|\n { ID id-NRUESidelinkAggregateMaximumBitrateForA2X  CRITICALITY ignore TYPE NRUESidelinkAggregateMaximumBitrate  PRESENCE optional }|\n { ID id-LTEUESidelinkAggregateMaximumBitrateForA2X CRITICALITY ignore TYPE LTEUESidelinkAggregateMaximumBitrate  PRESENCE optional }|\n { ID id-DLLBTFailureInformationRequest    CRITICALITY ignore TYPE DLLBTFailureInformationRequest    PRESENCE optional }|\n { ID id-SLPositioning-Ranging-Service-Info  CRITICALITY ignore TYPE SLPositioning-Ranging-Service-Info      PRESENCE optional }|\n { ID id-NonIntegerDRXCycle      CRITICALITY ignore TYPE NonIntegerDRXCycle         PRESENCE optional },\n ...\n}",
+      "Mandatory_or_Optional": "Derived",
+      "IE_Category": ""
+    },
+    {
+      "IE_Name": "LTMgNB-DU-IDs-PreambleIndexList",
+      "IE_Definition": "LTMgNB-DU-IDs-PreambleIndexList ::= SEQUENCE (SIZE(1..maxnoofLTMgNB-DUs)) OF LTMgNB-DU-IDs-PreambleIndex-Item",
+      "Mandatory_or_Optional": "Derived",
+      "IE_Category": ""
+    },
+    {
+      "IE_Name": "LTMgNB-DU-IDs-PreambleIndex-Item",
+      "IE_Definition": "LTMgNB-DU-IDs-PreambleIndex-Item ::= SEQUENCE{\n lTMgNB-DU-ID   GNB-DU-ID,\n preambleIndexList  PreambleIndexList                OPTIONAL,\n iE-Extensions   ProtocolExtensionContainer {{ LTMgNB-DU-IDs-PreambleIndex-Item-ExtIEs}}  OPTIONAL\n}",
+      "Mandatory_or_Optional": "Derived",
+      "IE_Category": ""
+    },
+    {
+      "IE_Name": "ResourceCoordinationTransferInformation",
+      "IE_Definition": "ResourceCoordinationTransferInformation ::= SEQUENCE {\n meNB-Cell-ID        EUTRA-Cell-ID,\n resourceCoordinationEUTRACellInfo  ResourceCoordinationEUTRACellInfo OPTIONAL,\n iE-Extensions ProtocolExtensionContainer { { ResourceCoordinationTransferInformation-ExtIEs } } OPTIONAL,\n ...\n}",
+      "Mandatory_or_Optional": "Derived",
+      "IE_Category": ""
+    },
+    {
+      "IE_Name": "ResourceCoordinationTransferContainer",
+      "IE_Definition": "ResourceCoordinationTransferContainer ::= OCTET STRING",
+      "Mandatory_or_Optional": "Derived",
+      "IE_Category": ""
+    },
+    {
+      "IE_Name": "ConditionalInterDUMobilityInformation",
+      "IE_Definition": "ConditionalInterDUMobilityInformation ::= SEQUENCE {\n cho-trigger      CHOtrigger-InterDU,\n targetgNB-DUUEF1APID   GNB-DU-UE-F1AP-ID       OPTIONAL\n -- The above IE shall be present if the cho-trigger IE is present and set to \"cho-replace\" --,\n iE-Extensions     ProtocolExtensionContainer { { ConditionalInterDUMobilityInformation-ExtIEs} } OPTIONAL,\n ...\n}",
+      "Mandatory_or_Optional": "Derived",
+      "IE_Category": ""
+    },
+    {
+      "IE_Name": "LTEUESidelinkAggregateMaximumBitrate",
+      "IE_Definition": "LTEUESidelinkAggregateMaximumBitrate ::= SEQUENCE {\n uELTESidelinkAggregateMaximumBitrate  BitRate,\n iE-Extensions     ProtocolExtensionContainer { {LTEUESidelinkAggregateMaximumBitrate-ExtIEs} } OPTIONAL\n}",
+      "Mandatory_or_Optional": "Derived",
+      "IE_Category": ""
+    },
+    {
+      "IE_Name": "NetworkControlledRepeaterAuthorized",
+      "IE_Definition": "NetworkControlledRepeaterAuthorized ::= ENUMERATED { authorized, not-authorized, ...}",
+      "Mandatory_or_Optional": "Derived",
+      "IE_Category": ""
+    },
+    {
+      "IE_Name": "NRUESidelinkAggregateMaximumBitrate",
+      "IE_Definition": "NRUESidelinkAggregateMaximumBitrate ::= SEQUENCE {\n uENRSidelinkAggregateMaximumBitrate  BitRate,\n iE-Extensions     ProtocolExtensionContainer { {NRUESidelinkAggregateMaximumBitrate-ExtIEs} } OPTIONAL\n}",
+      "Mandatory_or_Optional": "Derived",
+      "IE_Category": ""
+    },
+    {
+      "IE_Name": "SLPositioning-Ranging-Service-Info",
+      "IE_Definition": "SLPositioning-Ranging-Service-Info ::= SEQUENCE{\n sLPositioning-Ranging-Authorized  SLPositioning-Ranging-Authorized,\n rSPP-transport-QoS-parameters   RSPP-transport-QoS-parameters  OPTIONAL,\n iE-Extensions  ProtocolExtensionContainer { { SLPositioning-Ranging-Service-Info-ExtIEs} } OPTIONAL,\n ...\n}",
+      "Mandatory_or_Optional": "Derived",
+      "IE_Category": ""
+    },
+    {
+      "IE_Name": "RAT-FrequencyPriorityInformation",
+      "IE_Definition": "RAT-FrequencyPriorityInformation::= CHOICE {\n eNDC  SubscriberProfileIDforRFP,\n nGRAN  RAT-FrequencySelectionPriority,\n choice-extension   ProtocolIE-SingleContainer { { RAT-FrequencyPriorityInformation-ExtIEs} }\n}",
+      "Mandatory_or_Optional": "Derived",
+      "IE_Category": ""
+    },
+    {
+      "IE_Name": "UE-MulticastMRBs-ToBeSetup-List",
+      "IE_Definition": "UE-MulticastMRBs-ToBeSetup-List ::= SEQUENCE (SIZE(1..maxnoofMRBsforUE)) OF ProtocolIE-SingleContainer { { UE-MulticastMRBs-ToBeSetup-ItemIEs} }\nServingCellMO-List ::= SEQUENCE (SIZE(1..maxnoofServingCellMOs)) OF ProtocolIE-SingleContainer { { ServingCellMO-List-ItemIEs} }",
+      "Mandatory_or_Optional": "Derived",
+      "IE_Category": ""
+    },
+    {
+      "IE_Name": "MDTPollutedMeasurementIndicator",
+      "IE_Definition": "MDTPollutedMeasurementIndicator ::= ENUMERATED {iDC,no-IDC, ...}",
+      "Mandatory_or_Optional": "Derived",
+      "IE_Category": ""
+    },
+    {
+      "IE_Name": "GNBDUUESliceMaximumBitRateList",
+      "IE_Definition": "GNBDUUESliceMaximumBitRateList::= SEQUENCE (SIZE(1.. maxnoofSMBRValues)) OF GNBDUUESliceMaximumBitRateItem",
+      "Mandatory_or_Optional": "Derived",
+      "IE_Category": ""
+    },
+    {
+      "IE_Name": "DLLBTFailureInformationRequest",
+      "IE_Definition": "DLLBTFailureInformationRequest  ::= ENUMERATED {inquiry, ...}\nDLLBTFailureInformationList  ::= SEQUENCE (SIZE(1.. maxnoofLBTFailureInformation)) OF DLLBTFailureInformationList-Item",
+      "Mandatory_or_Optional": "Derived",
+      "IE_Category": ""
+    },
+    {
+      "IE_Name": "InactivityMonitoringRequest",
+      "IE_Definition": "InactivityMonitoringRequest ::= ENUMERATED { true,...}\nInactivityMonitoringResponse ::= ENUMERATED { not-supported,...}",
+      "Mandatory_or_Optional": "Derived",
+      "IE_Category": ""
+    },
+    {
+      "IE_Name": "PC5RLCChannelToBeSetupList",
+      "IE_Definition": "PC5RLCChannelToBeSetupList ::= SEQUENCE (SIZE(1.. maxnoofPC5RLCChannels)) OF PC5RLCChannelToBeSetupItem",
+      "Mandatory_or_Optional": "Derived",
+      "IE_Category": ""
+    },
+    {
+      "IE_Name": "AdditionalRRMPriorityIndex",
+      "IE_Definition": "AdditionalRRMPriorityIndex ::= BIT STRING (SIZE(32))",
+      "Mandatory_or_Optional": "Derived",
+      "IE_Category": ""
+    },
+    {
+      "IE_Name": "UuRLCChannelToBeSetupList",
+      "IE_Definition": "UuRLCChannelToBeSetupList ::= SEQUENCE (SIZE(1.. maxnoofUuRLCChannels)) OF UuRLCChannelToBeSetupItem",
+      "Mandatory_or_Optional": "Derived",
+      "IE_Category": ""
+    },
+    {
+      "IE_Name": "BHChannels-ToBeSetup-List",
+      "IE_Definition": "BHChannels-ToBeSetup-List ::= SEQUENCE (SIZE(1..maxnoofBHRLCChannels)) OF ProtocolIE-SingleContainer { { BHChannels-ToBeSetup-ItemIEs} }\nSLDRBs-ToBeSetup-List ::= SEQUENCE (SIZE(1..maxnoofSLDRBs)) OF ProtocolIE-SingleContainer { { SLDRBs-ToBeSetup-ItemIEs} }",
+      "Mandatory_or_Optional": "Derived",
+      "IE_Category": ""
+    },
+    {
+      "IE_Name": "RRCDeliveryStatusRequest",
+      "IE_Definition": "RRCDeliveryStatusRequest ::= ENUMERATED {true, ...}",
+      "Mandatory_or_Optional": "Derived",
+      "IE_Category": ""
+    },
+    {
+      "IE_Name": "LTEV2XServicesAuthorized",
+      "IE_Definition": "LTEV2XServicesAuthorized ::= SEQUENCE {\n vehicleUE   VehicleUE              OPTIONAL,\n pedestrianUE   PedestrianUE             OPTIONAL,\n iE-Extensions  ProtocolExtensionContainer { {LTEV2XServicesAuthorized-ExtIEs} }  OPTIONAL\n}",
+      "Mandatory_or_Optional": "Derived",
+      "IE_Category": ""
+    },
+    {
+      "IE_Name": "LTEA2XServicesAuthorized",
+      "IE_Definition": "LTEA2XServicesAuthorized ::= SEQUENCE {\n aerialUE   AerialUE              OPTIONAL,\n controllerUE   ControllerUE             OPTIONAL,\n iE-Extensions  ProtocolExtensionContainer { {LTEA2XServicesAuthorized-ExtIEs} }  OPTIONAL\n}",
+      "Mandatory_or_Optional": "Derived",
+      "IE_Category": ""
+    },
+    {
+      "IE_Name": "PathSwitchConfiguration",
+      "IE_Definition": "PathSwitchConfiguration ::= SEQUENCE {\n targetRelayUEID   BIT STRING(SIZE(24)),\n remoteUELocalID   RemoteUELocalID,\n t420     ENUMERATED {ms50, ms100, ms150, ms200, ms500, ms1000, ms2000, ms10000},\n iE-Extensions   ProtocolExtensionContainer { { PathSwitchConfiguration-ExtIEs } }  OPTIONAL,\n ...\n}",
+      "Mandatory_or_Optional": "Derived",
+      "IE_Category": ""
+    },
+    {
+      "IE_Name": "PathAdditionInformation",
+      "IE_Definition": "PathAdditionInformation ::= CHOICE {\n indirectPathAddition   IndirectPathAddition,\n directPathAddition   NULL,\n n3C-indirectPathAddition  N3CIndirectPathAddition,\n choice-extension    ProtocolIE-SingleContainer { { PathAdditionInformation-ExtIEs} }\n}",
+      "Mandatory_or_Optional": "Derived",
+      "IE_Category": ""
+    },
+    {
+      "IE_Name": "NRV2XServicesAuthorized",
+      "IE_Definition": "NRV2XServicesAuthorized ::= SEQUENCE {\n vehicleUE   VehicleUE              OPTIONAL,\n pedestrianUE   PedestrianUE             OPTIONAL,\n iE-Extensions  ProtocolExtensionContainer { {NRV2XServicesAuthorized-ExtIEs} } OPTIONAL\n}",
+      "Mandatory_or_Optional": "Derived",
+      "IE_Category": ""
+    },
+    {
+      "IE_Name": "NRA2XServicesAuthorized",
+      "IE_Definition": "NRA2XServicesAuthorized ::= SEQUENCE {\n aerialUE   AerialUE              OPTIONAL,\n controllerUE  ControllerUE             OPTIONAL,\n iE-Extensions  ProtocolExtensionContainer { {NRA2XServicesAuthorized-ExtIEs} } OPTIONAL\n}",
+      "Mandatory_or_Optional": "Derived",
+      "IE_Category": ""
+    },
+    {
+      "IE_Name": "MulticastMBSSessionList",
+      "IE_Definition": "MulticastMBSSessionList ::= SEQUENCE (SIZE(1..maxnoofMBSSessionsofUE)) OF MulticastMBSSessionList-Item\nMulticastMBSSessionList-Item ::= SEQUENCE {\n mbsSessionId    MBS-Session-ID,\n iE-Extensions    ProtocolExtensionContainer { { MulticastMBSSessionList-Item-ExtIEs } } OPTIONAL,\n ...\n}",
+      "Mandatory_or_Optional": "Derived",
+      "IE_Category": ""
+    },
+    {
+      "IE_Name": "SLDRBs-ToBeSetup-List",
+      "IE_Definition": "SLDRBs-ToBeSetup-List ::= SEQUENCE (SIZE(1..maxnoofSLDRBs)) OF ProtocolIE-SingleContainer { { SLDRBs-ToBeSetup-ItemIEs} }\nUE-MulticastMRBs-ToBeSetup-List ::= SEQUENCE (SIZE(1..maxnoofMRBsforUE)) OF ProtocolIE-SingleContainer { { UE-MulticastMRBs-ToBeSetup-ItemIEs} }",
+      "Mandatory_or_Optional": "Derived",
+      "IE_Category": ""
+    },
+    {
+      "IE_Name": "FiveG-ProSeAuthorized",
+      "IE_Definition": "FiveG-ProSeAuthorized ::= SEQUENCE {\n fiveG-proSeDirectDiscovery     FiveG-ProSeDirectDiscovery         OPTIONAL,\n fiveG-proSeDirectCommunication    FiveG-ProSeDirectCommunication        OPTIONAL,\n fiveG-ProSeLayer2UEtoNetworkRelay   FiveG-ProSeLayer2UEtoNetworkRelay       OPTIONAL,\n fiveG-ProSeLayer3UEtoNetworkRelay   FiveG-ProSeLayer3UEtoNetworkRelay       OPTIONAL,\n fiveG-ProSeLayer2RemoteUE     FiveG-ProSeLayer2RemoteUE         OPTIONAL,\n iE-Extensions        ProtocolExtensionContainer { {FiveG-ProSeAuthorized-ExtIEs} } OPTIONAL,\n ...\n}",
+      "Mandatory_or_Optional": "Derived",
+      "IE_Category": ""
+    },
+    {
+      "IE_Name": "Candidate-SpCell-List",
+      "IE_Definition": "Candidate-SpCell-List::= SEQUENCE (SIZE(1..maxnoofCandidateSpCells)) OF ProtocolIE-SingleContainer { { Candidate-SpCell-ItemIEs} }\nSCell-ToBeSetup-List::= SEQUENCE (SIZE(1..maxnoofSCells)) OF ProtocolIE-SingleContainer { { SCell-ToBeSetup-ItemIEs} }",
+      "Mandatory_or_Optional": "Derived",
+      "IE_Category": ""
+    },
+    {
+      "IE_Name": "SDT-Volume-Threshold",
+      "IE_Definition": "SDT-Volume-Threshold ::= INTEGER(1.. 192000,...)",
+      "Mandatory_or_Optional": "Derived",
+      "IE_Category": ""
+    },
+    {
+      "IE_Name": "SCell-ToBeSetup-List",
+      "IE_Definition": "SCell-ToBeSetup-List::= SEQUENCE (SIZE(1..maxnoofSCells)) OF ProtocolIE-SingleContainer { { SCell-ToBeSetup-ItemIEs} }\nSRBs-ToBeSetup-List ::= SEQUENCE (SIZE(1..maxnoofSRBs)) OF ProtocolIE-SingleContainer { { SRBs-ToBeSetup-ItemIEs} }",
+      "Mandatory_or_Optional": "Derived",
+      "IE_Category": ""
+    },
+    {
+      "IE_Name": "SCGActivationRequest",
+      "IE_Definition": "SCGActivationRequest ::= ENUMERATED {activate-scg, deactivate-scg, ...}",
+      "Mandatory_or_Optional": "Derived",
+      "IE_Category": ""
+    },
+    {
+      "IE_Name": "CUtoDURRCInformation",
+      "IE_Definition": "CUtoDURRCInformation ::= SEQUENCE {\n cG-ConfigInfo      CG-ConfigInfo      OPTIONAL,\n uE-CapabilityRAT-ContainerList  UE-CapabilityRAT-ContainerList  OPTIONAL,\n measConfig       MeasConfig       OPTIONAL,\n iE-Extensions    ProtocolExtensionContainer { { CUtoDURRCInformation-ExtIEs} } OPTIONAL,\n ...\n}",
+      "Mandatory_or_Optional": "Derived",
+      "IE_Category": ""
+    },
+    {
+      "IE_Name": "SRBs-ToBeSetup-List",
+      "IE_Definition": "SRBs-ToBeSetup-List ::= SEQUENCE (SIZE(1..maxnoofSRBs)) OF ProtocolIE-SingleContainer { { SRBs-ToBeSetup-ItemIEs} }\nDRBs-ToBeSetup-List ::= SEQUENCE (SIZE(1..maxnoofDRBs)) OF ProtocolIE-SingleContainer { { DRBs-ToBeSetup-ItemIEs} }",
+      "Mandatory_or_Optional": "Derived",
+      "IE_Category": ""
+    },
+    {
+      "IE_Name": "F1CTransferPathNRDC",
+      "IE_Definition": "F1CTransferPathNRDC ::= SEQUENCE {\n f1CPathNRDC      F1CPathNRDC,\n iE-Extensions     ProtocolExtensionContainer { { F1CTransferPathNRDC-ExtIEs} } OPTIONAL,\n ...\n}",
+      "Mandatory_or_Optional": "Derived",
+      "IE_Category": ""
+    },
+    {
+      "IE_Name": "DRBs-ToBeSetup-List",
+      "IE_Definition": "DRBs-ToBeSetup-List ::= SEQUENCE (SIZE(1..maxnoofDRBs)) OF ProtocolIE-SingleContainer { { DRBs-ToBeSetup-ItemIEs} }\nBHChannels-ToBeSetup-List ::= SEQUENCE (SIZE(1..maxnoofBHRLCChannels)) OF ProtocolIE-SingleContainer { { BHChannels-ToBeSetup-ItemIEs} }",
+      "Mandatory_or_Optional": "Derived",
+      "IE_Category": ""
+    },
+    {
+      "IE_Name": "ServingCellMO-List",
+      "IE_Definition": "ServingCellMO-List ::= SEQUENCE (SIZE(1..maxnoofServingCellMOs)) OF ProtocolIE-SingleContainer { { ServingCellMO-List-ItemIEs} }",
+      "Mandatory_or_Optional": "Derived",
+      "IE_Category": ""
+    },
+    {
+      "IE_Name": "NonIntegerDRXCycle",
+      "IE_Definition": "NonIntegerDRXCycle ::= SEQUENCE {\n longNonIntegerDRXCycleLength LongNonIntegerDRXCycleLength,\n shortNonIntegerDRXCycleLength ShortNonIntegerDRXCycleLength OPTIONAL,\n shortDRXCycleTimer    ShortDRXCycleTimer OPTIONAL,\n iE-Extensions     ProtocolExtensionContainer { { NonIntegerDRXCycle-ExtIEs} } OPTIONAL,\n ...\n}",
+      "Mandatory_or_Optional": "Derived",
+      "IE_Category": ""
+    },
+    {
+      "IE_Name": "GNB-DU-UE-F1AP-ID",
+      "IE_Definition": "GNB-DU-UE-F1AP-ID  ::= INTEGER (0..4294967295)",
+      "Mandatory_or_Optional": "Derived",
+      "IE_Category": ""
+    },
+    {
+      "IE_Name": "GNB-CU-UE-F1AP-ID",
+      "IE_Definition": "GNB-CU-UE-F1AP-ID  ::= INTEGER (0..4294967295)",
+      "Mandatory_or_Optional": "Derived",
+      "IE_Category": ""
+    },
+    {
+      "IE_Name": "CG-SDTSessionInfo",
+      "IE_Definition": "CG-SDTSessionInfo ::= SEQUENCE {\n gNB-CU-UE-F1AP-ID     GNB-CU-UE-F1AP-ID,\n gNB-DU-UE-F1AP-ID     GNB-DU-UE-F1AP-ID,\n iE-Extensions      ProtocolExtensionContainer {{CG-SDTSessionInfo-ExtIEs}}  OPTIONAL,\n ...\n}",
+      "Mandatory_or_Optional": "Derived",
+      "IE_Category": ""
+    },
+    {
+      "IE_Name": "CellULConfigured",
+      "IE_Definition": "CellULConfigured ::=  ENUMERATED {none, ul, sul, ul-and-sul, ...}",
+      "Mandatory_or_Optional": "Derived",
+      "IE_Category": ""
+    },
+    {
+      "IE_Name": "TraceActivation",
+      "IE_Definition": "TraceActivation ::= SEQUENCE {\n traceID        TraceID,\n interfacesToTrace     InterfacesToTrace,\n traceDepth       TraceDepth,\n traceCollectionEntityIPAddress  TransportLayerAddress,\n iE-Extensions  ProtocolExtensionContainer { {TraceActivation-ExtIEs} } OPTIONAL\n}",
+      "Mandatory_or_Optional": "Derived",
+      "IE_Category": ""
+    },
+    {
+      "IE_Name": "F1CTransferPath",
+      "IE_Definition": "F1CTransferPath ::= SEQUENCE {\n f1CPathNSA      F1CPathNSA,\n iE-Extensions     ProtocolExtensionContainer { { F1CTransferPath-ExtIEs} } OPTIONAL,\n ...\n}",
+      "Mandatory_or_Optional": "Derived",
+      "IE_Category": ""
+    },
+    {
+      "IE_Name": "ServCellIndex",
+      "IE_Definition": "ServCellIndex ::= INTEGER (0..31, ...)",
+      "Mandatory_or_Optional": "Derived",
+      "IE_Category": ""
+    },
+    {
+      "IE_Name": "PLMN-Identity",
+      "IE_Definition": "PLMN-Identity ::= OCTET STRING (SIZE(3))",
+      "Mandatory_or_Optional": "Derived",
+      "IE_Category": ""
+    },
+    {
+      "IE_Name": "RRCContainer",
+      "IE_Definition": "RRCContainer ::= OCTET STRING",
+      "Mandatory_or_Optional": "Derived",
+      "IE_Category": ""
+    },
+    {
+      "IE_Name": "MaskedIMEISV",
+      "IE_Definition": "MaskedIMEISV ::=  BIT STRING (SIZE (64))",
+      "Mandatory_or_Optional": "Derived",
+      "IE_Category": ""
+    },
+    {
+      "IE_Name": "MDTPLMNList",
+      "IE_Definition": "MDTPLMNList ::= SEQUENCE (SIZE(1..maxnoofMDTPLMNs)) OF PLMN-Identity",
+      "Mandatory_or_Optional": "Derived",
+      "IE_Category": ""
+    },
+    {
+      "IE_Name": "BAPAddress",
+      "IE_Definition": "BAPAddress ::= BIT STRING (SIZE(10))",
+      "Mandatory_or_Optional": "Derived",
+      "IE_Category": ""
+    },
+    {
+      "IE_Name": "DRXCycle",
+      "IE_Definition": "DRXCycle ::= SEQUENCE {\n longDRXCycleLength LongDRXCycleLength,\n shortDRXCycleLength  ShortDRXCycleLength OPTIONAL,\n shortDRXCycleTimer ShortDRXCycleTimer OPTIONAL,\n iE-Extensions  ProtocolExtensionContainer { { DRXCycle-ExtIEs} } OPTIONAL,\n ...\n}",
+      "Mandatory_or_Optional": "Derived",
+      "IE_Category": ""
+    },
+    {
+      "IE_Name": "RANUEID",
+      "IE_Definition": "RANUEID ::= OCTET STRING (SIZE (8))",
+      "Mandatory_or_Optional": "Derived",
+      "IE_Category": ""
+    },
+    {
+      "IE_Name": "BitRate",
+      "IE_Definition": "BitRate ::= INTEGER (0..4000000000000,...)",
+      "Mandatory_or_Optional": "Derived",
+      "IE_Category": ""
+    },
+    {
+      "IE_Name": "NRCGI",
+      "IE_Definition": "NRCGI ::= SEQUENCE {\n pLMN-Identity   PLMN-Identity,\n nRCellIdentity   NRCellIdentity,\n iE-Extensions   ProtocolExtensionContainer { {NRCGI-ExtIEs} } OPTIONAL,\n ...\n}",
+      "Mandatory_or_Optional": "Derived",
+      "IE_Category": ""
+    },
+    {
+      "IE_Name": "NID",
+      "IE_Definition": "NID ::= BIT STRING (SIZE(44))",
+      "Mandatory_or_Optional": "Derived",
+      "IE_Category": ""
+    },
+    {
+      "IE_Name": "protocolextensioncontainer",
+      "IE_Definition": "ProtocolExtensionContainer {F1AP-PROTOCOL-EXTENSION : ExtensionSetParam} ::=\n SEQUENCE (SIZE (1..maxProtocolExtensions)) OF\n ProtocolExtensionField {{ExtensionSetParam}}",
+      "Mandatory_or_Optional": "Derived",
+      "IE_Category": ""
+    },
+    {
+      "IE_Name": "protocoliesinglecontainer",
+      "IE_Definition": "ProtocolIE-SingleContainer {F1AP-PROTOCOL-IES : IEsSetParam} ::=\n ProtocolIE-Field {{IEsSetParam}}",
+      "Mandatory_or_Optional": "Derived",
+      "IE_Category": ""
+    },
+    {
+      "IE_Name": "ServingCellMO-encoded-in-CGC-List",
+      "IE_Definition": "ServingCellMO-encoded-in-CGC-List ::= SEQUENCE (SIZE(1.. maxNrofBWPs)) OF ServingCellMO-encoded-in-CGC-Item",
+      "Mandatory_or_Optional": "Derived",
+      "IE_Category": ""
+    },
+    {
+      "IE_Name": "PC5RLCChannelFailedToBeSetupList",
+      "IE_Definition": "PC5RLCChannelFailedToBeSetupList ::= SEQUENCE (SIZE(1.. maxnoofPC5RLCChannels)) OF PC5RLCChannelFailedToBeSetupItem",
+      "Mandatory_or_Optional": "Derived",
+      "IE_Category": ""
+    },
+    {
+      "IE_Name": "UuRLCChannelFailedToBeSetupList",
+      "IE_Definition": "UuRLCChannelFailedToBeSetupList ::= SEQUENCE (SIZE(1.. maxnoofUuRLCChannels)) OF UuRLCChannelFailedToBeSetupItem",
+      "Mandatory_or_Optional": "Derived",
+      "IE_Category": ""
+    },
+    {
+      "IE_Name": "BHChannels-FailedToBeSetup-List",
+      "IE_Definition": "BHChannels-FailedToBeSetup-List ::= SEQUENCE (SIZE(1..maxnoofBHRLCChannels)) OF ProtocolIE-SingleContainer { { BHChannels-FailedToBeSetup-ItemIEs}\n}",
+      "Mandatory_or_Optional": "Derived",
+      "IE_Category": ""
+    },
+    {
+      "IE_Name": "UE-MulticastMRBs-Setupnew-List",
+      "IE_Definition": "UE-MulticastMRBs-Setupnew-List ::= SEQUENCE (SIZE(1..maxnoofMRBsforUE)) OF ProtocolIE-SingleContainer { { UE-MulticastMRBs-Setupnew-ItemIEs } }",
+      "Mandatory_or_Optional": "Derived",
+      "IE_Category": ""
+    },
+    {
+      "IE_Name": "DedicatedSIDeliveryIndication",
+      "IE_Definition": "DedicatedSIDeliveryIndication::= ENUMERATED{true, ...}",
+      "Mandatory_or_Optional": "Derived",
+      "IE_Category": ""
+    },
+    {
+      "IE_Name": "InactivityMonitoringResponse",
+      "IE_Definition": "InactivityMonitoringResponse ::= ENUMERATED { not-supported,...}",
+      "Mandatory_or_Optional": "Derived",
+      "IE_Category": ""
+    },
+    {
+      "IE_Name": "SLDRBs-FailedToBeSetup-List",
+      "IE_Definition": "SLDRBs-FailedToBeSetup-List ::= SEQUENCE (SIZE(1..maxnoofSLDRBs)) OF ProtocolIE-SingleContainer { { SLDRBs-FailedToBeSetup-ItemIEs} }",
+      "Mandatory_or_Optional": "Derived",
+      "IE_Category": ""
+    },
+    {
+      "IE_Name": "SRBs-FailedToBeSetup-List",
+      "IE_Definition": "SRBs-FailedToBeSetup-List ::= SEQUENCE (SIZE(1..maxnoofSRBs)) OF ProtocolIE-SingleContainer { { SRBs-FailedToBeSetup-ItemIEs} }\nDRBs-FailedToBeSetup-List ::= SEQUENCE (SIZE(1..maxnoofDRBs)) OF ProtocolIE-SingleContainer { { DRBs-FailedToBeSetup-ItemIEs} }",
+      "Mandatory_or_Optional": "Derived",
+      "IE_Category": ""
+    },
+    {
+      "IE_Name": "DRBs-FailedToBeSetup-List",
+      "IE_Definition": "DRBs-FailedToBeSetup-List ::= SEQUENCE (SIZE(1..maxnoofDRBs)) OF ProtocolIE-SingleContainer { { DRBs-FailedToBeSetup-ItemIEs} }\nSCell-FailedtoSetup-List ::= SEQUENCE (SIZE(1..maxnoofSCells)) OF ProtocolIE-SingleContainer { { SCell-FailedtoSetup-ItemIEs} }",
+      "Mandatory_or_Optional": "Derived",
+      "IE_Category": ""
+    },
+    {
+      "IE_Name": "SCell-FailedtoSetup-List",
+      "IE_Definition": "SCell-FailedtoSetup-List ::= SEQUENCE (SIZE(1..maxnoofSCells)) OF ProtocolIE-SingleContainer { { SCell-FailedtoSetup-ItemIEs} }\nSRBs-Setup-List ::= SEQUENCE (SIZE(1..maxnoofSRBs)) OF ProtocolIE-SingleContainer { { SRBs-Setup-ItemIEs} }",
+      "Mandatory_or_Optional": "Derived",
+      "IE_Category": ""
+    },
+    {
+      "IE_Name": "PC5RLCChannelSetupList",
+      "IE_Definition": "PC5RLCChannelSetupList ::= SEQUENCE (SIZE(1.. maxnoofPC5RLCChannels)) OF PC5RLCChannelSetupItem",
+      "Mandatory_or_Optional": "Derived",
+      "IE_Category": ""
+    },
+    {
+      "IE_Name": "CriticalityDiagnostics",
+      "IE_Definition": "CriticalityDiagnostics ::= SEQUENCE {\n procedureCode     ProcedureCode              OPTIONAL,\n triggeringMessage    TriggeringMessage             OPTIONAL,\n procedureCriticality   Criticality               OPTIONAL,\n transactionID     TransactionID              OPTIONAL,\n iEsCriticalityDiagnostics  CriticalityDiagnostics-IE-List          OPTIONAL,\n iE-Extensions     ProtocolExtensionContainer {{CriticalityDiagnostics-ExtIEs}}  OPTIONAL,\n ...\n}",
+      "Mandatory_or_Optional": "Derived",
+      "IE_Category": ""
+    },
+    {
+      "IE_Name": "UuRLCChannelSetupList",
+      "IE_Definition": "UuRLCChannelSetupList ::= SEQUENCE (SIZE(1.. maxnoofUuRLCChannels)) OF UuRLCChannelSetupItem",
+      "Mandatory_or_Optional": "Derived",
+      "IE_Category": ""
+    },
+    {
+      "IE_Name": "BHChannels-Setup-List",
+      "IE_Definition": "BHChannels-Setup-List ::= SEQUENCE (SIZE(1..maxnoofBHRLCChannels)) OF ProtocolIE-SingleContainer { { BHChannels-Setup-ItemIEs} }\nBHChannels-FailedToBeSetup-List ::= SEQUENCE (SIZE(1..maxnoofBHRLCChannels)) OF ProtocolIE-SingleContainer { { BHChannels-FailedToBeSetup-ItemIEs}\n}",
+      "Mandatory_or_Optional": "Derived",
+      "IE_Category": ""
+    },
+    {
+      "IE_Name": "S-CPAC-Configuration",
+      "IE_Definition": "S-CPAC-Configuration ::= SEQUENCE {\n referenceConfigurationInformation  ReferenceConfigurationInformation   OPTIONAL,\n completeCandidateConfigurationIndicator  CompleteCandidateConfigurationIndicator  OPTIONAL,\n iE-Extensions      ProtocolExtensionContainer { { S-CPAC-Configuration-ExtIEs } } OPTIONAL,\n ...\n}",
+      "Mandatory_or_Optional": "Derived",
+      "IE_Category": ""
+    },
+    {
+      "IE_Name": "DUtoCURRCInformation",
+      "IE_Definition": "DUtoCURRCInformation ::= SEQUENCE {\n cellGroupConfig  CellGroupConfig,\n measGapConfig   MeasGapConfig OPTIONAL,\n requestedP-MaxFR1    OCTET STRING    OPTIONAL,\n iE-Extensions    ProtocolExtensionContainer { { DUtoCURRCInformation-ExtIEs} } OPTIONAL,\n ...\n}",
+      "Mandatory_or_Optional": "Derived",
+      "IE_Category": ""
+    },
+    {
+      "IE_Name": "SCGActivationStatus",
+      "IE_Definition": "SCGActivationStatus ::= ENUMERATED {scg-activated, scg-deactivated, ...}",
+      "Mandatory_or_Optional": "Derived",
+      "IE_Category": ""
+    },
+    {
+      "IE_Name": "Configured-BWP-List",
+      "IE_Definition": "Configured-BWP-List ::= SEQUENCE (SIZE(1.. maxNrofBWPs)) OF Configured-BWP-Item",
+      "Mandatory_or_Optional": "Derived",
+      "IE_Category": ""
+    },
+    {
+      "IE_Name": "SLDRBs-Setup-List",
+      "IE_Definition": "SLDRBs-Setup-List ::= SEQUENCE (SIZE(1..maxnoofSLDRBs)) OF ProtocolIE-SingleContainer { { SLDRBs-Setup-ItemIEs} }",
+      "Mandatory_or_Optional": "Derived",
+      "IE_Category": ""
+    },
+    {
+      "IE_Name": "FullConfiguration",
+      "IE_Definition": "FullConfiguration ::= ENUMERATED {full, ...}",
+      "Mandatory_or_Optional": "Derived",
+      "IE_Category": ""
+    },
+    {
+      "IE_Name": "SRBs-Setup-List",
+      "IE_Definition": "SRBs-Setup-List ::= SEQUENCE (SIZE(1..maxnoofSRBs)) OF ProtocolIE-SingleContainer { { SRBs-Setup-ItemIEs} }\nBHChannels-Setup-List ::= SEQUENCE (SIZE(1..maxnoofBHRLCChannels)) OF ProtocolIE-SingleContainer { { BHChannels-Setup-ItemIEs} }",
+      "Mandatory_or_Optional": "Derived",
+      "IE_Category": ""
+    },
+    {
+      "IE_Name": "DRBs-Setup-List",
+      "IE_Definition": "DRBs-Setup-List ::= SEQUENCE (SIZE(1..maxnoofDRBs)) OF ProtocolIE-SingleContainer { { DRBs-Setup-ItemIEs} }",
+      "Mandatory_or_Optional": "Derived",
+      "IE_Category": ""
+    },
+    {
+      "IE_Name": "C-RNTI",
+      "IE_Definition": "C-RNTI ::= INTEGER (0..65535, ...)",
+      "Mandatory_or_Optional": "Derived",
+      "IE_Category": ""
+    },
+    {
+      "IE_Name": "LTMCFRAResourceConfig-List",
+      "IE_Definition": "LTMCFRAResourceConfig-List ::= SEQUENCE (SIZE (1.. maxnoofLTMCells)) OF LTMCFRAResourceConfig-Item",
+      "Mandatory_or_Optional": "Derived",
+      "IE_Category": ""
+    },
+    {
+      "IE_Name": "SSBInformation",
+      "IE_Definition": "SSBInformation ::= SEQUENCE {\n sSBInformationList SSBInformationList,\n iE-Extensions  ProtocolExtensionContainer { { SSBInformation-ExtIEs } } OPTIONAL\n}",
+      "Mandatory_or_Optional": "Derived",
+      "IE_Category": ""
+    },
+    {
+      "IE_Name": "RequestforRACHConfiguration",
+      "IE_Definition": "RequestforRACHConfiguration  ::= ENUMERATED {true, ...}",
+      "Mandatory_or_Optional": "Derived",
+      "IE_Category": ""
+    },
+    {
+      "IE_Name": "LTMgNB-DU-IDsList",
+      "IE_Definition": "LTMgNB-DU-IDsList ::= SEQUENCE (SIZE(1..maxnoofLTMgNB-DUs)) OF LTMgNB-DU-IDs-Item",
+      "Mandatory_or_Optional": "Derived",
+      "IE_Category": ""
+    },
+    {
+      "IE_Name": "GNB-DU-ID",
+      "IE_Definition": "GNB-DU-ID   ::= INTEGER (0..68719476735)",
+      "Mandatory_or_Optional": "Derived",
+      "IE_Category": ""
+    },
+    {
+      "IE_Name": "ResourceCoordinationEUTRACellInfo",
+      "IE_Definition": "ResourceCoordinationEUTRACellInfo ::= SEQUENCE {\n eUTRA-Mode-Info       EUTRA-Coex-Mode-Info,\n eUTRA-PRACH-Configuration     EUTRA-PRACH-Configuration,\n iE-Extensions ProtocolExtensionContainer { { ResourceCoordinationEUTRACellInfo-ExtIEs } } OPTIONAL,\n ...\n}",
+      "Mandatory_or_Optional": "Derived",
+      "IE_Category": ""
+    },
+    {
+      "IE_Name": "EUTRA-Cell-ID",
+      "IE_Definition": "EUTRA-Cell-ID ::= BIT STRING (SIZE(28))",
+      "Mandatory_or_Optional": "Derived",
+      "IE_Category": ""
+    },
+    {
+      "IE_Name": "CHOtrigger-InterDU",
+      "IE_Definition": "CHOtrigger-InterDU ::= ENUMERATED {\n cho-initiation,\n cho-replace,\n ...\n}",
+      "Mandatory_or_Optional": "Derived",
+      "IE_Category": ""
+    },
+    {
+      "IE_Name": "SLPositioning-Ranging-Authorized",
+      "IE_Definition": "SLPositioning-Ranging-Authorized ::= ENUMERATED {\n authorized,\n not-authorized,\n ...\n}",
+      "Mandatory_or_Optional": "Derived",
+      "IE_Category": ""
+    },
+    {
+      "IE_Name": "RSPP-transport-QoS-parameters",
+      "IE_Definition": "RSPP-transport-QoS-parameters ::= SEQUENCE {\n rSPPQoSFlowList    RSPPQoSFlowList,\n rSPPLinkAggregateBitRates BitRate            OPTIONAL,\n iE-Extensions  ProtocolExtensionContainer { { RSPP-transport-QoS-parameters-ExtIEs} } OPTIONAL,\n ...\n}",
+      "Mandatory_or_Optional": "Derived",
+      "IE_Category": ""
+    },
+    {
+      "IE_Name": "RAT-FrequencySelectionPriority",
+      "IE_Definition": "RAT-FrequencySelectionPriority::= INTEGER (1.. 256, ...)",
+      "Mandatory_or_Optional": "Derived",
+      "IE_Category": ""
+    },
+    {
+      "IE_Name": "SubscriberProfileIDforRFP",
+      "IE_Definition": "SubscriberProfileIDforRFP ::= INTEGER (1..256, ...)",
+      "Mandatory_or_Optional": "Derived",
+      "IE_Category": ""
+    },
+    {
+      "IE_Name": "PedestrianUE",
+      "IE_Definition": "PedestrianUE ::= ENUMERATED {\n authorized,\n not-authorized,\n ...\n}",
+      "Mandatory_or_Optional": "Derived",
+      "IE_Category": ""
+    },
+    {
+      "IE_Name": "VehicleUE",
+      "IE_Definition": "VehicleUE ::= ENUMERATED {\n authorized,\n not-authorized,\n ...\n}",
+      "Mandatory_or_Optional": "Derived",
+      "IE_Category": ""
+    },
+    {
+      "IE_Name": "ControllerUE",
+      "IE_Definition": "ControllerUE ::= ENUMERATED {\n authorized,\n not-authorized,\n ...\n}",
+      "Mandatory_or_Optional": "Derived",
+      "IE_Category": ""
+    },
+    {
+      "IE_Name": "AerialUE",
+      "IE_Definition": "AerialUE ::= ENUMERATED {\n authorized,\n not-authorized,\n ...\n}",
+      "Mandatory_or_Optional": "Derived",
+      "IE_Category": ""
+    },
+    {
+      "IE_Name": "RemoteUELocalID",
+      "IE_Definition": "RemoteUELocalID ::= INTEGER (0..255, ...)",
+      "Mandatory_or_Optional": "Derived",
+      "IE_Category": ""
+    },
+    {
+      "IE_Name": "N3CIndirectPathAddition",
+      "IE_Definition": "N3CIndirectPathAddition::= SEQUENCE {\n targetRelayUEID   GNB-DU-UE-F1AP-ID,\n iE-Extensions   ProtocolExtensionContainer { { N3CIndirectPathAddition-ExtIEs } }  OPTIONAL,\n ...\n}",
+      "Mandatory_or_Optional": "Derived",
+      "IE_Category": ""
+    },
+    {
+      "IE_Name": "IndirectPathAddition",
+      "IE_Definition": "IndirectPathAddition ::= SEQUENCE {\n targetRelayUEID   BIT STRING(SIZE(24)),\n remoteUELocalID   RemoteUELocalID,\n iE-Extensions   ProtocolExtensionContainer { { IndirectPathAddition-ExtIEs } }  OPTIONAL,\n ...\n}",
+      "Mandatory_or_Optional": "Derived",
+      "IE_Category": ""
+    },
+    {
+      "IE_Name": "MBS-Session-ID",
+      "IE_Definition": "MBS-Session-ID ::= SEQUENCE {\n tMGI      TMGI,\n nID       NID     OPTIONAL,\n iE-Extensions    ProtocolExtensionContainer { { MBS-Session-ID-ExtIEs} } OPTIONAL,\n ...\n}",
+      "Mandatory_or_Optional": "Derived",
+      "IE_Category": ""
+    },
+    {
+      "IE_Name": "FiveG-ProSeLayer3UEtoNetworkRelay",
+      "IE_Definition": "FiveG-ProSeLayer3UEtoNetworkRelay ::= ENUMERATED {\n authorized,\n not-authorized,\n ...\n}",
+      "Mandatory_or_Optional": "Derived",
+      "IE_Category": ""
+    },
+    {
+      "IE_Name": "FiveG-ProSeLayer2UEtoNetworkRelay",
+      "IE_Definition": "FiveG-ProSeLayer2UEtoNetworkRelay ::= ENUMERATED {\n authorized,\n not-authorized,\n ...\n}",
+      "Mandatory_or_Optional": "Derived",
+      "IE_Category": ""
+    },
+    {
+      "IE_Name": "FiveG-ProSeDirectCommunication",
+      "IE_Definition": "FiveG-ProSeDirectCommunication ::= ENUMERATED {\n authorized,\n not-authorized,\n ...\n}",
+      "Mandatory_or_Optional": "Derived",
+      "IE_Category": ""
+    },
+    {
+      "IE_Name": "FiveG-ProSeDirectDiscovery",
+      "IE_Definition": "FiveG-ProSeDirectDiscovery ::= ENUMERATED {\n authorized,\n not-authorized,\n ...\n}",
+      "Mandatory_or_Optional": "Derived",
+      "IE_Category": ""
+    },
+    {
+      "IE_Name": "FiveG-ProSeLayer2RemoteUE",
+      "IE_Definition": "FiveG-ProSeLayer2RemoteUE ::= ENUMERATED {\n authorized,\n not-authorized,\n ...\n}",
+      "Mandatory_or_Optional": "Derived",
+      "IE_Category": ""
+    },
+    {
+      "IE_Name": "UE-CapabilityRAT-ContainerList",
+      "IE_Definition": "UE-CapabilityRAT-ContainerList::= OCTET STRING",
+      "Mandatory_or_Optional": "Derived",
+      "IE_Category": ""
+    },
+    {
+      "IE_Name": "CG-ConfigInfo",
+      "IE_Definition": "CG-ConfigInfo ::= OCTET STRING",
+      "Mandatory_or_Optional": "Derived",
+      "IE_Category": ""
+    },
+    {
+      "IE_Name": "MeasConfig",
+      "IE_Definition": "MeasConfig ::= OCTET STRING",
+      "Mandatory_or_Optional": "Derived",
+      "IE_Category": ""
+    },
+    {
+      "IE_Name": "F1CPathNRDC",
+      "IE_Definition": "F1CPathNRDC ::= ENUMERATED {mcg, scg, both}",
+      "Mandatory_or_Optional": "Derived",
+      "IE_Category": ""
+    },
+    {
+      "IE_Name": "ShortNonIntegerDRXCycleLength",
+      "IE_Definition": "ShortNonIntegerDRXCycleLength ::=  ENUMERATED { ms1001over240, ms25over6, ms25over3, ms1001over120, ms100over9, ms25over2, ms40over3, ms125over9,\nms50over3, ms1001over60, ms125over6, ms200over9, ms100over3, ms1001over30, ms125over3, ms1001over24, ms200over3, ...}",
+      "Mandatory_or_Optional": "Derived",
+      "IE_Category": ""
+    },
+    {
+      "IE_Name": "LongNonIntegerDRXCycleLength",
+      "IE_Definition": "LongNonIntegerDRXCycleLength ::=  ENUMERATED\n{ ms1001over240, ms25over6, ms25over3, ms1001over120, ms100over9, ms25over2, ms40over3, ms125over9, ms50over3, ms1001over60, ms125over6,\nms200over9, ms250over9, ms100over3, ms1001over30, ms75over2, ms125over3, ms1001over24, ms200over3, ms1001over15, ms250over3, ms1001over12,\nms400over3, ...}",
+      "Mandatory_or_Optional": "Derived",
+      "IE_Category": ""
+    },
+    {
+      "IE_Name": "ShortDRXCycleTimer",
+      "IE_Definition": "ShortDRXCycleTimer ::= INTEGER (1..16)",
+      "Mandatory_or_Optional": "Derived",
+      "IE_Category": ""
+    },
+    {
+      "IE_Name": "CP-TransportLayerAddress",
+      "IE_Definition": "CP-TransportLayerAddress ::= CHOICE {\n endpoint-IP-address    TransportLayerAddress,\n endpoint-IP-address-and-port Endpoint-IP-address-and-port,\n choice-extension    ProtocolIE-SingleContainer { { CP-TransportLayerAddress-ExtIEs } }\n}",
+      "Mandatory_or_Optional": "Derived",
+      "IE_Category": ""
+    },
+    {
+      "IE_Name": "InterfacesToTrace",
+      "IE_Definition": "InterfacesToTrace ::= BIT STRING (SIZE(8))",
+      "Mandatory_or_Optional": "Derived",
+      "IE_Category": ""
+    },
+    {
+      "IE_Name": "TraceDepth",
+      "IE_Definition": "TraceDepth ::= ENUMERATED {\n minimum,\n medium,\n maximum,\n minimumWithoutVendorSpecificExtension,\n mediumWithoutVendorSpecificExtension,\n maximumWithoutVendorSpecificExtension,\n ...\n}",
+      "Mandatory_or_Optional": "Derived",
+      "IE_Category": ""
+    },
+    {
+      "IE_Name": "TraceID",
+      "IE_Definition": "TraceID ::= OCTET STRING (SIZE(8))",
+      "Mandatory_or_Optional": "Derived",
+      "IE_Category": ""
+    },
+    {
+      "IE_Name": "F1CPathNSA",
+      "IE_Definition": "F1CPathNSA ::= ENUMERATED {lte, nr, both}",
+      "Mandatory_or_Optional": "Derived",
+      "IE_Category": ""
+    },
+    {
+      "IE_Name": "ShortDRXCycleLength",
+      "IE_Definition": "ShortDRXCycleLength ::=  ENUMERATED {ms2, ms3, ms4, ms5, ms6, ms7, ms8, ms10, ms14, ms16, ms20, ms30, ms32, ms35, ms40, ms64, ms80, ms128, ms160,\nms256, ms320, ms512, ms640, ...}",
+      "Mandatory_or_Optional": "Derived",
+      "IE_Category": ""
+    },
+    {
+      "IE_Name": "LongDRXCycleLength",
+      "IE_Definition": "LongDRXCycleLength ::=  ENUMERATED\n{ms10, ms20, ms32, ms40, ms60, ms64, ms70, ms80, ms128, ms160, ms256, ms320, ms512, ms640, ms1024, ms1280, ms2048, ms2560, ms5120, ms10240, ...}",
+      "Mandatory_or_Optional": "Derived",
+      "IE_Category": ""
+    },
+    {
+      "IE_Name": "NRCellIdentity",
+      "IE_Definition": "NRCellIdentity ::= BIT STRING (SIZE(36))",
+      "Mandatory_or_Optional": "Derived",
+      "IE_Category": ""
+    },
+    {
+      "IE_Name": "CriticalityDiagnostics-IE-List",
+      "IE_Definition": "CriticalityDiagnostics-IE-List ::= SEQUENCE (SIZE (1.. maxnoofErrors)) OF CriticalityDiagnostics-IE-Item",
+      "Mandatory_or_Optional": "Derived",
+      "IE_Category": ""
+    },
+    {
+      "IE_Name": "TriggeringMessage",
+      "IE_Definition": "TriggeringMessage ::= ENUMERATED { initiating-message, successful-outcome, unsuccessful-outcome }",
+      "Mandatory_or_Optional": "Derived",
+      "IE_Category": ""
+    },
+    {
+      "IE_Name": "TransactionID",
+      "IE_Definition": "TransactionID    ::= INTEGER (0..255, ...)",
+      "Mandatory_or_Optional": "Derived",
+      "IE_Category": ""
+    },
+    {
+      "IE_Name": "ProcedureCode",
+      "IE_Definition": "ProcedureCode  ::= INTEGER (0..255)",
+      "Mandatory_or_Optional": "Derived",
+      "IE_Category": ""
+    },
+    {
+      "IE_Name": "CellGroupConfig",
+      "IE_Definition": "CellGroupConfig ::= OCTET STRING",
+      "Mandatory_or_Optional": "Derived",
+      "IE_Category": ""
+    },
+    {
+      "IE_Name": "MeasGapConfig",
+      "IE_Definition": "MeasGapConfig ::= OCTET STRING",
+      "Mandatory_or_Optional": "Derived",
+      "IE_Category": ""
+    },
+    {
+      "IE_Name": "SSBInformationList",
+      "IE_Definition": "SSBInformationList ::= SEQUENCE (SIZE(1.. maxnoofSSBs)) OF SSBInformationItem",
+      "Mandatory_or_Optional": "Derived",
+      "IE_Category": ""
+    },
+    {
+      "IE_Name": "EUTRA-PRACH-Configuration",
+      "IE_Definition": "EUTRA-PRACH-Configuration ::= SEQUENCE {\n rootSequenceIndex      INTEGER (0..837),\n zeroCorrelationIndex     INTEGER (0..15),\n highSpeedFlag       BOOLEAN,\n prach-FreqOffset      INTEGER (0..94),\n prach-ConfigIndex      INTEGER (0..63)  OPTIONAL,\n -- The above IE shall be present if the EUTRA-Mode-Info IE in the Resource Coordination E-UTRA Cell Information IE is set to the value \"TDD\"\n iE-Extensions       ProtocolExtensionContainer { {EUTRA-PRACH-Configuration-ExtIEs} } OPTIONAL,\n ...\n}",
+      "Mandatory_or_Optional": "Derived",
+      "IE_Category": ""
+    },
+    {
+      "IE_Name": "EUTRA-Coex-Mode-Info",
+      "IE_Definition": "EUTRA-Coex-Mode-Info ::= CHOICE {\n fDD  EUTRA-Coex-FDD-Info,\n tDD  EUTRA-Coex-TDD-Info,\n ...\n}",
+      "Mandatory_or_Optional": "Derived",
+      "IE_Category": ""
+    },
+    {
+      "IE_Name": "RSPPQoSFlowList",
+      "IE_Definition": "RSPPQoSFlowList ::= SEQUENCE (SIZE(1..maxnoofRSPPQoSFlows)) OF RSPPQoSFlowItem",
+      "Mandatory_or_Optional": "Derived",
+      "IE_Category": ""
+    },
+    {
+      "IE_Name": "TMGI",
+      "IE_Definition": "TMGI ::=  OCTET STRING (SIZE(6))",
+      "Mandatory_or_Optional": "Derived",
+      "IE_Category": ""
+    },
+    {
+      "IE_Name": "Endpoint-IP-address-and-port",
+      "IE_Definition": "Endpoint-IP-address-and-port ::=SEQUENCE {\n endpointIPAddress TransportLayerAddress,\n iE-Extensions     ProtocolExtensionContainer { { Endpoint-IP-address-and-port-ExtIEs} } OPTIONAL\n}",
+      "Mandatory_or_Optional": "Derived",
+      "IE_Category": ""
+    },
+    {
+      "IE_Name": "EUTRA-Coex-TDD-Info",
+      "IE_Definition": "EUTRA-Coex-TDD-Info ::= SEQUENCE {\n eARFCN       ExtendedEARFCN,\n transmission-Bandwidth   EUTRA-Transmission-Bandwidth,\n subframeAssignment    EUTRA-SubframeAssignment,\n specialSubframe-Info   EUTRA-SpecialSubframe-Info,\n iE-Extensions     ProtocolExtensionContainer { {EUTRA-Coex-TDD-Info-ExtIEs} } OPTIONAL,\n ...\n}",
+      "Mandatory_or_Optional": "Derived",
+      "IE_Category": ""
+    },
+    {
+      "IE_Name": "EUTRA-Coex-FDD-Info",
+      "IE_Definition": "EUTRA-Coex-FDD-Info ::= SEQUENCE {\n uL-EARFCN      ExtendedEARFCN     OPTIONAL,\n dL-EARFCN      ExtendedEARFCN,\n uL-Transmission-Bandwidth  EUTRA-Transmission-Bandwidth OPTIONAL,\n dL-Transmission-Bandwidth  EUTRA-Transmission-Bandwidth,\n iE-Extensions     ProtocolExtensionContainer { {EUTRA-Coex-FDD-Info-ExtIEs} } OPTIONAL,\n ...\n}",
+      "Mandatory_or_Optional": "Derived",
+      "IE_Category": ""
+    },
+    {
+      "IE_Name": "EUTRA-Transmission-Bandwidth",
+      "IE_Definition": "EUTRA-Transmission-Bandwidth ::= ENUMERATED {\n bw6,\n bw15,\n bw25,\n bw50,\n bw75,\n bw100,\n ...\n}",
+      "Mandatory_or_Optional": "Derived",
+      "IE_Category": ""
+    },
+    {
+      "IE_Name": "EUTRA-SpecialSubframe-Info",
+      "IE_Definition": "EUTRA-SpecialSubframe-Info ::= SEQUENCE {\n specialSubframePatterns  EUTRA-SpecialSubframePatterns,\n cyclicPrefixDL    EUTRA-CyclicPrefixDL,\n cyclicPrefixUL    EUTRA-CyclicPrefixUL,\n iE-Extensions    ProtocolExtensionContainer { { EUTRA-SpecialSubframe-Info-ExtIEs} } OPTIONAL,\n ...\n}",
+      "Mandatory_or_Optional": "Derived",
+      "IE_Category": ""
+    },
+    {
+      "IE_Name": "EUTRA-SubframeAssignment",
+      "IE_Definition": "EUTRA-SubframeAssignment ::= ENUMERATED {\n sa0,\n sa1,\n sa2,\n sa3,\n sa4,\n sa5,\n sa6,\n ...\n}",
+      "Mandatory_or_Optional": "Derived",
+      "IE_Category": ""
+    },
+    {
+      "IE_Name": "ExtendedEARFCN",
+      "IE_Definition": "ExtendedEARFCN ::= INTEGER (0..262143)",
+      "Mandatory_or_Optional": "Derived",
+      "IE_Category": ""
+    },
+    {
+      "IE_Name": "EUTRA-SpecialSubframePatterns",
+      "IE_Definition": "EUTRA-SpecialSubframePatterns ::= ENUMERATED {\n ssp0,\n ssp1,\n ssp2,\n ssp3,\n ssp4,\n ssp5,\n ssp6,\n ssp7,\n ssp8,\n ssp9,\n ssp10,\n ...\n}",
+      "Mandatory_or_Optional": "Derived",
+      "IE_Category": ""
+    },
+    {
+      "IE_Name": "EUTRA-CyclicPrefixUL",
+      "IE_Definition": "EUTRA-CyclicPrefixUL ::= ENUMERATED {\n normal,\n extended,\n ...\n}",
+      "Mandatory_or_Optional": "Derived",
+      "IE_Category": ""
+    },
+    {
+      "IE_Name": "EUTRA-CyclicPrefixDL",
+      "IE_Definition": "EUTRA-CyclicPrefixDL ::= ENUMERATED {\n normal,\n extended,\n ...\n}",
+      "Mandatory_or_Optional": "Derived",
+      "IE_Category": ""
+    }
+  ],
+  "Piggy_Backed_IES_Info": "The ReferenceConfigurationInformation IE is used to provide lower layer configuration, potentially an RRC container, from the gNB-DU to the gNB-CU for generating the LTM reference configuration, or from gNB-CU to gNB-DU for generating the LTM lower layer configuration.",
+  "Piggy_Backed_IES_Mapping": [
+    {
+      "Piggy_Backed_IE_Name": "ReferenceConfigurationInformation",
+      "Piggy_Backed_IE_Type": "F1AP IE",
+      "Source_IE_Name": "ReferenceConfiguration (within LTMInformation-Setup)",
+      "Source_IE_Type": "F1AP IE"
+    },
+    {
+      "Piggy_Backed_IE_Name": "ReferenceConfigurationInformation",
+      "Piggy_Backed_IE_Type": "F1AP IE",
+      "Source_IE_Name": "LTMConfiguration",
+      "Source_IE_Type": "F1AP IE"
+    }
+  ],
+  "Codebase_Metadata": {
+    "Code_Language": "C",
+    "Build_System": "CMake",
+    "Repo_Path": ".",
+    "Code_Output_Type": "Library/Executable",
+    "Execution_Mode": "Runtime",
+    "CI_Pipeline": "",
+    "Version_Control": "Git"
+  },
+  "Knowledge_Hints": [
+    "9.2.14.11 (ts_138473v180900p): MULTICAST DISTRIBUTION SETUP RESPONSE",
+    "8.2.1.5 (ts_138401v180600p): Inter-gNB-DU LTM",
+    "8.2.1 (ts_138401v180600p): Intra-NR Mobility",
+    "8.2.1.6 (ts_138401v180600p): LTM with gNB-CU-UP change",
+    "8.2.1.4 (ts_138401v180600p): Intra-gNB-DU LTM",
+    "8.2.1.3 (ts_138401v180600p): Inter-gNB-DU Conditional Handover or Conditional PSCell Change or subsequent CPAC",
+    "8.2.1.2 (ts_138401v180600p): Intra-gNB-DU handover",
+    "8.2.1.1 (ts_138401v180600p): Inter-gNB-DU Mobility",
+    "8.14.1.1 (ts_138401v180600p): Signalling of RLF information from gNB-CU to gNB-DU",
+    "8.2 (ts_138401v180600p): Intra-gNB-CU Mobility",
+    "8.2.2 (ts_138401v180600p): EN-DC Mobility",
+    "8.2.3 (ts_138401v180600p): Intra-CU topology adaptation procedure",
+    "8.2.5 (ts_138401v180600p): Intra-CU Backhaul RLF recovery for IAB-nodes in SA mode",
+    "8.2.4 (ts_138401v180600p): Intra-CU topological redundancy procedure",
+    "8.15.2 (ts_138401v180600p): Mobility procedure for Multicast",
+    "8.2.2.2 (ts_138401v180600p): Inter-gNB-DU Mobility using SCG SRB (SRB3)",
+    "8.9.4 (ts_138401v180600p): Inter-gNB handover involving gNB-CU-UP change",
+    "8.9.5 (ts_138401v180600p): Change of gNB-CU-UP",
+    "8.19.4.2 (ts_138401v180600p): Intra-gNB-DU switch from direct to indirect path",
+    "8.2.2.3 (ts_138401v180600p): Inter-gNB-DU Conditional PSCell Change using MCG SRB without MN negotiation",
+    "8.2.2.1 (ts_138401v180600p): Inter-gNB-DU Mobility using MCG SRB",
+    "8.16.1 (ts_138401v180600p): MN initiated Conditional PSCell Addition",
+    "6.2.2 (ts_138401v180600p): gNB-DU ID",
+    "8.3.1 (ts_138401v180600p): Centralized Retransmission in Intra gNB-CU Cases",
+    "8.4.1.1 (ts_138401v180600p): EN-DC",
+    "8.4.2.1 (ts_138401v180600p): EN-DC",
+    "8.14.1.3 (ts_138401v180600p): Reporting of DL LBT failure information from gNB-DU to gNB-CU",
+    "6.2.5 (ts_138401v180600p): RAN UE ID",
+    "8.19.4.1 (ts_138401v180600p): Inter-gNB-DU switch from direct to indirect path",
+    "8.14.1 (ts_138401v180600p): Overall procedures for MRO",
+    "8.14.1.2 (ts_138401v180600p): Signalling of RACH information from gNB-CU to gNB-DU",
+    "9.2.2.1 (ts_138473v180900p): UE CONTEXT SETUP REQUEST",
+    "9.2.2.2 (ts_138473v180900p): UE CONTEXT SETUP RESPONSE",
+    "8.3.1.3 (ts_138473v180900p): Unsuccessful Operation",
+    "8.3.1.1 (ts_138473v180900p): General",
+    "8.3 (ts_138473v180900p): UE Context Management procedures",
+    "8.3.1.4 (ts_138473v180900p): Abnormal Conditions",
+    "8.3.1.2 (ts_138473v180900p): Successful Operation",
+    "8.3.8 (ts_138473v180900p): Access Success",
+    "8.3.5 (ts_138473v180900p): UE Context Modification Required (gNB-DU initiated)",
+    "8.3.10 (ts_138473v180900p): CU-DU Cell Switch Notification",
+    "8.3.2 (ts_138473v180900p): UE Context Release Request (gNB-DU initiated)",
+    "8.3.9 (ts_138473v180900p): DU-CU Cell Switch Notification",
+    "8.3.11 (ts_138473v180900p): CU-DU Mobility Initiation",
+    "8.3.4 (ts_138473v180900p): UE Context Modification (gNB-CU initiated)",
+    "8.3.3 (ts_138473v180900p): UE Context Release (gNB-CU initiated)",
+    "8.3.7 (ts_138473v180900p): Notify",
+    "8.3.6 (ts_138473v180900p): UE Inactivity Notification",
+    "9.2.2.3 (ts_138473v180900p): UE CONTEXT SETUP FAILURE",
+    "9.2.2 (ts_138473v180900p): UE Context Management messages",
+    "9.2.2.4 (ts_138473v180900p): UE CONTEXT RELEASE REQUEST",
+    "9.2.2.5 (ts_138473v180900p): UE CONTEXT RELEASE COMMAND",
+    "9.2.2.12 (ts_138473v180900p): UE INACTIVITY NOTIFICATION",
+    "9.2.2.8 (ts_138473v180900p): UE CONTEXT MODIFICATION RESPONSE",
+    "9.2.2.7 (ts_138473v180900p): UE CONTEXT MODIFICATION REQUEST",
+    "9.2.2.6 (ts_138473v180900p): UE CONTEXT RELEASE COMPLETE",
+    "9.2.2.17 (ts_138473v180900p): CU-DU MOBILITY INITIATION REQUEST",
+    "9.2.2.16 (ts_138473v180900p): CU-DU CELL SWITCH NOTIFICATION",
+    "9.2.2.13 (ts_138473v180900p): NOTIFY",
+    "9.2.2.15 (ts_138473v180900p): DU-CU CELL SWITCH NOTIFICATION",
+    "9.2.2.11 (ts_138473v180900p): UE CONTEXT MODIFICATION CONFIRM",
+    "9.2.2.14 (ts_138473v180900p): ACCESS SUCCESS",
+    "9.2.2.9 (ts_138473v180900p): UE CONTEXT MODIFICATION FAILURE",
+    "8.3.4.3 (ts_138473v180900p): Unsuccessful Operation",
+    "8.2.3.3 (ts_138473v180900p): Unsuccessful Operation",
+    "8.3.5.1 (ts_138473v180900p): General",
+    "8.3.2.1 (ts_138473v180900p): General",
+    "8.3.4.1 (ts_138473v180900p): General",
+    "8.3.3.1 (ts_138473v180900p): General",
+    "8 (ts_138473v180900p): F1AP procedures",
+    "8.15 (ts_138473v180900p): PDC Measurement Reporting procedures",
+    "8.11 (ts_138473v180900p): Self Optimisation Support procedures",
+    "8.8 (ts_138473v180900p): Trace Procedures",
+    "8.16 (ts_138473v180900p): QMC Procedures",
+    "8.10 (ts_138473v180900p): IAB Procedures",
+    "8.6 (ts_138473v180900p): System Information Procedures",
+    "8.4 (ts_138473v180900p): RRC Message Transfer procedures",
+    "8.7 (ts_138473v180900p): Paging procedures",
+    "8.9 (ts_138473v180900p): Radio Information Transfer procedures",
+    "8.5 (ts_138473v180900p): Warning Message Transmission Procedures",
+    "8.12 (ts_138473v180900p): Reference Time Information Reporting procedures",
+    "8.13 (ts_138473v180900p): Positioning Procedures",
+    "8.14 (ts_138473v180900p): NR MBS Procedures",
+    "8.1 (ts_138473v180900p): List of F1AP Elementary procedures",
+    "8.17 (ts_138473v180900p): Timing Synchronisation Status Reporting Procedures",
+    "8.3.4.4 (ts_138473v180900p): Abnormal Conditions",
+    "8.3.3.4 (ts_138473v180900p): Abnormal Conditions",
+    "8.3.4.2 (ts_138473v180900p): Successful Operation",
+    "8.3.2.2 (ts_138473v180900p): Successful Operation",
+    "8.3.5.2 (ts_138473v180900p): Successful Operation",
+    "8.7.1.2 (ts_138473v180900p): Successful Operation",
+    "8.3.3.2 (ts_138473v180900p): Successful Operation",
+    "8.3.8.2 (ts_138473v180900p): Successful Operation",
+    "8.3.8.3 (ts_138473v180900p): Abnormal Conditions",
+    "8.3.8.1 (ts_138473v180900p): General",
+    "8.3.5.3 (ts_138473v180900p): Abnormal Conditions",
+    "8.3.10.2 (ts_138473v180900p): Successful Operation",
+    "8.3.10.4 (ts_138473v180900p): Abnormal Conditions",
+    "8.3.10.3 (ts_138473v180900p): Unsuccessful Operation",
+    "8.3.10.1 (ts_138473v180900p): General",
+    "8.3.2.3 (ts_138473v180900p): Abnormal Conditions",
+    "8.3.9.3 (ts_138473v180900p): Unsuccessful Operation",
+    "8.3.9.4 (ts_138473v180900p): Abnormal Conditions",
+    "8.3.9.2 (ts_138473v180900p): Successful Operation",
+    "8.3.9.1 (ts_138473v180900p): General",
+    "8.3.11.1 (ts_138473v180900p): General",
+    "8.3.11.4 (ts_138473v180900p): Abnormal Conditions",
+    "8.3.11.3 (ts_138473v180900p): Unsuccessful Operation",
+    "8.3.11.2 (ts_138473v180900p): Successful Operation",
+    "8.3.7.3 (ts_138473v180900p): Abnormal Conditions",
+    "8.3.7.2 (ts_138473v180900p): Successful Operation",
+    "8.3.7.1 (ts_138473v180900p): General",
+    "8.3.6.2 (ts_138473v180900p): Successful Operation",
+    "8.3.6.1 (ts_138473v180900p): General",
+    "8.3.6.3 (ts_138473v180900p): Abnormal Conditions",
+    "9.2 (ts_138473v180900p): Message Functional Definition and Content",
+    "9.2.10 (ts_138473v180900p): Self Optimisation Support Messages",
+    "9.2.12 (ts_138473v180900p): Messages for Positioning Procedures",
+    "9.2.7 (ts_138473v180900p): Trace Messages",
+    "9.2.1 (ts_138473v180900p): Interface Management messages",
+    "9.2.9 (ts_138473v180900p): IAB messages",
+    "9.2.14 (ts_138473v180900p): Multicast Context Management messages",
+    "9.2.11 (ts_138473v180900p): Reference Time Information Reporting messages",
+    "9.2.8 (ts_138473v180900p): Radio Information Transfer messages",
+    "9.2.3 (ts_138473v180900p): RRC Message Transfer messages",
+    "9.2.4 (ts_138473v180900p): Warning Message Transmission Messages",
+    "9.2.6 (ts_138473v180900p): Paging messages",
+    "9.2.13 (ts_138473v180900p): Broadcast Context Management messages",
+    "9.2.13.4 (ts_138473v180900p): BROADCAST CONTEXT RELEASE COMMAND",
+    "8.14.10.2 (ts_138473v180900p): Successful Operation",
+    "8.14.9.2 (ts_138473v180900p): Successful Operation",
+    "8.14.11.2 (ts_138473v180900p): Successful Operation",
+    "8.14.8.2 (ts_138473v180900p): Successful Operation"
+  ]
+}

@@ -1,0 +1,1060 @@
+{
+  "version": "1.0.0",
+  "schema": "https://schema.rca-assistant.org/error-patterns/v1",
+  "generated_at": "2025-07-17T22:05:53.981978",
+  "source": "OpenAirInterface Pattern Generator",
+  "total_patterns": 63,
+  "patterns": {
+    "rrc_setup_failure": {
+      "patterns": [
+        "RRC setup failed",
+        "RRC setup timeout",
+        "Invalid UE capability",
+        "Missing security capabilities",
+        "RRCConnectionSetup failed, returning to IDLE state",
+        "RRC connection establishment failed",
+        "\\[RRC\\].*not defined",
+        "RRC.*warning",
+        "RRC.*error"
+      ],
+      "severity": "high",
+      "layer": "RRC",
+      "impact": "Connection establishment failures",
+      "spec_reference": "3GPP TS 38.331 Section 5.3.3",
+      "confidence_threshold": 0.7
+    },
+    "pdcp_failure": {
+      "patterns": [
+        "PDCP integrity check failed",
+        "PDCP ciphering failed",
+        "PDCP data forwarding failed",
+        "PDCP error",
+        "PDCP security verification failed",
+        "ERROR: PDCP integrity check failed .* during handover",
+        "PDCP data request failed",
+        "PDCP.*failed",
+        "\\[PDCP\\]\\[E\\].*failed"
+      ],
+      "severity": "high",
+      "layer": "PDCP",
+      "impact": "Data integrity and security compromised",
+      "spec_reference": "3GPP TS 38.323",
+      "confidence_threshold": 0.8,
+      "children": [
+        "pdcp_integrity_failure",
+        "pdcp_ciphering_failure"
+      ]
+    },
+    "pdu_session_establishment_reject":{
+      "patterns":[
+      "Received unexpected message in DLinformationTransfer",
+      "unknow message type", 
+      "Received PDU Session Establishment Reject"
+      ],   
+      "severity":"high", 
+      "layer":"NAS", 
+      "impact": "pou session could not be established by UE", 
+      "spec_reference":"3GPP TS 24.501 Section 6.3.2", 
+      "confidence_threshold":0.85
+    },
+    "pdcp_integrity_failure": {
+      "patterns": [
+        "PDCP integrity check failed",
+        "ERROR: PDCP integrity check failed .* during handover",
+        "PDCP security verification failed",
+        "discard.*PDU.*integrity.*failed",
+        "PDCP.*discard.*integrity",
+        "integrity failed"
+      ],
+      "severity": "critical",
+      "layer": "PDCP",
+      "impact": "Data integrity compromised",
+      "spec_reference": "3GPP TS 38.323 Section 5.9",
+      "confidence_threshold": 0.85,
+      "related_functions": [
+        "nr_pdcp_integrity_verify",
+        "pdcp_validate_security"
+      ],
+      "related_configs": [
+        "imsi",
+        "key",
+        "opc",
+        "dnn",
+        "nssai_sst",
+        "nssai_sd",
+        "amf",
+        "sqn",
+        "nmc_size"
+      ]
+    },
+    "pdcp_ciphering_failure": {
+      "patterns": [
+        "PDCP ciphering failed",
+        "PDCP encryption error",
+        "PDCP decryption failed"
+      ],
+      "severity": "critical",
+      "layer": "PDCP",
+      "impact": "Data confidentiality compromised",
+      "spec_reference": "3GPP TS 38.323 Section 5.8",
+      "confidence_threshold": 0.85
+    },
+    "rlc_failure": {
+      "patterns": [
+        "Data sending request over RLC failed with 'Bad Parameter' reason!",
+        "Data sending request over RLC failed with 'Internal Error' reason!",
+        "RLC_OP_STATUS_INTERNAL_ERROR",
+        "Data sending request over RLC failed with 'Out of Resources' reason!",
+        "RLC error"
+      ],
+      "severity": "medium",
+      "layer": "RLC",
+      "impact": "Data transmission reliability affected",
+      "spec_reference": "3GPP TS 38.322",
+      "confidence_threshold": 0.85
+    },
+    "mac_failure": {
+      "patterns": [
+        "Module id .* Contention resolution timer expired, RA failed",
+        "\\[UE .*\\] Contention resolution failed",
+        "MAC error",
+        "Random access failed",
+        "Contention resolution timer expired",
+        "RA contention resolution failed",
+        "\\[MAC\\]\\[E\\].*contention.*failed",
+        "nr_ra_contention_resolution_failed"
+      ],
+      "severity": "medium",
+      "layer": "MAC",
+      "impact": "Access procedure failures",
+      "spec_reference": "3GPP TS 38.321",
+      "confidence_threshold": 0.85
+    },
+    "phy_failure": {
+      "patterns": [
+        "NFAPI_NR_PHY_MSG_TYPE_ERROR_INDICATION",
+        "xran_reg_physide_cb failed .*",
+        "PHY error",
+        "DLSCH.*error",
+        "\\[PHY\\]\\[I\\].*error",
+        "ue_dlsch_procedures.*error"
+      ],
+      "severity": "medium",
+      "layer": "PHY",
+      "impact": "Physical layer communication issues",
+      "spec_reference": "3GPP TS 38.211-214",
+      "confidence_threshold": 0.8
+    },
+    "ngap_failure": {
+      "patterns": [
+        "Bringing interface .* for .*: ioctl call failed: .*, .*",
+        "Received NG Error indication NGAP_CauseProtocol_semantic_error",
+        "Received NG Error indication NGAP_CauseProtocol_transfer_syntax_error",
+        "Received NG Error indication NGAP_CauseMisc_hardware_failure",
+        "Create task for NGAP failed",
+        "Received NG Error indication NGAP_CauseRadioNetwork_failure_in_radio_interface_procedure",
+        "Received NG Error indication NGAP_CauseProtocol_abstract_syntax_error_ignore_and_notify",
+        "Received NG Error indication NGAP_CauseNas_authentication_failure",
+        "Received NG Error indication NGAP_CauseProtocol_abstract_syntax_error_reject"
+      ],
+      "severity": "high",
+      "layer": "NGAP",
+      "impact": "Core network connectivity issues",
+      "spec_reference": "3GPP TS 38.413",
+      "confidence_threshold": 0.85
+    },
+    "security_failure": {
+      "patterns": [
+        "Security verification failed",
+        "Authentication failed",
+        "Ciphering error",
+        "Integrity check failed",
+        "Security context error"
+      ],
+      "severity": "critical",
+      "layer": "PDCP",
+      "impact": "Security and privacy compromised",
+      "spec_reference": "3GPP TS 33.501",
+      "confidence_threshold": 0.85
+    },
+    "initial_context_setup_failure": {
+      "patterns": [
+        "Initial context setup failed",
+        "Radio resource config.*failed",
+        "Security Mode Command failed",
+        "UE context allocation failed",
+        "Initial context setup timeout"
+      ],
+      "severity": "high",
+      "layer": "NGAP/RRC",
+      "impact": "Connection establishment failures",
+      "spec_reference": "3GPP TS 38.413 Section 8.3",
+      "confidence_threshold": 0.85
+    },
+    "pdu_session_setup_failure": {
+      "patterns": [
+        "PDU session setup failed",
+        "QoS flow setup failed",
+        "DRB configuration failed",
+        "Resource allocation failed",
+        "PDU session resource setup failed",
+        "Failed to update PDU session",
+        "PDU.*failed",
+        "NGSM-PROC.*Failed.*PDU"
+      ],
+      "severity": "high",
+      "layer": "NGAP/RRC",
+      "impact": "Data connectivity failures",
+      "spec_reference": "3GPP TS 38.413 Section 8.2.1",
+      "confidence_threshold": 0.85
+    },
+    "handover_failure": {
+      "patterns": [
+        "[Hh]andover .*failed",
+        "Aborting handover",
+        "Handover timeout",
+        "Handover preparation failed",
+        "Target cell not found",
+        "Handover command failed"
+      ],
+      "severity": "high",
+      "layer": "RRC",
+      "impact": "Mobility failures affecting user experience",
+      "spec_reference": "3GPP TS 38.331 Section 5.3.5",
+      "confidence_threshold": 0.75
+    },
+    "mac_scheduling_failure": {
+      "patterns": [
+        "MAC scheduling failed",
+        "Resource allocation failed",
+        "Grant allocation error",
+        "MAC PDU construction failed"
+      ],
+      "severity": "medium",
+      "layer": "MAC",
+      "impact": "Resource allocation and scheduling issues",
+      "spec_reference": "3GPP TS 38.321",
+      "confidence_threshold": 0.75
+    },
+    "rlc_retransmission_failure": {
+      "patterns": [
+        "RLC retransmission failed",
+        "RLC segmentation failed",
+        "RLC reassembly failed",
+        "RLC buffer overflow"
+      ],
+      "severity": "medium",
+      "layer": "RLC",
+      "impact": "Data transmission reliability issues",
+      "spec_reference": "3GPP TS 38.322",
+      "confidence_threshold": 0.75
+    },
+    "nas_failure": {
+      "patterns": [
+        "Failed to process primitive",
+        "EMMAS-SAP.*Failed",
+        "\\[NAS\\]\\[E\\].*failed",
+        "NGSM-PROC.*Failed",
+        "NAS.*error"
+      ],
+      "severity": "high",
+      "layer": "NAS",
+      "impact": "Non-access stratum protocol failures",
+      "spec_reference": "3GPP TS 24.501",
+      "confidence_threshold": 0.8
+    },
+    "configuration_failure": {
+      "patterns": [
+        "file.*error",
+        "config.*error",
+        "init.*abort",
+        "configuration.*couldn't.*performed",
+        "config module.*couldn't.*loaded",
+        "couldn't retrieve config",
+        "file I/O error",
+        "\\[CONFIG\\].*error",
+        "\\[LIBCONFIG\\].*error"
+      ],
+      "severity": "medium",
+      "layer": "CONFIG",
+      "impact": "System configuration and initialization failures",
+      "spec_reference": "OAI Configuration",
+      "confidence_threshold": 0.8
+    },
+    "loader_failure": {
+      "patterns": [
+        "\\[LOADER\\].*error",
+        "couldn't retrieve config from section",
+        "load.*failed",
+        "module.*couldn't.*load",
+        "loader.*error"
+      ],
+      "severity": "medium",
+      "layer": "LOADER",
+      "impact": "Module loading and initialization failures",
+      "spec_reference": "OAI Loader",
+      "confidence_threshold": 0.8
+    },
+    "contention_resolution_failure": {
+      "patterns": [
+        "Contention resolution timer expired",
+        "Contention resolution failed",
+        "RA contention resolution failed",
+        "\\[UE .*\\] Contention resolution failed",
+        "Module id .* Contention resolution timer expired",
+        "nr_ra_contention_resolution_failed",
+        "contention_resolution_timer.*expired",
+        "RA.*contention.*resolution.*failed"
+      ],
+      "severity": "high",
+      "layer": "MAC",
+      "impact": "Random access procedure failures affecting connection establishment",
+      "spec_reference": "3GPP TS 38.321 Section 5.1.4",
+      "confidence_threshold": 0.9,
+      "related_functions": [
+        "nr_ra_contention_resolution_failed",
+        "nr_timer_tick"
+      ]
+    },
+    "phy_channel_failure": {
+      "patterns": [
+        "PHY channel error",
+        "Physical layer failure",
+        "Modulation error",
+        "Coding error",
+        "Channel estimation failed"
+      ],
+      "severity": "high",
+      "layer": "PHY",
+      "impact": "Physical layer transmission issues",
+      "spec_reference": "3GPP TS 38.211",
+      "confidence_threshold": 0.8
+    },
+    "resource_allocation_failure": {
+      "patterns": [
+        "Resource allocation failed",
+        "No available resources",
+        "Resource exhaustion",
+        "Memory allocation failed"
+      ],
+      "severity": "medium",
+      "layer": "MAC",
+      "impact": "Resource management issues",
+      "spec_reference": "3GPP TS 38.321",
+      "confidence_threshold": 0.75
+    },
+    "timing_synchronization_failure": {
+      "patterns": [
+        "Timing synchronization failed",
+        "Frame synchronization error",
+        "Slot timing error",
+        "Symbol timing error"
+      ],
+      "severity": "high",
+      "layer": "PHY",
+      "impact": "Timing and synchronization issues",
+      "spec_reference": "3GPP TS 38.211",
+      "confidence_threshold": 0.8
+    },
+    "network_connectivity_failure": {
+      "patterns": [
+        "connect\\(\\) to .* failed, errno\\([0-9]+\\)",
+        "Connection to .* failed",
+        "Network connection failed",
+        "Socket connection error",
+        "TCP connection failed",
+        "UDP connection failed"
+      ],
+      "severity": "high",
+      "layer": "NETWORK",
+      "impact": "Network connectivity issues affecting communication",
+      "spec_reference": "Network Layer",
+      "confidence_threshold": 0.85
+    },
+    "func_check_t_reordering_error": {
+      "patterns": [
+        "ERROR.*check_t_reordering",
+        "check_t_reordering.*failed",
+        "check_t_reordering.*error",
+        "\\[PDCP\\].*check_t_reordering.*failed"
+      ],
+      "severity": "high",
+      "layer": "PDCP",
+      "impact": "Function check_t_reordering failure in PDCP layer",
+      "spec_reference": "Generated from OpenAirInterface source code",
+      "confidence_threshold": 0.7,
+      "related_functions": [
+        "check_t_reordering"
+      ],
+      "source_file": "openair2/LAYER2/nr_pdcp/nr_pdcp_entity.c"
+    },
+    "error_return_-1": {
+      "patterns": [
+        "ERROR.*-1",
+        "-1.*error",
+        "\\[Common\\].*-1"
+      ],
+      "severity": "medium",
+      "layer": "Common",
+      "impact": "Error return -1 in Common layer",
+      "spec_reference": "Generated from OpenAirInterface source code",
+      "confidence_threshold": 0.6,
+      "source_file": "common/utils/LOG/log.c"
+    },
+    "log_error_637": {
+      "patterns": [
+        "\\[PDCP\\].*bad\\ PDU\\ received\\ \\(size\\ =\\ %d\\)\\\\n",
+        "ERROR.*bad\\ PDU\\ received\\ \\(size\\ =\\ %d\\)\\\\n",
+        "bad\\ PDU\\ received\\ \\(size\\ =\\ %d\\)\\\\n"
+      ],
+      "severity": "high",
+      "layer": "PDCP",
+      "impact": "Log message: bad PDU received (size = %d)\\n...",
+      "spec_reference": "Generated from OpenAirInterface source code",
+      "confidence_threshold": 0.8,
+      "source_file": "openair2/LAYER2/nr_pdcp/nr_pdcp_entity.c"
+    },
+    "log_error_136": {
+      "patterns": [
+        "\\[NGAP\\].*,\\ ue_desc_p\\->gNB_ue_ngap_id\\);\\\n\\ \\ return;\\\n\\}\\\n\\\nstruct\\ ngap_gNB_ue_context_s\\ \\*ngap_get_ue_context\\(uint32_t\\ gNB_ue_ngap_id\\)\\\n\\{\\\n\\ \\ ngap_gNB_ue_context_t\\ temp\\ =\\ \\{\\.gNB_ue_ngap_id\\ =\\ gNB_ue_ngap_id\\};\\\n\\ \\ return\\ RB_FIND\\(ngap_ue_map,\\ \\&ngap_ue_head,\\ \\&temp\\);\\\n\\}\\\n\\\nstruct\\ ngap_gNB_ue_context_s\\ \\*ngap_detach_ue_context\\(uint32_t\\ gNB_ue_ngap_id\\)\\\n\\{\\\n\\ \\ struct\\ ngap_gNB_ue_context_s\\ \\*tmp\\ =\\ ngap_get_ue_context\\(gNB_ue_ngap_id\\);\\\n\\ \\ if\\ \\(tmp\\ ==\\ NULL\\)\\ \\{\\\n\\ \\ \\ \\ NGAP_ERROR\\(",
+        "ERROR.*,\\ ue_desc_p\\->gNB_ue_ngap_id\\);\\\n\\ \\ return;\\\n\\}\\\n\\\nstruct\\ ngap_gNB_ue_context_s\\ \\*ngap_get_ue_context\\(uint32_t\\ gNB_ue_ngap_id\\)\\\n\\{\\\n\\ \\ ngap_gNB_ue_context_t\\ temp\\ =\\ \\{\\.gNB_ue_ngap_id\\ =\\ gNB_ue_ngap_id\\};\\\n\\ \\ return\\ RB_FIND\\(ngap_ue_map,\\ \\&ngap_ue_head,\\ \\&temp\\);\\\n\\}\\\n\\\nstruct\\ ngap_gNB_ue_context_s\\ \\*ngap_detach_ue_context\\(uint32_t\\ gNB_ue_ngap_id\\)\\\n\\{\\\n\\ \\ struct\\ ngap_gNB_ue_context_s\\ \\*tmp\\ =\\ ngap_get_ue_context\\(gNB_ue_ngap_id\\);\\\n\\ \\ if\\ \\(tmp\\ ==\\ NULL\\)\\ \\{\\\n\\ \\ \\ \\ NGAP_ERROR\\(",
+        ",\\ ue_desc_p\\->gNB_ue_ngap_id\\);\\\n\\ \\ return;\\\n\\}\\\n\\\nstruct\\ ngap_gNB_ue_context_s\\ \\*ngap_get_ue_context\\(uint32_t\\ gNB_ue_ngap_id\\)\\\n\\{\\\n\\ \\ ngap_gNB_ue_context_t\\ temp\\ =\\ \\{\\.gNB_ue_ngap_id\\ =\\ gNB_ue_ngap_id\\};\\\n\\ \\ return\\ RB_FIND\\(ngap_ue_map,\\ \\&ngap_ue_head,\\ \\&temp\\);\\\n\\}\\\n\\\nstruct\\ ngap_gNB_ue_context_s\\ \\*ngap_detach_ue_context\\(uint32_t\\ gNB_ue_ngap_id\\)\\\n\\{\\\n\\ \\ struct\\ ngap_gNB_ue_context_s\\ \\*tmp\\ =\\ ngap_get_ue_context\\(gNB_ue_ngap_id\\);\\\n\\ \\ if\\ \\(tmp\\ ==\\ NULL\\)\\ \\{\\\n\\ \\ \\ \\ NGAP_ERROR\\("
+      ],
+      "severity": "high",
+      "layer": "NGAP",
+      "impact": "Log message: , ue_desc_p->gNB_ue_ngap_id);\n  return;\n}\n\nstruct ...",
+      "spec_reference": "Generated from OpenAirInterface source code",
+      "confidence_threshold": 0.8,
+      "source_file": "openair3/NGAP/ngap_gNB_ue_context.c"
+    },
+    "func_register_log_component_error": {
+      "patterns": [
+        "ERROR.*register_log_component",
+        "register_log_component.*failed",
+        "register_log_component.*error",
+        "\\[Common\\].*register_log_component.*failed"
+      ],
+      "severity": "high",
+      "layer": "Common",
+      "impact": "Function register_log_component failure in Common layer",
+      "spec_reference": "Generated from OpenAirInterface source code",
+      "confidence_threshold": 0.7,
+      "related_functions": [
+        "register_log_component"
+      ],
+      "source_file": "common/utils/LOG/log.c"
+    },
+    "func_isloginitdone_error": {
+      "patterns": [
+        "ERROR.*isLogInitDone",
+        "isLogInitDone.*failed",
+        "isLogInitDone.*error",
+        "\\[Common\\].*isLogInitDone.*failed"
+      ],
+      "severity": "high",
+      "layer": "Common",
+      "impact": "Function isLogInitDone failure in Common layer",
+      "spec_reference": "Generated from OpenAirInterface source code",
+      "confidence_threshold": 0.7,
+      "related_functions": [
+        "isLogInitDone"
+      ],
+      "source_file": "common/utils/LOG/log.c"
+    },
+    "func_loginit_error": {
+      "patterns": [
+        "ERROR.*logInit",
+        "logInit.*failed",
+        "logInit.*error",
+        "\\[Common\\].*logInit.*failed"
+      ],
+      "severity": "high",
+      "layer": "Common",
+      "impact": "Function logInit failure in Common layer",
+      "spec_reference": "Generated from OpenAirInterface source code",
+      "confidence_threshold": 0.7,
+      "related_functions": [
+        "logInit"
+      ],
+      "source_file": "common/utils/LOG/log.c"
+    },
+    "func_log_header_error": {
+      "patterns": [
+        "ERROR.*log_header",
+        "log_header.*failed",
+        "log_header.*error",
+        "\\[Common\\].*log_header.*failed"
+      ],
+      "severity": "high",
+      "layer": "Common",
+      "impact": "Function log_header failure in Common layer",
+      "spec_reference": "Generated from OpenAirInterface source code",
+      "confidence_threshold": 0.7,
+      "related_functions": [
+        "log_header"
+      ],
+      "source_file": "common/utils/LOG/log.c"
+    },
+    "func_set_log_error": {
+      "patterns": [
+        "ERROR.*set_log",
+        "set_log.*failed",
+        "set_log.*error",
+        "\\[Common\\].*set_log.*failed"
+      ],
+      "severity": "high",
+      "layer": "Common",
+      "impact": "Function set_log failure in Common layer",
+      "spec_reference": "Generated from OpenAirInterface source code",
+      "confidence_threshold": 0.7,
+      "related_functions": [
+        "set_log"
+      ],
+      "source_file": "common/utils/LOG/log.c"
+    },
+    "func_loginit_log_mem_error": {
+      "patterns": [
+        "ERROR.*logInit_log_mem",
+        "logInit_log_mem.*failed",
+        "logInit_log_mem.*error",
+        "\\[Common\\].*logInit_log_mem.*failed"
+      ],
+      "severity": "high",
+      "layer": "Common",
+      "impact": "Function logInit_log_mem failure in Common layer",
+      "spec_reference": "Generated from OpenAirInterface source code",
+      "confidence_threshold": 0.7,
+      "related_functions": [
+        "logInit_log_mem"
+      ],
+      "source_file": "common/utils/LOG/log.c"
+    },
+    "func_test_log_error": {
+      "patterns": [
+        "ERROR.*test_log",
+        "test_log.*failed",
+        "test_log.*error",
+        "\\[Common\\].*test_log.*failed"
+      ],
+      "severity": "high",
+      "layer": "Common",
+      "impact": "Function test_log failure in Common layer",
+      "spec_reference": "Generated from OpenAirInterface source code",
+      "confidence_threshold": 0.7,
+      "related_functions": [
+        "test_log"
+      ],
+      "source_file": "common/utils/LOG/log.c"
+    },
+    "func_log_getconfig_error": {
+      "patterns": [
+        "ERROR.*log_getconfig",
+        "log_getconfig.*failed",
+        "log_getconfig.*error",
+        "\\[Common\\].*log_getconfig.*failed"
+      ],
+      "severity": "high",
+      "layer": "Common",
+      "impact": "Function log_getconfig failure in Common layer",
+      "spec_reference": "Generated from OpenAirInterface source code",
+      "confidence_threshold": 0.7,
+      "related_functions": [
+        "log_getconfig"
+      ],
+      "source_file": "common/utils/LOG/log.c"
+    },
+    "func_unregister_all_log_components_error": {
+      "patterns": [
+        "ERROR.*unregister_all_log_components",
+        "unregister_all_log_components.*failed",
+        "unregister_all_log_components.*error",
+        "\\[Common\\].*unregister_all_log_components.*failed"
+      ],
+      "severity": "high",
+      "layer": "Common",
+      "impact": "Function unregister_all_log_components failure in Common layer",
+      "spec_reference": "Generated from OpenAirInterface source code",
+      "confidence_threshold": 0.7,
+      "related_functions": [
+        "unregister_all_log_components"
+      ],
+      "source_file": "common/utils/LOG/log.c"
+    },
+    "func_logterm_error": {
+      "patterns": [
+        "ERROR.*logTerm",
+        "logTerm.*failed",
+        "logTerm.*error",
+        "\\[Common\\].*logTerm.*failed"
+      ],
+      "severity": "high",
+      "layer": "Common",
+      "impact": "Function logTerm failure in Common layer",
+      "spec_reference": "Generated from OpenAirInterface source code",
+      "confidence_threshold": 0.7,
+      "related_functions": [
+        "logTerm"
+      ],
+      "source_file": "common/utils/LOG/log.c"
+    },
+    "func_logrecord_mt_error": {
+      "patterns": [
+        "ERROR.*logRecord_mt",
+        "logRecord_mt.*failed",
+        "logRecord_mt.*error",
+        "\\[Common\\].*logRecord_mt.*failed"
+      ],
+      "severity": "high",
+      "layer": "Common",
+      "impact": "Function logRecord_mt failure in Common layer",
+      "spec_reference": "Generated from OpenAirInterface source code",
+      "confidence_threshold": 0.7,
+      "related_functions": [
+        "logRecord_mt"
+      ],
+      "source_file": "common/utils/LOG/log.c"
+    },
+    "func_logrecord_lttng_error": {
+      "patterns": [
+        "ERROR.*logRecord_lttng",
+        "logRecord_lttng.*failed",
+        "logRecord_lttng.*error",
+        "\\[Common\\].*logRecord_lttng.*failed"
+      ],
+      "severity": "high",
+      "layer": "Common",
+      "impact": "Function logRecord_lttng failure in Common layer",
+      "spec_reference": "Generated from OpenAirInterface source code",
+      "confidence_threshold": 0.7,
+      "related_functions": [
+        "logRecord_lttng"
+      ],
+      "source_file": "common/utils/LOG/log.c"
+    },
+    "func_vlogrecord_mt_error": {
+      "patterns": [
+        "ERROR.*vlogRecord_mt",
+        "vlogRecord_mt.*failed",
+        "vlogRecord_mt.*error",
+        "\\[Common\\].*vlogRecord_mt.*failed"
+      ],
+      "severity": "high",
+      "layer": "Common",
+      "impact": "Function vlogRecord_mt failure in Common layer",
+      "spec_reference": "Generated from OpenAirInterface source code",
+      "confidence_threshold": 0.7,
+      "related_functions": [
+        "vlogRecord_mt"
+      ],
+      "source_file": "common/utils/LOG/log.c"
+    },
+    "func_log_dump_error": {
+      "patterns": [
+        "ERROR.*log_dump",
+        "log_dump.*failed",
+        "log_dump.*error",
+        "\\[Common\\].*log_dump.*failed"
+      ],
+      "severity": "high",
+      "layer": "Common",
+      "impact": "Function log_dump failure in Common layer",
+      "spec_reference": "Generated from OpenAirInterface source code",
+      "confidence_threshold": 0.7,
+      "related_functions": [
+        "log_dump"
+      ],
+      "source_file": "common/utils/LOG/log.c"
+    },
+    "func_set_glog_error": {
+      "patterns": [
+        "ERROR.*set_glog",
+        "set_glog.*failed",
+        "set_glog.*error",
+        "\\[Common\\].*set_glog.*failed"
+      ],
+      "severity": "high",
+      "layer": "Common",
+      "impact": "Function set_glog failure in Common layer",
+      "spec_reference": "Generated from OpenAirInterface source code",
+      "confidence_threshold": 0.7,
+      "related_functions": [
+        "set_glog"
+      ],
+      "source_file": "common/utils/LOG/log.c"
+    },
+    "func_set_glog_onlinelog_error": {
+      "patterns": [
+        "ERROR.*set_glog_onlinelog",
+        "set_glog_onlinelog.*failed",
+        "set_glog_onlinelog.*error",
+        "\\[Common\\].*set_glog_onlinelog.*failed"
+      ],
+      "severity": "high",
+      "layer": "Common",
+      "impact": "Function set_glog_onlinelog failure in Common layer",
+      "spec_reference": "Generated from OpenAirInterface source code",
+      "confidence_threshold": 0.7,
+      "related_functions": [
+        "set_glog_onlinelog"
+      ],
+      "source_file": "common/utils/LOG/log.c"
+    },
+    "func_set_glog_filelog_error": {
+      "patterns": [
+        "ERROR.*set_glog_filelog",
+        "set_glog_filelog.*failed",
+        "set_glog_filelog.*error",
+        "\\[Common\\].*set_glog_filelog.*failed"
+      ],
+      "severity": "high",
+      "layer": "Common",
+      "impact": "Function set_glog_filelog failure in Common layer",
+      "spec_reference": "Generated from OpenAirInterface source code",
+      "confidence_threshold": 0.7,
+      "related_functions": [
+        "set_glog_filelog"
+      ],
+      "source_file": "common/utils/LOG/log.c"
+    },
+    "func_set_component_filelog_error": {
+      "patterns": [
+        "ERROR.*set_component_filelog",
+        "set_component_filelog.*failed",
+        "set_component_filelog.*error",
+        "\\[Common\\].*set_component_filelog.*failed"
+      ],
+      "severity": "high",
+      "layer": "Common",
+      "impact": "Function set_component_filelog failure in Common layer",
+      "spec_reference": "Generated from OpenAirInterface source code",
+      "confidence_threshold": 0.7,
+      "related_functions": [
+        "set_component_filelog"
+      ],
+      "source_file": "common/utils/LOG/log.c"
+    },
+    "func_close_component_filelog_error": {
+      "patterns": [
+        "ERROR.*close_component_filelog",
+        "close_component_filelog.*failed",
+        "close_component_filelog.*error",
+        "\\[Common\\].*close_component_filelog.*failed"
+      ],
+      "severity": "high",
+      "layer": "Common",
+      "impact": "Function close_component_filelog failure in Common layer",
+      "spec_reference": "Generated from OpenAirInterface source code",
+      "confidence_threshold": 0.7,
+      "related_functions": [
+        "close_component_filelog"
+      ],
+      "source_file": "common/utils/LOG/log.c"
+    },
+    "func_logclean_error": {
+      "patterns": [
+        "ERROR.*logClean",
+        "logClean.*failed",
+        "logClean.*error",
+        "\\[Common\\].*logClean.*failed"
+      ],
+      "severity": "high",
+      "layer": "Common",
+      "impact": "Function logClean failure in Common layer",
+      "spec_reference": "Generated from OpenAirInterface source code",
+      "confidence_threshold": 0.7,
+      "related_functions": [
+        "logClean"
+      ],
+      "source_file": "common/utils/LOG/log.c"
+    },
+    "func_log_output_memory_error": {
+      "patterns": [
+        "ERROR.*log_output_memory",
+        "log_output_memory.*failed",
+        "log_output_memory.*error",
+        "\\[Common\\].*log_output_memory.*failed"
+      ],
+      "severity": "high",
+      "layer": "Common",
+      "impact": "Function log_output_memory failure in Common layer",
+      "spec_reference": "Generated from OpenAirInterface source code",
+      "confidence_threshold": 0.7,
+      "related_functions": [
+        "log_output_memory"
+      ],
+      "source_file": "common/utils/LOG/log.c"
+    },
+    "func_close_log_mem_error": {
+      "patterns": [
+        "ERROR.*close_log_mem",
+        "close_log_mem.*failed",
+        "close_log_mem.*error",
+        "\\[Common\\].*close_log_mem.*failed"
+      ],
+      "severity": "high",
+      "layer": "Common",
+      "impact": "Function close_log_mem failure in Common layer",
+      "spec_reference": "Generated from OpenAirInterface source code",
+      "confidence_threshold": 0.7,
+      "related_functions": [
+        "close_log_mem"
+      ],
+      "source_file": "common/utils/LOG/log.c"
+    },
+    "mac_contention_resolution_failure": {
+      "patterns": [
+        "Contention resolution failed",
+        "Contention resolution timer expired",
+        "nr_ra_contention_resolution_failed",
+        "MAC contention resolution.*failed"
+      ],
+      "severity": "medium",
+      "layer": "MAC",
+      "impact": "MAC contention resolution failure",
+      "spec_reference": "3GPP TS 38.321 Section 5.1.4",
+      "confidence_threshold": 0.8,
+      "related_functions": [
+        "nr_ra_contention_resolution",
+        "mac_contention_resolution"
+      ]
+    },
+    "rlc_transmission_failure": {
+      "patterns": [
+        "RLC transmission failed",
+        "Data sending request over RLC failed",
+        "nr_rlc_send.*failed",
+        "RLC_OP_STATUS.*ERROR"
+      ],
+      "severity": "medium",
+      "layer": "RLC",
+      "impact": "RLC transmission failure",
+      "spec_reference": "3GPP TS 38.322 Section 5.1",
+      "confidence_threshold": 0.8,
+      "related_functions": [
+        "nr_rlc_send",
+        "rlc_transmit"
+      ]
+    },
+    "ngap_error_indication": {
+      "patterns": [
+        "Received NG Error indication",
+        "NGAP_Cause.*error",
+        "ngap_error_indication",
+        "NGAP.*failed"
+      ],
+      "severity": "high",
+      "layer": "NGAP",
+      "impact": "NGAP error indication",
+      "spec_reference": "3GPP TS 38.413 Section 8.7",
+      "confidence_threshold": 0.8,
+      "related_functions": [
+        "ngap_error_indication",
+        "ngap_handle_error"
+      ]
+    },
+    "security_authentication_failure": {
+      "patterns": [
+        "Authentication failed",
+        "Security authentication.*failed",
+        "nr_security_auth.*failed",
+        "SECU.*authentication.*failed"
+      ],
+      "severity": "critical",
+      "layer": "Security",
+      "impact": "Security authentication failure",
+      "spec_reference": "3GPP TS 33.501 Section 6.1",
+      "confidence_threshold": 0.9,
+      "related_functions": [
+        "nr_security_auth",
+        "secu_authentication"
+      ]
+    },
+    "log_error_298": {
+      "patterns": [
+        "\\[PDCP\\].*bad\\ PDU\\ received\\ \\(size\\ =\\ %d\\)\\\\n",
+        "ERROR.*bad\\ PDU\\ received\\ \\(size\\ =\\ %d\\)\\\\n",
+        "bad\\ PDU\\ received\\ \\(size\\ =\\ %d\\)\\\\n"
+      ],
+      "severity": "high",
+      "layer": "PDCP",
+      "impact": "Log message: bad PDU received (size = %d)\\n...",
+      "spec_reference": "Generated from OpenAirInterface source code",
+      "confidence_threshold": 0.8,
+      "source_file": "openair2/LAYER2/nr_pdcp/nr_pdcp_entity.c"
+    },
+    "log_error_356": {
+      "patterns": [
+        "\\[NGAP\\].*,\\ ue_desc_p\\->gNB_ue_ngap_id\\);\\\n\\ \\ return;\\\n\\}\\\n\\\nstruct\\ ngap_gNB_ue_context_s\\ \\*ngap_get_ue_context\\(uint32_t\\ gNB_ue_ngap_id\\)\\\n\\{\\\n\\ \\ ngap_gNB_ue_context_t\\ temp\\ =\\ \\{\\.gNB_ue_ngap_id\\ =\\ gNB_ue_ngap_id\\};\\\n\\ \\ return\\ RB_FIND\\(ngap_ue_map,\\ \\&ngap_ue_head,\\ \\&temp\\);\\\n\\}\\\n\\\nstruct\\ ngap_gNB_ue_context_s\\ \\*ngap_detach_ue_context\\(uint32_t\\ gNB_ue_ngap_id\\)\\\n\\{\\\n\\ \\ struct\\ ngap_gNB_ue_context_s\\ \\*tmp\\ =\\ ngap_get_ue_context\\(gNB_ue_ngap_id\\);\\\n\\ \\ if\\ \\(tmp\\ ==\\ NULL\\)\\ \\{\\\n\\ \\ \\ \\ NGAP_ERROR\\(",
+        "ERROR.*,\\ ue_desc_p\\->gNB_ue_ngap_id\\);\\\n\\ \\ return;\\\n\\}\\\n\\\nstruct\\ ngap_gNB_ue_context_s\\ \\*ngap_get_ue_context\\(uint32_t\\ gNB_ue_ngap_id\\)\\\n\\{\\\n\\ \\ ngap_gNB_ue_context_t\\ temp\\ =\\ \\{\\.gNB_ue_ngap_id\\ =\\ gNB_ue_ngap_id\\};\\\n\\ \\ return\\ RB_FIND\\(ngap_ue_map,\\ \\&ngap_ue_head,\\ \\&temp\\);\\\n\\}\\\n\\\nstruct\\ ngap_gNB_ue_context_s\\ \\*ngap_detach_ue_context\\(uint32_t\\ gNB_ue_ngap_id\\)\\\n\\{\\\n\\ \\ struct\\ ngap_gNB_ue_context_s\\ \\*tmp\\ =\\ ngap_get_ue_context\\(gNB_ue_ngap_id\\);\\\n\\ \\ if\\ \\(tmp\\ ==\\ NULL\\)\\ \\{\\\n\\ \\ \\ \\ NGAP_ERROR\\(",
+        ",\\ ue_desc_p\\->gNB_ue_ngap_id\\);\\\n\\ \\ return;\\\n\\}\\\n\\\nstruct\\ ngap_gNB_ue_context_s\\ \\*ngap_get_ue_context\\(uint32_t\\ gNB_ue_ngap_id\\)\\\n\\{\\\n\\ \\ ngap_gNB_ue_context_t\\ temp\\ =\\ \\{\\.gNB_ue_ngap_id\\ =\\ gNB_ue_ngap_id\\};\\\n\\ \\ return\\ RB_FIND\\(ngap_ue_map,\\ \\&ngap_ue_head,\\ \\&temp\\);\\\n\\}\\\n\\\nstruct\\ ngap_gNB_ue_context_s\\ \\*ngap_detach_ue_context\\(uint32_t\\ gNB_ue_ngap_id\\)\\\n\\{\\\n\\ \\ struct\\ ngap_gNB_ue_context_s\\ \\*tmp\\ =\\ ngap_get_ue_context\\(gNB_ue_ngap_id\\);\\\n\\ \\ if\\ \\(tmp\\ ==\\ NULL\\)\\ \\{\\\n\\ \\ \\ \\ NGAP_ERROR\\("
+      ],
+      "severity": "high",
+      "layer": "NGAP",
+      "impact": "Log message: , ue_desc_p->gNB_ue_ngap_id);\n  return;\n}\n\nstruct ...",
+      "spec_reference": "Generated from OpenAirInterface source code",
+      "confidence_threshold": 0.8,
+      "source_file": "openair3/NGAP/ngap_gNB_ue_context.c"
+    },
+    "amf_association_failure": {
+      "patterns": [
+        "No AMF is associated to the gNB",
+        "No AMF is associated with gNB",
+        "AMF association failed",
+        "AMF not connected",
+        "No AMF available",
+        "AMF selection failed",
+        "AMF.*not.*associated",
+        "AMF.*connection.*failed"
+      ],
+      "severity": "critical",
+      "layer": "NGAP",
+      "impact": "UE connection establishment completely blocked",
+      "spec_reference": "3GPP TS 38.413 Section 8.2.1",
+      "confidence_threshold": 0.9,
+      "related_functions": [
+        "select_amf",
+        "ngap_gNB_nnsf_select_amf",
+        "ngap_gNB_handle_nas_first_req"
+      ],
+      "fix_recommendations": [
+        "Check AMF status and connectivity",
+        "Verify NG Setup procedure completion",
+        "Review AMF configuration",
+        "Check SCTP associations",
+        "Monitor AMF load and capacity"
+      ]
+    },
+    "e1ap_setup_failure": {
+      "patterns": [
+        "E1AP setup failed",
+        "E1AP setup failure",
+        "e1ap.*setup.*fail",
+        "E1AP.*error",
+        "e1ap.*failure"
+      ],
+      "severity": "high",
+      "layer": "E1AP",
+      "impact": "CU-CP to CU-UP interface failures",
+      "spec_reference": "3GPP TS 38.463",
+      "confidence_threshold": 0.8,
+      "related_functions": [
+        "e1apCUCP_send_SETUP_FAILURE",
+        "e1ap_handle_ERROR_INDICATION"
+      ]
+    },
+    "f1ap_setup_failure": {
+      "patterns": [
+        "F1AP setup failed",
+        "F1AP setup failure",
+        "f1ap.*setup.*fail",
+        "F1AP.*error",
+        "f1ap.*failure"
+      ],
+      "severity": "high",
+      "layer": "F1AP",
+      "impact": "CU-DU interface failures",
+      "spec_reference": "3GPP TS 38.473",
+      "confidence_threshold": 0.8,
+      "related_functions": [
+        "CU_send_F1_SETUP_FAILURE",
+        "DU_handle_F1_SETUP_FAILURE"
+      ]
+    },
+    "x2ap_handover_failure": {
+      "patterns": [
+        "X2AP handover failed",
+        "X2AP handover failure",
+        "x2ap.*handover.*fail",
+        "X2AP.*error",
+        "x2ap.*failure"
+      ],
+      "severity": "high",
+      "layer": "X2AP",
+      "impact": "Inter-eNB handover failures",
+      "spec_reference": "3GPP TS 36.423",
+      "confidence_threshold": 0.8
+    },
+    "s1ap_connection_failure": {
+      "patterns": [
+        "S1AP connection failed",
+        "S1AP setup failure",
+        "s1ap.*connection.*fail",
+        "S1AP.*error",
+        "s1ap.*failure"
+      ],
+      "severity": "high",
+      "layer": "S1AP",
+      "impact": "eNB-MME interface failures",
+      "spec_reference": "3GPP TS 36.413",
+      "confidence_threshold": 0.8
+    },
+    "transport_layer_failure": {
+      "patterns": [
+        "SCTP.*failed",
+        "TCP.*failed",
+        "UDP.*failed",
+        "transport.*error",
+        "connection.*timeout",
+        "socket.*error"
+      ],
+      "severity": "medium",
+      "layer": "TRANSPORT",
+      "impact": "Network connectivity issues",
+      "spec_reference": "RFC 4960 (SCTP)",
+      "confidence_threshold": 0.7
+    },
+    "authentication_failure": {
+      "patterns": [
+        "Authentication failed",
+        "Auth failure",
+        "authentication.*fail",
+        "auth.*error",
+        "security.*failure"
+      ],
+      "severity": "critical",
+      "layer": "SECURITY",
+      "impact": "Security and access control compromised",
+      "spec_reference": "3GPP TS 33.501",
+      "confidence_threshold": 0.9
+    },
+    "memory_allocation_failure": {
+      "patterns": [
+        "Memory allocation failed",
+        "malloc.*failed",
+        "out of memory",
+        "memory.*error",
+        "allocation.*failed"
+      ],
+      "severity": "medium",
+      "layer": "SYSTEM",
+      "impact": "System resource exhaustion",
+      "spec_reference": "System-level error",
+      "confidence_threshold": 0.8
+    },
+    "file_operation_failure": {
+      "patterns": [
+        "File operation failed",
+        "File.*error",
+        "open.*failed",
+        "read.*failed",
+        "write.*failed"
+      ],
+      "severity": "medium",
+      "layer": "SYSTEM",
+      "impact": "Configuration and logging issues",
+      "spec_reference": "System-level error",
+      "confidence_threshold": 0.7
+    },
+    "simulated_crash": {
+      "patterns": [
+        "Simulated crash",
+        "segmentation fault"
+      ],
+      "severity": "critical",
+      "layer": "SYSTEM",
+      "impact": "Process crash and abnormal termination",
+      "spec_reference": "POSIX/SIGSEGV",
+      "confidence_threshold": 0.99
+    }
+  }
+}

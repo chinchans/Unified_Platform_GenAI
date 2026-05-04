@@ -1,0 +1,123 @@
+{
+  "timestamp": "2025-12-08T12:20:42.188849",
+  "phase": "crash_phase2_graded",
+  "crash_analysis": true,
+  "crash_info_summary": {
+    "faulting_function": "rrc_gNB_send_NGAP_NAS_FIRST_REQ",
+    "fault_location": "/home/tcs/jayasvi/cu/openairinterface5g/openair2/RRC/NR/rrc_gNB_NGAP.c:173",
+    "signal": "SIGSEGV"
+  },
+  "suspected_functions": [
+    {
+      "function_name": "rrc_gNB_send_NGAP_NAS_FIRST_REQ",
+      "file_path": "openair2/RRC/NR/rrc_gNB_NGAP.c",
+      "relevance_score": 1.0,
+      "source": "backtrace",
+      "code_snippet": "void rrc_gNB_send_NGAP_NAS_FIRST_REQ(gNB_RRC_INST *rrc, gNB_RRC_UE_t *UE, NR_RRCSetupComplete_IEs_t *rrcSetupComplete)\n{\n  MessageDef *message_p = itti_alloc_new_message(TASK_RRC_GNB, rrc->module_id, NGAP_NAS_FIRST_REQ);\n  ngap_nas_first_req_t *req = &NGAP_NAS_FIRST_REQ(message_p);\n  memset(req, 0, sizeof(*req));\n\n  // RAN UE NGAP ID\n  req->gNB_ue_ngap_id = UE->rrc_ue_id;\n\n  // RRC Establishment Cause\n  /* Assume that cause is coded in the same way in RRC and NGap, just check that the value is in NGap range */\n  AssertFatal(UE->establishment_cause < NGAP_RRC_CAUSE_LAST, \"Establishment cause invalid (%jd/%d)!\", UE->establishment_cause, NGAP_RRC_CAUSE_LAST);\n  req->establishment_cause = UE->establishment_cause;\n\n  // NAS-PDU\n  req->nas_pdu = create_byte_array(rrcSetupComplete->dedicatedNAS_Message.size, rrcSetupComplete->dedicatedNAS_Message.buf);\n\n  /* Selected PLMN Identity (Optional)\n   * selectedPLMN-Identity in RRCSetupComplete: Index of the PLMN selected by the UE from the plmn-IdentityInfoList (SIB1)\n   * Selected PLMN Identity in INITIAL UE MESSAGE: Indicates the selected PLMN id for the non-3GPP access.*/\n  if (rrcSetupComplete->selectedPLMN_Identity > rrc->configuration.num_plmn) {\n    LOG_E(NGAP,\n          \"Failed to send Initial UE Message: selected PLMN (%ld) identity is out of bounds (%d)\\n\",\n          rrcSetupComplete->selectedPLMN_Identity,\n          rrc->configuration.num_plmn);\n    return;\n  }\n  int selected_plmn_identity = rrcSetupComplete->selectedPLMN_Identity - 1; // Convert 1-based PLMN Identity IE to 0-based index\n  req->plmn = rrc->configuration.plmn[selected_plmn_identity]; // Select from the stored list\n  plmn_id_t *p = &req->plmn;\n  LOG_I(NGAP, \"Selected PLMN in the NG Initial UE Message: MCC=%03d MNC=%0*d\\n\", p->mcc, p->mnc_digit_length, p->mnc);\n\n  /* 5G-S-TMSI */\n  if (UE->Initialue_identity_5g_s_TMSI.presence) {\n    req->ue_identity.presenceMask |= NGAP_UE_IDENTITIES_FiveG_s_tmsi;\n    req->ue_identity.s_tmsi.amf_set_id = UE->Initialue_identity_5g_s_TMSI.amf_set_id;\n    req->ue_identity.s_tmsi.amf_pointer = UE->Initialue_identity_5g_s_TMSI.amf_pointer;\n    req->ue_identity.s_tmsi.m_tmsi = UE->Initialue_identity_5g_s_TMSI.fiveg_tmsi;\n  }\n\n  /* Process Registered AMF IE */\n  if (rrcSetupComplete->registeredAMF != NULL) {\n    /* Fetch the AMF-Identifier from the registeredAMF IE\n     * The IE AMF-Identifier (AMFI) comprises of an AMF Region ID (8b),\n     * an AMF Set ID (10b) and an AMF Pointer (6b)\n     * as specified in TS 23.003 [21], clause 2.10.1. */\n    NR_RegisteredAMF_t *r_amf = rrcSetupComplete->registeredAMF;\n    req->ue_identity.presenceMask |= NGAP_UE_IDENTITIES_guami;\n    uint32_t amf_Id = BIT_STRING_to_uint32(&r_amf->amf_Identifier);\n    UE->ue_guami = req->ue_identity.guami = get_guami(amf_Id, req->plmn);\n    LOG_I(NGAP,\n          \"GUAMI in NGAP_NAS_FIRST_REQ (UE %04x): AMF Set ID %u, Region ID %u, Pointer %u\\n\",\n          UE->rnti,\n          req->ue_identity.guami.amf_set_id,\n          req->ue_identity.gu\n... [truncated]",
+      "reason": "Frame #0 crash point at line 173. Null pointer dereference on rrcSetupComplete parameter. Missing NULL check before accessing rrcSetupComplete->dedicatedNAS_Message.size.",
+      "role": "CRASH_POINT",
+      "frame_number": 0,
+      "priority_score": 1.0,
+      "has_source": true
+    },
+    {
+      "function_name": "rrc_gNB_decode_dcch",
+      "file_path": "openair2/RRC/NR/rrc_gNB.c",
+      "relevance_score": 0.95,
+      "source": "backtrace",
+      "code_snippet": "static int rrc_gNB_decode_dcch(gNB_RRC_INST *rrc, const f1ap_ul_rrc_message_t *msg)\n{\n  /* we look up by CU UE ID! Do NOT change back to RNTI! */\n  rrc_gNB_ue_context_t *ue_context_p = rrc_gNB_get_ue_context(rrc, msg->gNB_CU_ue_id);\n  if (!ue_context_p) {\n    LOG_E(RRC, \"could not find UE context for CU UE ID %u, aborting transaction\\n\", msg->gNB_CU_ue_id);\n    return -1;\n  }\n  gNB_RRC_UE_t *UE = &ue_context_p->ue_context;\n\n  if (msg->srb_id < 1 || msg->srb_id > 2) {\n    LOG_E(NR_RRC, \"Received message on SRB %d, discarding message\\n\", msg->srb_id);\n    return -1;\n  }\n\n  LOG_D(NR_RRC, \"UE %d: Decoding DCCH %d size %d\\n\", UE->rrc_ue_id, msg->srb_id, msg->rrc_container_length);\n  LOG_DUMPMSG(RRC, DEBUG_RRC, (char *)msg->rrc_container, msg->rrc_container_length, \"[MSG] RRC UL Information Transfer \\n\");\n  NR_UL_DCCH_Message_t *ul_dcch_msg = NULL;\n  asn_dec_rval_t dec_rval =\n      uper_decode(NULL, &asn_DEF_NR_UL_DCCH_Message, (void **)&ul_dcch_msg, msg->rrc_container, msg->rrc_container_length, 0, 0);\n\n  if ((dec_rval.code != RC_OK) && (dec_rval.consumed == 0)) {\n    LOG_E(NR_RRC, \"UE %d: Failed to decode UL-DCCH (%zu bytes)\\n\", UE->rrc_ue_id, dec_rval.consumed);\n    return -1;\n  }\n\n  if (LOG_DEBUGFLAG(DEBUG_ASN1)) {\n    xer_fprint(stdout, &asn_DEF_NR_UL_DCCH_Message, (void *)ul_dcch_msg);\n  }\n\n  if (ul_dcch_msg->message.present == NR_UL_DCCH_MessageType_PR_c1) {\n#ifdef E2_AGENT\n    // 38.331 Sec 6.2.1: message index of UL-DCCH-Message\n    const uint32_t rrc_msg_id = ul_dcch_msg->message.choice.c1->present;\n    byte_array_t buffer_ba = {.len = msg->rrc_container_length};\n    buffer_ba.buf = msg->rrc_container;\n    signal_rrc_msg(UL_DCCH_NR_RRC_CLASS, rrc_msg_id, buffer_ba);\n#endif\n    switch (ul_dcch_msg->message.choice.c1->present) {\n      case NR_UL_DCCH_MessageType__c1_PR_NOTHING:\n... [middle truncated] ...\n        LOG_E(NR_RRC, \"UE %d: received securityModeFailure\\n\", ue_context_p->ue_context.rrc_ue_id);\n        LOG_W(NR_RRC, \"Cannot continue as no AS security is activated (implementation missing)\\n\");\n        break;\n\n      case NR_UL_DCCH_MessageType__c1_PR_ueCapabilityInformation:\n        handle_ueCapabilityInformation(rrc, UE, ul_dcch_msg->message.choice.c1->choice.ueCapabilityInformation);\n        break;\n\n      case NR_UL_DCCH_MessageType__c1_PR_rrcReestablishmentComplete:\n        LOG_UE_UL_EVENT(UE, \"Received RRCReestablishmentComplete\\n\");\n        handle_rrcReestablishmentComplete(rrc, UE, ul_dcch_msg->message.choice.c1->choice.rrcReestablishmentComplete);\n        break;\n\n      default:\n        break;\n    }\n  }\n  ASN_STRUCT_FREE(asn_DEF_NR_UL_DCCH_Message, ul_dcch_msg);\n  return 0;\n}",
+      "reason": "Frame #1 immediate caller. Likely passes NULL or invalid rrcSetupComplete to crash function. Should validate before calling.",
+      "role": "IMMEDIATE_CALLER",
+      "frame_number": 1,
+      "priority_score": 0.95,
+      "has_source": true
+    },
+    {
+      "function_name": "rrc_gNB_process_RRCSetupComplete",
+      "file_path": "openair2/RRC/NR/rrc_gNB.c",
+      "relevance_score": 0.9,
+      "source": "crash_upstream",
+      "code_snippet": "static void rrc_gNB_process_RRCSetupComplete(gNB_RRC_INST *rrc, gNB_RRC_UE_t *UE, NR_RRCSetupComplete_IEs_t *rrcSetupComplete)\n//-----------------------------------------------------------------------------\n{\n  UE->Srb[1].Active = 1;\n  UE->Srb[2].Active = 0;\n\n  rrcSetupComplete=NULL;\n  rrc_gNB_send_NGAP_NAS_FIRST_REQ(rrc, UE, rrcSetupComplete);\n}",
+      "reason": "Calls rrc_gNB_send_NGAP_NAS_FIRST_REQ with rrcSetupComplete set to NULL. This directly leads to the crash due to invalid parameter passing.",
+      "role": "Calls crash function rrc_gNB_send_NGAP_NAS_FIRST_REQ - check parameter passing",
+      "frame_number": null,
+      "priority_score": 0.8,
+      "has_source": true
+    },
+    {
+      "function_name": "create_byte_array",
+      "file_path": "common/utils/ds/byte_array.c",
+      "relevance_score": 0.85,
+      "source": "crash_downstream",
+      "code_snippet": "byte_array_t create_byte_array(const size_t len, const uint8_t* buffer)\n{\n  byte_array_t result = {.len = len};\n  if (len) {\n    result.buf = malloc_or_fail(len);\n    memcpy(result.buf, buffer, len);\n  }\n  return result;\n}",
+      "reason": "Called by rrc_gNB_send_NGAP_NAS_FIRST_REQ. If rrcSetupComplete->dedicatedNAS_Message.buf is NULL, this function will cause a crash when trying to copy memory.",
+      "role": "Called by crash function rrc_gNB_send_NGAP_NAS_FIRST_REQ - potential null/invalid call",
+      "frame_number": null,
+      "priority_score": 0.85,
+      "has_source": true
+    },
+    {
+      "function_name": "BIT_STRING_to_uint32",
+      "file_path": "common/utils/oai_asn1.h",
+      "relevance_score": 0.85,
+      "source": "crash_downstream",
+      "code_snippet": "static inline uint32_t BIT_STRING_to_uint32(const BIT_STRING_t *asn) {\n  uint32_t result = 0;\n  size_t index;\n\n  DevCheck ((asn->size > 0) && (asn->size <= 4), asn->size, 0, 0);\n\n  int shift = ((asn->size - 1) * 8) - asn->bits_unused;\n  for (index = 0; index < (asn->size - 1); index++) {\n    result |= asn->buf[index] << shift;\n    shift -= 8;\n  }\n\n  result |= asn->buf[index] >> asn->bits_unused;\n\n  return result;\n}",
+      "reason": "Called by rrc_gNB_send_NGAP_NAS_FIRST_REQ. If the BIT_STRING_t pointer passed is NULL or invalid, it can lead to a segmentation fault.",
+      "role": "Called by crash function rrc_gNB_send_NGAP_NAS_FIRST_REQ - potential null/invalid call",
+      "frame_number": null,
+      "priority_score": 0.85,
+      "has_source": true
+    },
+    {
+      "function_name": "itti_alloc_new_message",
+      "file_path": "common/utils/ocp_itti/intertask_interface.cpp",
+      "relevance_score": 0.85,
+      "source": "crash_downstream",
+      "code_snippet": "  MessageDef *itti_alloc_new_message(task_id_t origin_task_id, instance_t originInstance, MessagesIds message_id) {\n    int size=sizeof(MessageHeader) + 32 + messages_info[message_id].size;\n    MessageDef *temp = (MessageDef *)itti_malloc (origin_task_id, TASK_UNKNOWN, size);\n    temp->ittiMsgHeader.messageId = message_id;\n    temp->ittiMsgHeader.originTaskId = origin_task_id;\n    temp->ittiMsgHeader.ittiMsgSize = size;\n    temp->ittiMsgHeader.destinationTaskId=TASK_UNKNOWN;\n    temp->ittiMsgHeader.originInstance=originInstance;\n    temp->ittiMsgHeader.destinationInstance=0;\n    temp->ittiMsgHeader.lte_time= {0};\n    return temp;\n    //return itti_alloc_new_message_sized(origin_task_id, message_id, messages_info[message_id].size);\n  }",
+      "reason": "Called by rrc_gNB_send_NGAP_NAS_FIRST_REQ. If memory allocation fails, it could return NULL, leading to a crash when dereferenced.",
+      "role": "Called by crash function rrc_gNB_send_NGAP_NAS_FIRST_REQ - potential null/invalid call",
+      "frame_number": null,
+      "priority_score": 0.85,
+      "has_source": true
+    },
+    {
+      "function_name": "get_guami",
+      "file_path": "openair2/RRC/NR/rrc_gNB_NGAP.c",
+      "relevance_score": 0.8,
+      "source": "crash_downstream",
+      "code_snippet": "static nr_guami_t get_guami(const uint32_t amf_Id, const plmn_id_t plmn)\n{\n  nr_guami_t guami = {0};\n  guami.amf_region_id = (amf_Id >> 16) & 0xff;\n  guami.amf_set_id = (amf_Id >> 6) & 0x3ff;\n  guami.amf_pointer = amf_Id & 0x3f;\n  guami.mcc = plmn.mcc;\n  guami.mnc = plmn.mnc;\n  guami.mnc_len = plmn.mnc_digit_length;\n  return guami;\n}",
+      "reason": "Called by rrc_gNB_send_NGAP_NAS_FIRST_REQ. If amf_Id is invalid, it could lead to incorrect values being assigned, potentially causing issues later.",
+      "role": "Called by crash function rrc_gNB_send_NGAP_NAS_FIRST_REQ - potential null/invalid call",
+      "frame_number": null,
+      "priority_score": 0.85,
+      "has_source": true
+    },
+    {
+      "function_name": "itti_send_msg_to_task",
+      "file_path": "common/utils/ocp_itti/intertask_interface.cpp",
+      "relevance_score": 0.75,
+      "source": "crash_downstream",
+      "code_snippet": "  int itti_send_msg_to_task(task_id_t destination_task_id, instance_t destinationInstance, MessageDef *message) {\n    task_list_t *t=tasks[destination_task_id];\n    pthread_mutex_lock (&t->queue_cond_lock);\n    int ret=itti_send_msg_to_task_locked(destination_task_id, destinationInstance, message);\n\n    while (t->message_queue.size() > 0 && t->task_parms.shortcut_func != NULL) {\n      if (t->message_queue.size()>1)\n        LOG_W(ITTI,\"queue in no thread mode is %ld\\n\", t->message_queue.size());\n\n      pthread_mutex_unlock (&t->queue_cond_lock);\n      t->task_parms.shortcut_func(NULL);\n      pthread_mutex_lock (&t->queue_cond_lock);\n    }\n\n    pthread_mutex_unlock (&t->queue_cond_lock);\n    return ret;\n  }",
+      "reason": "Called by rrc_gNB_send_NGAP_NAS_FIRST_REQ. If the message passed is NULL, it can lead to a segmentation fault when trying to access its members.",
+      "role": "Called by crash function rrc_gNB_send_NGAP_NAS_FIRST_REQ - potential null/invalid call",
+      "frame_number": null,
+      "priority_score": 0.85,
+      "has_source": true
+    },
+    {
+      "function_name": "rrc_gnb_task",
+      "file_path": "openair2/RRC/NR/rrc_gNB.c",
+      "relevance_score": 0.7,
+      "source": "backtrace",
+      "code_snippet": "void *rrc_gnb_task(void *args_p) {\n  MessageDef *msg_p;\n  instance_t                         instance;\n  int                                result;\n\n  long stats_timer_id = 1;\n  if (!IS_SOFTMODEM_NOSTATS) {\n    /* timer to write stats to file */\n    timer_setup(1, 0, TASK_RRC_GNB, 0, TIMER_PERIODIC, NULL, &stats_timer_id);\n  }\n\n  itti_mark_task_ready(TASK_RRC_GNB);\n  LOG_I(NR_RRC,\"Entering main loop of NR_RRC message task\\n\");\n\n  while (1) {\n    // Wait for a message\n    itti_receive_msg(TASK_RRC_GNB, &msg_p);\n    const char *msg_name_p = ITTI_MSG_NAME(msg_p);\n    instance = ITTI_MSG_DESTINATION_INSTANCE(msg_p);\n    LOG_D(NR_RRC,\n          \"RRC GNB Task Received %s for instance %ld from task %s\\n\",\n          ITTI_MSG_NAME(msg_p),\n          ITTI_MSG_DESTINATION_INSTANCE(msg_p),\n          ITTI_MSG_ORIGIN_NAME(msg_p));\n    switch (ITTI_MSG_ID(msg_p)) {\n      case TERMINATE_MESSAGE:\n        LOG_W(NR_RRC, \" *** Exiting NR_RRC thread\\n\");\n        timer_remove(stats_timer_id);\n        itti_exit_task();\n        break;\n\n      case MESSAGE_TEST:\n        LOG_I(NR_RRC, \"[gNB %ld] Received %s\\n\", instance, msg_name_p);\n        break;\n\n      case TIMER_HAS_EXPIRED:\n        if (TIMER_HAS_EXPIRED(msg_p).timer_id == stats_timer_id) {\n          if (!write_rrc_stats(RC.nrrrc[0]))\n            timer_remove(stats_timer_id);\n        } else {\n... [middle truncated] ...\n      case NGAP_HANDOVER_REQUEST:\n        rrc_gNB_process_Handover_Request(RC.nrrrc[instance], instance, &NGAP_HANDOVER_REQUEST(msg_p));\n        rrc_gNB_free_Handover_Request(&NGAP_HANDOVER_REQUEST(msg_p)); // Free transfered NG message\n        break;\n\n      case NGAP_HANDOVER_COMMAND:\n        rrc_gNB_process_HandoverCommand(RC.nrrrc[instance], &NGAP_HANDOVER_COMMAND(msg_p));\n        rrc_gNB_free_Handover_Command(&NGAP_HANDOVER_COMMAND(msg_p)); // Free transfered NG message\n        break;\n\n      default:\n        LOG_E(NR_RRC, \"[gNB %ld] Received unexpected message %s\\n\", instance, msg_name_p);\n        break;\n    }\n\n    result = itti_free(ITTI_MSG_ORIGIN_ID(msg_p), msg_p);\n    AssertFatal(result == EXIT_SUCCESS, \"Failed to free memory (%d)!\\n\", result);\n    msg_p = NULL;\n  }\n}",
+      "reason": "Upstream caller that processes messages. If it receives an invalid message or context, it may lead to passing invalid data to rrc_gNB_decode_dcch.",
+      "role": "UPSTREAM_CALLER",
+      "frame_number": 2,
+      "priority_score": 0.9,
+      "has_source": true
+    }
+  ],
+  "suspected_configs": [],
+  "total_candidates_analyzed": 10,
+  "top_functions_selected": 9
+}

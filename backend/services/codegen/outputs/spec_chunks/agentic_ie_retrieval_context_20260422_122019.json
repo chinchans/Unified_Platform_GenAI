@@ -1,0 +1,1160 @@
+{
+  "feature_json_path": "in_memory",
+  "template_path": "C:\\Users\\ChanduVangala\\Desktop\\Unified_Platform_UI\\backend\\services\\codegen\\inputs\\Template_common.json",
+  "intent": "gNB-CU has to prepare and send F1AP \"UE CONTEXT SETUP REQUEST\" message to the candidate gNB-DU and candidate gNB-DU has to respond with F1AP \"UE CONTEXT SETUP RESPONSE\" message and this message has to be handled on gNB-CU for Inter-gNB DU LTM Handover Procedure",
+  "timestamp": "2026-04-22T12:20:19.171565+05:30",
+  "retrieval_config": {
+    "max_depth_kg_expand": 2,
+    "llm_iexpand_max_depth": 2,
+    "llm_iexpand_max_nodes": 60,
+    "llm_available": true
+  },
+  "kg_expansion_trace_by_doc_id": {
+    "ts_138401v180600p": {
+      "doc_id": "ts_138401v180600p",
+      "seeds": [
+        "8.4.3"
+      ],
+      "max_depth": 2,
+      "direction": "both",
+      "visited_count": 44,
+      "edges_count": 43,
+      "truncated": false,
+      "edges": [
+        {
+          "from_section_id": "8.4.3",
+          "to_section_id": "8.4",
+          "root_seed_section_id": "8.4.3",
+          "depth_level": 1,
+          "relationship_types": [
+            "CHILD_OF"
+          ]
+        },
+        {
+          "from_section_id": "8.4.3",
+          "to_section_id": "8.4.2",
+          "root_seed_section_id": "8.4.3",
+          "depth_level": 1,
+          "relationship_types": [
+            "SIBLING_OF"
+          ]
+        },
+        {
+          "from_section_id": "8.4.3",
+          "to_section_id": "8.4.4",
+          "root_seed_section_id": "8.4.3",
+          "depth_level": 1,
+          "relationship_types": [
+            "SIBLING_OF"
+          ]
+        },
+        {
+          "from_section_id": "8.4.3",
+          "to_section_id": "8.4.1",
+          "root_seed_section_id": "8.4.3",
+          "depth_level": 1,
+          "relationship_types": [
+            "SIBLING_OF"
+          ]
+        },
+        {
+          "from_section_id": "8.4.3",
+          "to_section_id": "8.9.6.1",
+          "root_seed_section_id": "8.4.3",
+          "depth_level": 1,
+          "relationship_types": [
+            "RELATED_TO"
+          ]
+        },
+        {
+          "from_section_id": "8.4.3",
+          "to_section_id": "8.4.4.3",
+          "root_seed_section_id": "8.4.3",
+          "depth_level": 1,
+          "relationship_types": [
+            "RELATED_TO"
+          ]
+        },
+        {
+          "from_section_id": "8.4.3",
+          "to_section_id": "8.4.4.2",
+          "root_seed_section_id": "8.4.3",
+          "depth_level": 1,
+          "relationship_types": [
+            "RELATED_TO"
+          ]
+        },
+        {
+          "from_section_id": "8.4.3",
+          "to_section_id": "8.9.6.2",
+          "root_seed_section_id": "8.4.3",
+          "depth_level": 1,
+          "relationship_types": [
+            "RELATED_TO"
+          ]
+        },
+        {
+          "from_section_id": "8.4",
+          "to_section_id": "8",
+          "root_seed_section_id": "8.4.3",
+          "depth_level": 2,
+          "relationship_types": [
+            "CHILD_OF"
+          ]
+        },
+        {
+          "from_section_id": "8.4",
+          "to_section_id": "8.12",
+          "root_seed_section_id": "8.4.3",
+          "depth_level": 2,
+          "relationship_types": [
+            "SIBLING_OF"
+          ]
+        },
+        {
+          "from_section_id": "8.4",
+          "to_section_id": "8.17",
+          "root_seed_section_id": "8.4.3",
+          "depth_level": 2,
+          "relationship_types": [
+            "SIBLING_OF"
+          ]
+        },
+        {
+          "from_section_id": "8.4",
+          "to_section_id": "8.21",
+          "root_seed_section_id": "8.4.3",
+          "depth_level": 2,
+          "relationship_types": [
+            "SIBLING_OF"
+          ]
+        },
+        {
+          "from_section_id": "8.4",
+          "to_section_id": "8.7",
+          "root_seed_section_id": "8.4.3",
+          "depth_level": 2,
+          "relationship_types": [
+            "SIBLING_OF"
+          ]
+        },
+        {
+          "from_section_id": "8.4",
+          "to_section_id": "8.5",
+          "root_seed_section_id": "8.4.3",
+          "depth_level": 2,
+          "relationship_types": [
+            "SIBLING_OF"
+          ]
+        },
+        {
+          "from_section_id": "8.4",
+          "to_section_id": "8.8",
+          "root_seed_section_id": "8.4.3",
+          "depth_level": 2,
+          "relationship_types": [
+            "SIBLING_OF"
+          ]
+        },
+        {
+          "from_section_id": "8.4",
+          "to_section_id": "8.3",
+          "root_seed_section_id": "8.4.3",
+          "depth_level": 2,
+          "relationship_types": [
+            "SIBLING_OF"
+          ]
+        },
+        {
+          "from_section_id": "8.4",
+          "to_section_id": "8.2",
+          "root_seed_section_id": "8.4.3",
+          "depth_level": 2,
+          "relationship_types": [
+            "SIBLING_OF"
+          ]
+        },
+        {
+          "from_section_id": "8.4",
+          "to_section_id": "8.16",
+          "root_seed_section_id": "8.4.3",
+          "depth_level": 2,
+          "relationship_types": [
+            "SIBLING_OF"
+          ]
+        },
+        {
+          "from_section_id": "8.4",
+          "to_section_id": "8.22",
+          "root_seed_section_id": "8.4.3",
+          "depth_level": 2,
+          "relationship_types": [
+            "SIBLING_OF",
+            "RELATED_TO"
+          ]
+        },
+        {
+          "from_section_id": "8.4",
+          "to_section_id": "8.20",
+          "root_seed_section_id": "8.4.3",
+          "depth_level": 2,
+          "relationship_types": [
+            "SIBLING_OF"
+          ]
+        },
+        {
+          "from_section_id": "8.4",
+          "to_section_id": "8.15",
+          "root_seed_section_id": "8.4.3",
+          "depth_level": 2,
+          "relationship_types": [
+            "SIBLING_OF"
+          ]
+        },
+        {
+          "from_section_id": "8.4",
+          "to_section_id": "8.24",
+          "root_seed_section_id": "8.4.3",
+          "depth_level": 2,
+          "relationship_types": [
+            "SIBLING_OF"
+          ]
+        },
+        {
+          "from_section_id": "8.4",
+          "to_section_id": "8.1",
+          "root_seed_section_id": "8.4.3",
+          "depth_level": 2,
+          "relationship_types": [
+            "SIBLING_OF"
+          ]
+        },
+        {
+          "from_section_id": "8.4",
+          "to_section_id": "8.10",
+          "root_seed_section_id": "8.4.3",
+          "depth_level": 2,
+          "relationship_types": [
+            "SIBLING_OF"
+          ]
+        },
+        {
+          "from_section_id": "8.4",
+          "to_section_id": "8.23",
+          "root_seed_section_id": "8.4.3",
+          "depth_level": 2,
+          "relationship_types": [
+            "SIBLING_OF"
+          ]
+        },
+        {
+          "from_section_id": "8.4",
+          "to_section_id": "8.11",
+          "root_seed_section_id": "8.4.3",
+          "depth_level": 2,
+          "relationship_types": [
+            "SIBLING_OF"
+          ]
+        },
+        {
+          "from_section_id": "8.4",
+          "to_section_id": "8.9",
+          "root_seed_section_id": "8.4.3",
+          "depth_level": 2,
+          "relationship_types": [
+            "SIBLING_OF"
+          ]
+        },
+        {
+          "from_section_id": "8.4",
+          "to_section_id": "8.13",
+          "root_seed_section_id": "8.4.3",
+          "depth_level": 2,
+          "relationship_types": [
+            "SIBLING_OF"
+          ]
+        },
+        {
+          "from_section_id": "8.4",
+          "to_section_id": "8.14",
+          "root_seed_section_id": "8.4.3",
+          "depth_level": 2,
+          "relationship_types": [
+            "SIBLING_OF"
+          ]
+        },
+        {
+          "from_section_id": "8.4",
+          "to_section_id": "8.19",
+          "root_seed_section_id": "8.4.3",
+          "depth_level": 2,
+          "relationship_types": [
+            "SIBLING_OF"
+          ]
+        },
+        {
+          "from_section_id": "8.4",
+          "to_section_id": "8.18",
+          "root_seed_section_id": "8.4.3",
+          "depth_level": 2,
+          "relationship_types": [
+            "SIBLING_OF"
+          ]
+        },
+        {
+          "from_section_id": "8.4",
+          "to_section_id": "8.2.2",
+          "root_seed_section_id": "8.4.3",
+          "depth_level": 2,
+          "relationship_types": [
+            "RELATED_TO"
+          ]
+        },
+        {
+          "from_section_id": "8.4",
+          "to_section_id": "7.9",
+          "root_seed_section_id": "8.4.3",
+          "depth_level": 2,
+          "relationship_types": [
+            "RELATED_TO"
+          ]
+        },
+        {
+          "from_section_id": "8.4.2",
+          "to_section_id": "8.4.2.1",
+          "root_seed_section_id": "8.4.3",
+          "depth_level": 2,
+          "relationship_types": [
+            "PARENT_OF"
+          ]
+        },
+        {
+          "from_section_id": "8.4.2",
+          "to_section_id": "8.16.2",
+          "root_seed_section_id": "8.4.3",
+          "depth_level": 2,
+          "relationship_types": [
+            "RELATED_TO"
+          ]
+        },
+        {
+          "from_section_id": "8.4.4",
+          "to_section_id": "8.4.4.1",
+          "root_seed_section_id": "8.4.3",
+          "depth_level": 2,
+          "relationship_types": [
+            "PARENT_OF"
+          ]
+        },
+        {
+          "from_section_id": "8.4.4",
+          "to_section_id": "8.4.1.1",
+          "root_seed_section_id": "8.4.3",
+          "depth_level": 2,
+          "relationship_types": [
+            "RELATED_TO"
+          ]
+        },
+        {
+          "from_section_id": "8.9.6.1",
+          "to_section_id": "8.9.6",
+          "root_seed_section_id": "8.4.3",
+          "depth_level": 2,
+          "relationship_types": [
+            "CHILD_OF"
+          ]
+        },
+        {
+          "from_section_id": "8.9.6.1",
+          "to_section_id": "8.18.2",
+          "root_seed_section_id": "8.4.3",
+          "depth_level": 2,
+          "relationship_types": [
+            "PREREQUISITE_FOR",
+            "RELATED_TO"
+          ]
+        },
+        {
+          "from_section_id": "8.9.6.1",
+          "to_section_id": "8.18.1",
+          "root_seed_section_id": "8.4.3",
+          "depth_level": 2,
+          "relationship_types": [
+            "RELATED_TO"
+          ]
+        },
+        {
+          "from_section_id": "8.9.6.1",
+          "to_section_id": "8.6.2",
+          "root_seed_section_id": "8.4.3",
+          "depth_level": 2,
+          "relationship_types": [
+            "RELATED_TO"
+          ]
+        },
+        {
+          "from_section_id": "8.9.6.2",
+          "to_section_id": "8.18.4",
+          "root_seed_section_id": "8.4.3",
+          "depth_level": 2,
+          "relationship_types": [
+            "DEFINES"
+          ]
+        },
+        {
+          "from_section_id": "8.9.6.2",
+          "to_section_id": "8.19.3",
+          "root_seed_section_id": "8.4.3",
+          "depth_level": 2,
+          "relationship_types": [
+            "RELATED_TO"
+          ]
+        }
+      ]
+    }
+  },
+  "ie_recursive_trace_by_message": [],
+  "per_doc_ie_definition_chunks": {},
+  "final_context_count": 44,
+  "final_context": [
+    {
+      "section_id": "8.4.3",
+      "section_title": "SCG suspend/resume in RRC_INACTIVE",
+      "content": "8.4.3 SCG suspend/resume in RRC_INACTIVE\nIn the following, the procedure for SCG resume in RRC_INACTIVE is described.\nUE MN SN-CU SN-DU\n4. SN Modification Request (resume lower layers)\n7. SN Modification Request Acknowledge\n(carry SN RRC reconfiguration message )\n8. RRC(Connection)Resume (restoreSCG)\n (carry  SN RRC reconfiguration message )\n9. RRC(Connection)ResumeComplete\n (carry SN RRC reconfiguration complete)\n11. Random Access Procedure\n10. SN Reconfiguration Complete\n (carry SN RRC reconfiguration complete)\n3. Activity Notification (active)\n5. UE CONTEXT MODIFICATION REQUEST (resume lower\nlayers)\n6. UE CONTEXT MODIFICATION RESPONSE (resume lower\nlayers)\nFind UE context based on the gNB-DU\nUE F1AP ID\n1. UE CONTEXT MODIFICATION REQUEST\n(suspend lower layers)\n2. UE CONTEXT MODIFICATION RESPONSE\n(suspend lower layers)\n\nFigure 8.4.3-1: SCG Suspend/Resume in RRC_INACTIVE\n1. The CU of SN sends the UE CONTEXT MODIFICATION REQUEST message to the DU of SN to suspend the\nSCG of the UE before the UE enters into RRC_INACTIVE state from RRC_CONNECTED state.\n2. The DU of SN sends the UE CONTEXT MODIFICATION RESPONSE to the CU of SN, and keeps all lower\nlayer configuration for UEs without transmitting or receiving data from UE.\n3~4: refer to TS 37.340 [12].\n5. The CU of SN sends the UE CONTEXT MODIFICATION REQUEST message to the DU of SN to resume the\nSCG of the UE before the UE enters into RRC_CONNECTED state from RRC_INACTIVE state.\n6. The DU of SN sends the UE CONTEXT MODIFICATION RESPONSE message to the CU of SN, and uses the\npreviously stored lower layer configuration for the UE.\n7~11: refer to TS 37.340 [12].",
+      "metadata": {
+        "doc_id": "ts_138401v180600p",
+        "level": 3,
+        "parent_section_id": "8.4",
+        "child_section_ids": [],
+        "page_numbers": [
+          61
+        ],
+        "knowledge_source": "ts_138401v180600p"
+      }
+    },
+    {
+      "section_id": "8.4",
+      "section_title": "Multi-Connectivity operation",
+      "content": "8.4 Multi-Connectivity operation",
+      "metadata": {
+        "doc_id": "ts_138401v180600p",
+        "level": 2,
+        "parent_section_id": "8",
+        "child_section_ids": [
+          "8.4.1",
+          "8.4.2",
+          "8.4.3",
+          "8.4.4"
+        ],
+        "page_numbers": [],
+        "knowledge_source": "ts_138401v180600p"
+      }
+    },
+    {
+      "section_id": "8.4.2",
+      "section_title": "Secondary Node Release (MN/SN initiated)",
+      "content": "8.4.2 Secondary Node Release (MN/SN initiated)",
+      "metadata": {
+        "doc_id": "ts_138401v180600p",
+        "level": 3,
+        "parent_section_id": "8.4",
+        "child_section_ids": [
+          "8.4.2.1"
+        ],
+        "page_numbers": [],
+        "knowledge_source": "ts_138401v180600p"
+      }
+    },
+    {
+      "section_id": "8.4.4",
+      "section_title": "SCG Deactivation and Activation",
+      "content": "8.4.4 SCG Deactivation and Activation\nThis clause gives the NR SCG deactivation and activation procedures in MR-DC given that the SN consists of a gNB-\nCU and gNB-DU(s).",
+      "metadata": {
+        "doc_id": "ts_138401v180600p",
+        "level": 3,
+        "parent_section_id": "8.4",
+        "child_section_ids": [
+          "8.4.4.1",
+          "8.4.4.2",
+          "8.4.4.3"
+        ],
+        "page_numbers": [],
+        "knowledge_source": "ts_138401v180600p"
+      }
+    },
+    {
+      "section_id": "8.4.1",
+      "section_title": "Secondary Node Addition",
+      "content": "8.4.1 Secondary Node Addition",
+      "metadata": {
+        "doc_id": "ts_138401v180600p",
+        "level": 3,
+        "parent_section_id": "8.4",
+        "child_section_ids": [
+          "8.4.1.1"
+        ],
+        "page_numbers": [],
+        "knowledge_source": "ts_138401v180600p"
+      }
+    },
+    {
+      "section_id": "8.9.6.1",
+      "section_title": "RRC Connected to RRC Inactive",
+      "content": "8.9.6.1 RRC Connected to RRC Inactive\nThe procedure for changing the UE state from RRC-connected to RRC-inactive is shown in Figure 8.9.6.1-1.\ngNB-DU gNB-CU-UP gNB-CU-CP\n7. UE CONTEXT RELEASE COMMAND (with RRCRelease)\n4. Decision of changing the\nUE state to RRC-inactive\n5. BEARER CONTEXT MODIFICATION REQUEST\n(with suspend indication)\n6. BEARER CONTEXT MODIFICATION\nRESPONSE(report PDCP status for e.g., data reporting)\nUE\n8. RRCRelease\n9. UE CONTEXT RELEASE COMPLETE\n1. BEARER CONTEXT SETUP REQUEST\n(inactivity timer)\n3. BEARER CONTEXT INACTIVITY NOTIFICATION\n2. BEARER CONTEXT SETUP RESPONSE\n\nFigure 8.9.6.1-1: RRC Connected to RRC Inactive state transition.\n1. The gNB-CU-CP sends BEARER CONTEXT SETUP REQUEST message with UE/PDU session/DRB level\ninactivity timer.\n2. The gNB-CU-UP sends BEARER CONTEXT SETUP RESPONSE message.\n3. The gNB-CU-UP sends BEARER CONTEXT INACTIVITY NOTIFICATION message with inactivity\nmonitoring results.\n4. The gNB-CU-CP determines that the UE should enter RRC-inactive (e.g., after receiving Bearer Context\nInactivity Notification procedure).\n5. The gNB-CU-CP sends BEARER CONTEXT MODIFICATION REQUEST message with a Bearer Context\nStatus Change to the gNB-CU-UP, which indicates that the UE is entering RRC-inactive state. The gNB-CU-CP\nkeeps the F1 UL TEIDs.\n6. The gNB-CU-UP sends the BEARER CONTEXT MODIFICATION RESPONSE message including the PDCP\nUL and DL status that may be needed for e.g., data volume reporting. The gNB-CU-UP keeps the Bearer\nContext, the UE-associated logical E1-connection, the NG-U related resource (e.g., NG-U DL TEIDs) and the\nF1 UL TEIDs.\n7. The gNB-CU-CP sends the UE CONTEXT RELEASE COMMAND message to the gNB-DU serving the UE,\ntogether with the RRCRelease message to be sent to the UE.\nNOTE: step 5 and step 7 can be performed at the same time.\n8. The gNB-DU sends the RRCRelease  message to the UE.\n9. The gNB-DU sends the UE CONTEXT RELEASE COMPLETE message to the gNB-CU-CP.",
+      "metadata": {
+        "doc_id": "ts_138401v180600p",
+        "level": 4,
+        "parent_section_id": "8.9.6",
+        "child_section_ids": [],
+        "page_numbers": [
+          78
+        ],
+        "knowledge_source": "ts_138401v180600p"
+      }
+    },
+    {
+      "section_id": "8.4.4.3",
+      "section_title": "SN initiated SN Modification with SCG Activation or Deactivation",
+      "content": "8.4.4.3 SN initiated SN Modification with SCG Activation or Deactivation\nMN-CU-UP MN-CU-CP SN-CU-CP SN-CU-UP SN-DU\n1. SCG deactivated or activated\n2. BEARER CONTEXT MODIFCIATION REQUEST\n(SCG activated or deactivated)\n3. BEARER CONTEXT MODIFCIATION RESPONSE\n4. UE CONTEXT MODIFICATION REQUEST\n(activate or deactivate the SCG)\n5. UE CONTEXT MODIFICATION RESPONSE\n(SCG status)\n6. BEARER CONTEXT MODIFCIATION REQUEST\n(SCG status)\n7. BEARER CONTEXT MODIFCIATION RESPONSE\n8. SN Modification Required\n(actiate or deactivate the SCG)\n9. BEARER CONTEXT MODIFICATION REQUEST\n(SCG status)\n10. BEARER CONTEXT MODIFICATION RESPONSE\n11. SN Modification Confirm\n\nFigure 8.4.4.3-1: SCG Activation or Deactivation in SN initiated SN Modification procedure\n1. SCG is deactivated or activated.\n2. The SN-CU-CP may send the BEARER CONTEXT MODIFICATION REQUEST message to the SN-CU-UP to\nnotify the SCG activation or deactivation.\n3. The SN-CU-UP sends the BEARER CONTEXT MODIFICATION RESPONSE message to the SN-CU-CP.\n4. The SN-CU sends the UE CONTEXT MODIFICATION REQUEST message to the SN-DU to indicate the\nrequest of SCG activation or deactivation.\n5. The SN-DU sends the UE CONTEXT MODIFICATION RESPONSE message to the SN-CU, indicates the SCG\nstatus.\n6. The SN-CU-CP may send the BEARER CONTEXT MODIFICATION REQUEST message to the SN-CU-UP to\nnotify the SCG status.\n7. The SN-CU-UP sends the BEARER CONTEXT MODIFICATION RESPONSE message to the SN-CU-CP.\nNOTE 1: Step 6 and 7 may be skipped in case the SN-DU accepted the SCG activation or deactivation request.\n8. The SN sends the SN Modification Required message to the MN, indicates the request of SCG activation or\ndeactivation.\n9. The MN-CU-CP may send the BEARER CONTEXT MODIFICATION REQUEST message to the MN-CU-UP\nto notify the SCG status.\n10. The MN-CU-UP sends the BEARER CONTEXT MODIFICATION RESPONSE message to the MN-CU-CP.\nNOTE 2: Based on implementation, step 9 and 10 can be performed after step 11.\n11. The MN sends the SN Modification Confirm message to the SN.\nNOTE 3: Step 8-11 are not performed in case the SN-DU rejected the SCG activation or deactivation request.",
+      "metadata": {
+        "doc_id": "ts_138401v180600p",
+        "level": 4,
+        "parent_section_id": "8.4.4",
+        "child_section_ids": [],
+        "page_numbers": [],
+        "knowledge_source": "ts_138401v180600p"
+      }
+    },
+    {
+      "section_id": "8.4.4.2",
+      "section_title": "MN initiated SN Modification with SCG Activation or Deactivation",
+      "content": "8.4.4.2 MN initiated SN Modification with SCG Activation or Deactivation\nMN-CU-UP MN-CU-CP SN-CU-CP SN-CU-UP SN-DU\n1. SCG deactivated or activated\n2. SN Modification Request\n(activate or deactivate the SCG)\n3. BEARER CONTEXT MODIFICATION REQUEST\n(SCG activated or deactivated)\n4. BEARER CONTEXT MODIFICATION RESPOSE\n5. UE CONTEXT MODIFICATION REQUEST\n(activate or deactivate the SCG)\n6. UE CONTEXT MODIFICATION RESPOSE\n(SCG status)\n7. BEARER CONTEXT MODIFICATION REQUEST\n(SCG status)\n8. BEARER CONTEXT MODIFICATION RESPOSE\n9. SN Modification Request Acknowledge\n(SCG status)\n10. BEARER CONTEXT MODIFICATION REQUEST\n(SCG status)\n11. BEARER CONTEXT MODIFICATION RESPONSE\n\nFigure 8.4.4.2-1: SCG Activation or Deactivation in MN initiated SN Modification procedure\n1. SCG is deactivated or activated.\n2. The MN sends the SN Modification Request message to the SN, indicates the request of SCG activation or\ndeactivation.\n3. The SN-CU-CP may send the BEARER CONTEXT MODIFICATION REQUEST message to the SN-CU-UP to\nnotify the SCG activation or deactivation.\n4. The SN-CU-UP sends the BEARER CONTEXT MODIFICATION RESPONSE message to the SN-CU-CP.\n5. The SN-CU sends the UE CONTEXT MODIFICATION REQUEST message to the SN-DU to indicate the\nrequest of SCG activation or deactivation.\n6. The SN-DU may send the UE CONTEXT MODIFICATION RESPONSE message to the SN-CU, indicates the\nSCG status.\n7. The SN-CU-CP sends the BEARER CONTEXT MODIFICATION REQUEST message to the SN-CU-UP to\nnotify the SCG status.\n8. The SN-CU-UP sends the BEARER CONTEXT MODIFICATION RESPONSE message to the SN-CU-CP.\nNOTE: Step 7 and 8 may be skipped in case the SN-DU accepted the SCG activation or deactivation request.\n9. The SN sends the SN Modification Request Acknowledge message towards the MN, indicates the SCG status.\n10. The MN-CU-CP may send the BEARER CONTEXT MODIFICATION REQUEST message to the MN-CU-UP\nto notify the SCG status.\n11. The MN-CU-UP sends the BEARER CONTEXT MODIFICATION RESPONSE message to the MN-CU-CP.",
+      "metadata": {
+        "doc_id": "ts_138401v180600p",
+        "level": 4,
+        "parent_section_id": "8.4.4",
+        "child_section_ids": [],
+        "page_numbers": [
+          63
+        ],
+        "knowledge_source": "ts_138401v180600p"
+      }
+    },
+    {
+      "section_id": "8.9.6.2",
+      "section_title": "RRC Inactive to other states",
+      "content": "8.9.6.2 RRC Inactive to other states\nThe procedure for changing the UE state from RRC-inactive to RRC-connected is shown in Figure 8.9.6.2-1.\ngNB-DU gNB-CU-UP gNB-CU-CP\n0. DL traffic detected on the\nNG-U tunnel(s)\n2. PAGING\nUE\n3. Paging\n1. DL DATA NOTIFICATION\n4. RRCResumeRequest\n5. INITIAL UL RRC MESSAGE TRANSFER\n9. BEARER CONTEXT MODIFICATION\nREQUEST\n(with resume indication and DL TEIDs)\n6. UE CONTEXT SETUP REQUEST\n (UL TEIDs)\n10. BEARER CONTEXT MODIFICATION\nRESPONSE\n8. RRC-Resume\n7. UE CONTEXT SETUP RESPONSE\n (DL TEIDs)\n\nFigure 8.9.6.2-1: RRC Inactive to RRC Connected state transition.\n0. The gNB-CU-UP receives DL data on NG-U interface.\n1. The gNB-CU-UP sends DL DATA NOTIFICATION message to the gNB-CU-CP.\n2. The gNB-CU-CP sends PAGING message to the gNB-DU.\n3. The gNB-DU sends the Paging  message to the UE.\nNOTE 1: steps 0-3 are needed only in case of DL data.\n4. The UE sends RRCResumeRequest  message either upon RAN paging or UL data arrival.\n5. The gNB-DU sends the INITIAL UL RRC MESSAGE TRANSFER message to the gNB-CU-CP.\n6. The gNB-CU-CP sends UE CONTEXT SETUP REQUEST message including the stored F1 UL TEIDs to create\nthe UE context in the gNB-DU.\n7. The gNB-DU responds with the UE CONTEXT SETUP RESPONSE message including the F1 DL TEIDs\nallocated for the DRBs.\n8. The gNB-CU-CP and the UE perform the RRC-Resume procedure via the gNB-DU.\n9. The gNB-CU-CP sends BEARER CONTEXT MODIFICATION REQUEST message with a RRC Resume\nindication, which indicates that the UE is resuming from RRC-inactive state. The gNB-CU-CP also includes the\nF1 DL TEIDs received from the gNB-DU in step 7.\n10. The gNB-CU-UP responds with theBEARER CONTEXT MODIFICATION RESPONSE message.\nNOTE 2: steps 8 and 9 can be performed in parallel.",
+      "metadata": {
+        "doc_id": "ts_138401v180600p",
+        "level": 4,
+        "parent_section_id": "8.9.6",
+        "child_section_ids": [],
+        "page_numbers": [
+          79,
+          80
+        ],
+        "knowledge_source": "ts_138401v180600p"
+      }
+    },
+    {
+      "section_id": "8",
+      "section_title": "Overall procedures in gNB-CU/gNB-DU Architecture",
+      "content": "8 Overall procedures in gNB-CU/gNB-DU Architecture",
+      "metadata": {
+        "doc_id": "ts_138401v180600p",
+        "level": 1,
+        "parent_section_id": null,
+        "child_section_ids": [
+          "8.1",
+          "8.2",
+          "8.3",
+          "8.4",
+          "8.5",
+          "8.7",
+          "8.8",
+          "8.9",
+          "8.10",
+          "8.11",
+          "8.12",
+          "8.13",
+          "8.14",
+          "8.15",
+          "8.16",
+          "8.17",
+          "8.18",
+          "8.19",
+          "8.20",
+          "8.21",
+          "8.22",
+          "8.23",
+          "8.24"
+        ],
+        "page_numbers": [],
+        "knowledge_source": "ts_138401v180600p"
+      }
+    },
+    {
+      "section_id": "8.12",
+      "section_title": "IAB-node Integration Procedure",
+      "content": "8.12 IAB-node Integration Procedure",
+      "metadata": {
+        "doc_id": "ts_138401v180600p",
+        "level": 2,
+        "parent_section_id": "8",
+        "child_section_ids": [
+          "8.12.1",
+          "8.12.2",
+          "8.12.3"
+        ],
+        "page_numbers": [],
+        "knowledge_source": "ts_138401v180600p"
+      }
+    },
+    {
+      "section_id": "8.17",
+      "section_title": "IAB Inter-CU Topology Management",
+      "content": "8.17 IAB Inter-CU Topology Management",
+      "metadata": {
+        "doc_id": "ts_138401v180600p",
+        "level": 2,
+        "parent_section_id": "8",
+        "child_section_ids": [
+          "8.17.1",
+          "8.17.2",
+          "8.17.3",
+          "8.17.4"
+        ],
+        "page_numbers": [],
+        "knowledge_source": "ts_138401v180600p"
+      }
+    },
+    {
+      "section_id": "8.21",
+      "section_title": "Overall procedures for Network Controlled Repeater",
+      "content": "8.21 Overall procedures for Network Controlled Repeater",
+      "metadata": {
+        "doc_id": "ts_138401v180600p",
+        "level": 2,
+        "parent_section_id": "8",
+        "child_section_ids": [
+          "8.21.1"
+        ],
+        "page_numbers": [],
+        "knowledge_source": "ts_138401v180600p"
+      }
+    },
+    {
+      "section_id": "8.7",
+      "section_title": "RRC connection reestablishment",
+      "content": "8.7 RRC connection reestablishment\nThis procedure is used for the case that UE tries to reestablish the RRC connection, as shown in Figure 8.7-1.\nUE gNB-DU gNB-CU\n3.RRCReestablishmentRequest\n(old C-RNTI, old PCI)\n4.INITIAL UL RRC MESSAGE TRANSFER\n (new C-RNTI, RRC message)\n9.UE CONTEXT MODIFICATION REQUEST\n1. Preamble\n2. RAR\nAllocate new C-RNTI and\nSRB1 configuration\n10.UE CONTEXT MODIFICATION RESPONSE\n7.RRCReestablishmentComplete 8.UL RRC MESSAGE TRANSFER\n11.DL RRC MESSAGE TRANSFER12.RRCReconfiguration\n13.RRCReconfigurationComplete 14.UL RRC MESSAGE TRANSFER\nFind UE context based on old gNB-\nDU UE F1AP ID, replace old C-\nRNTI/PCI with new C-RNTI/PCI\n9'.UE CONTEXT MODIFICATION REQUIRED\n10'.UE CONTEXT MODIFICATION CONFIRM\n5.DL RRC MESSAGE TRANSFER\n (old gNB-DU F1AP UE ID)6. RRCReesta blishment\n\nFigure 8.7-1: RRC connection reestablishment procedure\n1. The UE sends a preamble to the gNB-DU.\n2. The gNB-DU allocates new C-RNTI and responds with RAR.\n3. The UE sends an RRCReestablishmentRequest  message to the gNB-DU, which contains old C-RNTI and old\nPCI.\n4. The gNB-DU includes the RRC message and, if the UE is admitted, the corresponding low layer configuration\nfor the UE in the INITIAL UL RRC MESSAGE TRANSFER message and transfers to the gNB-CU. The\nINITIAL UL RRC MESSAGE TRANSFER message includes the new C-RNTI. If the gNB-DU identifies the\nUE as a Reduced Capability UE during the random access procedure, a NR RedCap UE Indication or a NR\neRedCap UE Indication is provided in the INITIAL UL RRC MESSAGE TRANSFER message.\n5. The gNB-CU includes an RRCReestablishment message and transfers to the gNB-DU. If the UE requests to re-\nestablish RRC connection in the last serving gNB-DU, the DL RRC MESSAGE TRANSFER message shall\ninclude old gNB-DU UE F1AP ID.\n6. The gNB-DU retrieves the UE context based on the old gNB-DU UE F1AP ID, and replaces old C-RNTI/PCI\nwith new C-RNTI/PCI. It sends the RRCReestablishment message to UE.\n7-8. The UE sends an RRCReestablishmentComplete message to the gNB-DU. The gNB-DU encapsulates the\nRRC message in the UL RRC MESSAGE TRANSFER message and sends to the gNB-CU.\n9-10. The gNB-CU triggers an UE Context Modification procedure by sending UE CONTEXT MODIFICATION\nREQUEST message, which may include DRBs to be modified and released list. The gNB-DU responses with the\nUE CONTEXT MODIFICATION RESPONSE message.\n9'-10'. The gNB-DU triggers an UE Context Modification procedure by sending UE CONTEXT MODIFICATION\nREQUIRED message, which may include DRBs to be modified and released list. The gNB-CU responses with\nUE CONTEXT MODIFICATION CONFIRM message.\nNOTE 1: Here it is assumed that the UE accessed the original gNB-DU where the UE context is available for that\nUE, and either steps 9-10 or steps 9’-10’ may be executed or both could be skipped.\nNOTE 2: If the UE accessed from a gNB-DU other than the original one, the gNB-CU should trigger the UE\nContext Setup procedure toward this new gNB-DU.\n11-12. The gNB-CU includes an RRCReconfiguration message into the DL RRC MESSAGE TRANSFER message\nand transfers to the gNB-DU. The gNB-DU forwards it to the UE.\n13-14. The UE sends an RRCReconfigurationComplete message to the gNB-DU, and the gNB-DU forwards it to the\ngNB-CU.",
+      "metadata": {
+        "doc_id": "ts_138401v180600p",
+        "level": 2,
+        "parent_section_id": "8",
+        "child_section_ids": [],
+        "page_numbers": [
+          68,
+          69
+        ],
+        "knowledge_source": "ts_138401v180600p"
+      }
+    },
+    {
+      "section_id": "8.5",
+      "section_title": "F1 Startup and cells activation",
+      "content": "8.5 F1 Startup and cells activation\nThis function allows to setup the F1 interface between a gNB-DU and a gNB-CU and it allows to activate the gNB-DU\ncells.\ngNB-DU gNB-CU\n3. F1 SETUP RESPONSE\n1. F1 SETUP REQUEST\n0. Pre-operational state\ngNB/eNB5GC\n2. NG Setup/gNB Configuration Update\n6. Xn/X2 Setup\n4. GNB-CU CONFIGURATION UPDATE\n5. GNB-CU CONFIGURATION UPDATE ACKNOWLEDGE\n\nFigure 8.5-1: F1 startup and cell activation\n0. The gNB-DU and its cells are configured by OAM in the F1 pre-operational state. The gNB-DU has TNL\nconnectivity toward the gNB-CU.\n1. The gNB-DU sends an F1 SETUP REQUEST message to the gNB-CU including a list of cells that are configured\nand ready to be activated. For each cell supporting NPN the gNB-DU includes NPN specific information.\n2. In NG-RAN, the gNB-CU ensures the connectivity toward the core network. For this reason, the gNB-CU may\ninitiate either the NG Setup or the gNB Configuration Update procedure towards 5GC.\n3. The gNB-CU sends an F1 SETUP RESPONSE message to the gNB-DU that optionally includes a list of cells to\nbe activated. The cells in the list of cells to be activated in F1 SETUP RESPONSE message become active,\nwhile the cells not in the list are inactive. The cells that are active are Out-of-Service until the gNB-DU indicates\nthat they are In-Service . The gNB-DU will initiate the gNB-DU Configuration Update procedure towards the\ngNB-CU and includes the cell(s) that are In-Service and/or the cell(s) that are Out-Of-Service. The gNB-DU may\nalso indicate cell(s) to be deleted, in which case the gNB-CU removes the corresponding cell(s) information.\n4. The gNB-CU may send a GNB CU CONFIGURATION UPDATE message to the gNB-DU that optionally\nincludes a list of cells to be activated, e.g., in case that these cells were not activated using the F1 SETUP\nRESPONSE message.\n5. The gNB-DU replies with a GNB CU CONFIGURATION UPDATE ACKNOWLEDGE message that optionally\nincludes a list of cells that failed to be activated. The gNB-CU regards all Active cells as Out-Of-Service until\nthe gNB-DU indicates that they are In-Service.\n6. The gNB-CU may initiate either the Xn Setup towards a neighbour NG-RAN node or the EN-DC X2 Setup\nprocedure towards a neighbour eNB.\nNOTE 1: For NG-RAN in case that the F1 SETUP RESPONSE message is not used to activate any cell, step 2 may\nbe performed after step 3.\nOver the F1 interface between a gNB-CU and a gNB-DU pair, the following two Cell States are possible:\n- Inactive : the cell is known by both the gNB-DU and the gNB-CU. The cell shall not serve UEs;\n- Active : the cell is known by both the gNB-DU and the gNB-CU. The cell should try to provide services to the\nUEs.\nThe gNB-CU decides whether the Cell State should be “Inactive“ or “Active“. The gNB-CU can request the gNB-DU\nto change the Cell State using the F1 SETUP RESPONSE, theGNB DU CONFIGURATION UPDATE\nACKNOWLEDGE, or the GNB CU CONFIGURATION UPDATE messages.\nThe gNB-DU reports to the gNB-CU the Service Status. The Service Status is the state of the radio transmission over\nthe air. The Service Status is reported by the gNB-DU for cells for which the Cell State is “Active “. The following\nService Status are defined:\n- In-Service : the cell is operational and able to serve UEs.\n- Out-Of-Service : the cell is not operational, and it is not able to serve UEs. The gNB-DU is trying to make the cell\noperational.\nThe gNB-DU reports the Service Status using the GNB DU CONFIGURATION UPDATE message.\nNOTE 2: If gNB-DU regards that one or more cells cannot become operational, the gNB-DU deletes them and\nreports them using the GNB DU CONFIGURATION UPDATE message.\n8.6 RRC state transition\n8.6.1 RRC connected to RRC inactive\nThis clause gives the RRC connected to RRC inactive state transition given that gNB consists of gNB-CU and gNB-\nDU(s), as shown in Figure 8.6.1-1.\n\ngNB-CUgNB-DU\n\nUE\n3. UE CONTEXT RELEASE COMPLETE\nDetermines UE to\nenter into RRC\ninactive mode\n1. UE CONTEXT RELEASE COMMAND2. RRCRelease (suspendConfig)\n\nFigure 8.6.1-1: RRC connected to RRC inactive state transition procedure\n0. At first, the gNB-CU determines the UE to enter into RRC inactive mode from connected mode.\n1. The gNB-CU generates RRCRelease message which includes suspend configuration towards UE. The RRC\nmessage is encapsulated in UE CONTEXT RELEASE COMMAND message to the gNB-DU.\n2. The gNB-DU forwards RRCRelease message to UE.\n3. The gNB-DU responds with UE CONTEXT RELEASE COMPLETE message.",
+      "metadata": {
+        "doc_id": "ts_138401v180600p",
+        "level": 2,
+        "parent_section_id": "8",
+        "child_section_ids": [],
+        "page_numbers": [
+          64,
+          65
+        ],
+        "knowledge_source": "ts_138401v180600p"
+      }
+    },
+    {
+      "section_id": "8.8",
+      "section_title": "Multiple TNLAs for F1-C",
+      "content": "8.8 Multiple TNLAs for F1-C\nIn the following, the procedure for managing multiple TNLAs for F1-C is described.\ngNB-DU gNB-CU\n3. F1 SETUP RESPONSE\n2. F1 SETUP REQUEST\n4. GNB-CU CONFIGURATION UPDATE\n6. GNB-CU CONFIGURATION UPATE ACK\n1. TNLA establishment (TNLA1)\n8. GNB-DU CONFIGURATION UPDATE\n9. GNB-DU CONFIGURATION UPATE ACK\n7. TNLA establishment (TNLA3)\n5. TNLA establishment (TNLA2)\n\nFigure 8.8-1: Managing multiple TNLAs for F1-C.\n1. The gNB-DU establishes the first TNLA with the gNB-CU using a configured TNL address.\nNOTE: The gNB-DU may use different source and/or destination IP end point(s) if the TNL establishment\ntowards one IP end point fails. How the gNB-DU gets the remote IP end point(s) and its own IP address\nare outside the scope of this specification.\n2-3. Once the TNLA has been established, the gNB-DU in itiates the F1 Setup procedure to exchange application\nlevel configuration data.\n4-6. The gNB-CU may add additional TNL Endpoint(s) to be used for F1-C signalling between the gNB-CU and\nthe gNB-DU pair using the gNB-CU Configuration Update procedure. The gNB-CU Configuration Update\nprocedure also allows the gNB-CU to request the gNB-DU to modify or release TNLA(s).\n7-9. The gNB-DU may add additional TNL association(s) to be used for F1-C signalling using a gNB-CU\nendpoint already in use for existing TNL associations between the gNB-CU and the gNB-DU pair. The gNB-DU\nCONFIGURATION UPDATE message including the gNB-DU ID shall be the first F1AP message sent on an\nadditional TNLA of an already setup F1-C interface instance after the TNL association has become operational.\nThe F1AP UE TNLA binding is a binding between a F1AP UE association and a specific TNL association for a given\nUE. After the F1AP UE TNLA binding is created, the gNB-CU can update the UE TNLA binding by sending the F1AP\nmessage for the UE to the gNB-DU via a different TNLA. The gNB-DU shall update the F1AP UE TNLA binding with\nthe new TNLA. The gNB-DU Configuration Update procedure also allows the gNB-DU to inform the gNB-CU that the\nindicated TNLA(s) will be removed by the gNB-DU.",
+      "metadata": {
+        "doc_id": "ts_138401v180600p",
+        "level": 2,
+        "parent_section_id": "8",
+        "child_section_ids": [],
+        "page_numbers": [
+          70
+        ],
+        "knowledge_source": "ts_138401v180600p"
+      }
+    },
+    {
+      "section_id": "8.3",
+      "section_title": "Mechanism of centralized retransmission of lost PDUs",
+      "content": "8.3 Mechanism of centralized retransmission of lost PDUs",
+      "metadata": {
+        "doc_id": "ts_138401v180600p",
+        "level": 2,
+        "parent_section_id": "8",
+        "child_section_ids": [
+          "8.3.1"
+        ],
+        "page_numbers": [],
+        "knowledge_source": "ts_138401v180600p"
+      }
+    },
+    {
+      "section_id": "8.2",
+      "section_title": "Intra-gNB-CU Mobility",
+      "content": "8.2 Intra-gNB-CU Mobility",
+      "metadata": {
+        "doc_id": "ts_138401v180600p",
+        "level": 2,
+        "parent_section_id": "8",
+        "child_section_ids": [
+          "8.2.1",
+          "8.2.2",
+          "8.2.3",
+          "8.2.4",
+          "8.2.5"
+        ],
+        "page_numbers": [],
+        "knowledge_source": "ts_138401v180600p"
+      }
+    },
+    {
+      "section_id": "8.16",
+      "section_title": "Overall procedures for CPAC",
+      "content": "8.16 Overall procedures for CPAC\nThe following clauses describe the overall procedures for CPAC involving E1 and F1.",
+      "metadata": {
+        "doc_id": "ts_138401v180600p",
+        "level": 2,
+        "parent_section_id": "8",
+        "child_section_ids": [
+          "8.16.1",
+          "8.16.2",
+          "8.16.3"
+        ],
+        "page_numbers": [],
+        "knowledge_source": "ts_138401v180600p"
+      }
+    },
+    {
+      "section_id": "8.22",
+      "section_title": "Overall procedures for multi-path support",
+      "content": "8.22 Overall procedures for multi-path support",
+      "metadata": {
+        "doc_id": "ts_138401v180600p",
+        "level": 2,
+        "parent_section_id": "8",
+        "child_section_ids": [
+          "8.22.1",
+          "8.22.3"
+        ],
+        "page_numbers": [],
+        "knowledge_source": "ts_138401v180600p"
+      }
+    },
+    {
+      "section_id": "8.20",
+      "section_title": "Void",
+      "content": "8.20 Void",
+      "metadata": {
+        "doc_id": "ts_138401v180600p",
+        "level": 2,
+        "parent_section_id": "8",
+        "child_section_ids": [],
+        "page_numbers": [],
+        "knowledge_source": "ts_138401v180600p"
+      }
+    },
+    {
+      "section_id": "8.15",
+      "section_title": "Overall procedures for NR MBS",
+      "content": "8.15 Overall procedures for NR MBS",
+      "metadata": {
+        "doc_id": "ts_138401v180600p",
+        "level": 2,
+        "parent_section_id": "8",
+        "child_section_ids": [
+          "8.15.1",
+          "8.15.2"
+        ],
+        "page_numbers": [],
+        "knowledge_source": "ts_138401v180600p"
+      }
+    },
+    {
+      "section_id": "8.24",
+      "section_title": "Timing resiliency service",
+      "content": "8.24 Timing resiliency service\nThe following clauses describe the overall procedures for RAN Timing Synchronisation Status (TSS) reporting\ninvolving gNB-CU/gNB-DU.\n8.24.1 RAN TSS reporting towards the CN\nThe signaling flow for RAN TSS reporting towards the CN is shown in Figure 8.24.1-1. This procedure is used when\nthe TSCTSF subscribes to RAN TSS reporting at the AMF as described in TS 23.502 [32].\ngNB-DU gNB-CU\n3. TIMING SYNCHRONISATION STATUS RESPONSE\nAMF\n4. TIMING SYNCHRONISATION STATUS RESPONSE\n1. TIMING SYNCHRONISATION STATUS REQUEST\n2. TIMING SYNCHRONISATION STATUS REQUEST\n5. TIMING SYNCHRONISATION STATUS REPORT\n6. TIMING SYNCHRONISATION STATUS REPORT\n7. Primary\nsource event\n8. TIMING SYNCHRONISATION STATUS REPORT\n9. TIMING SYNCHRONISATION STATUS REPORT\n0. RAN TSS\nthresholds configured\n\nFigure 8.24.1-1: RAN TSS reporting towards the CN\n0. The gNB-DU is pre-configured with a threshold for each RAN TSS attribute it supports. The gNB-DU does not\nreport RAN TSS attribute values better than the pre-configured thresholds, i.e. if a RAN TSS attribute has a\nvalue better than the pre-configured threshold, the gNB-DU reports the threshold value to the gNB-CU instead.\nNOTE 1: It is assumed the pre-configured thresholds in the gNB-DU are sufficient to meet UE time sync\nperformance requirement which are configured by the operator.\n1. The AMF requests RAN TSS reporting by sending the TIMING SYNCHRONISATION STATUS REQUEST\nmessage to the gNB-CU.\n2. The gNB-CU requests RAN TSS reporting from at least one gNB-DU by sending the TIMING\nSYNCHRONISATION STATUS REQUEST message to the gNB-DU.\nNOTE 2: It is up to gNB-CU implementation whether to send the request to all its gNB-DUs or to a particular\nsubset of its gNB-DUs, depending on e.g. network topology.\n3. The gNB-DU replies to the gNB-CU by sending the TIMING SYNCHRONISATION STATUS RESPONSE\nmessage.\n4. The gNB-CU replies to the AMF by sending the TIMING SYNCHRONISATION STATUS RESPONSE\nmessage. If the gNB-CU does not receive a successful response from at least one gNB-DU, the gNB-CU replies\nto the AMF by sending the TIMING SYNCHRONISATION STATUS FAILURE message and the flow stops at\nthis step.\n5. Upon sending the response to the gNB-CU, the gNB-DU provides a first RAN TSS report to the gNB-CU by\nsending the TIMING SYNCHRONISATION STATUS REPORT message.\nNOTE 3: The RAN TSS attributes included in the report is up to gNB-DU implementation.\n6. The gNB-CU sends the TIMING SYNCHRONISATION STATUS REPORT message to the AMF. The message\ncontains the RAN TSS attributes received from the gNB-DU and the RAN TSS Scope IE to indicate whether the\nscope of the RAN TSS report is “RAN node level” or “cell list level”.\n7. Later, the gNB-DU detects a primary source event:\na) a RAN TSS attribute cannot meet a pre-confi gured threshold (i.e. status is degraded);\nb) a RAN TSS attribute meets the pre-configured thre shold again (i.e. status is no longer degraded);\nc) event a) occurred and b) has not yet been reached for a RAN TSS attribute, and either an implementation-\ndependent time interval has passed or a previously reported value can no longer be met.\nNOTE 4: Additional primary source events, if any, are up to gNB-DU implementation.\n8. Upon detecting the primary source event, the gNB-DU provides an updated RAN TSS report to the gNB-CU by\nsending a TIMING SYNCHRONISATION STATUS REPORT message.\n9. Same as step 6.\n8.24.2 RAN TSS reporting towards the UE\nThe signaling flow for RAN TSS reporting towards the UE in RRC_CONNECTED state is shown in Figure 8.24.2-1.\ngNB-DU gNB-CU AMF\n2. INITIAL CONTEXT SETUP RESPONSE\n1. INITIAL CONTEXT SETUP REQUEST\n(Clock Quality Reporting Control Information )\n4. Primary\nsource event\n5. TIMING SYNCHRONISATION STATUS REPORT\nUE\n6. DLInfoTransf er message\n     (Clock Quality Information)\n3. DLInfoTransf er message\n    (Clock Quality Information)\n\nFigure 8.24.2-1: RAN TSS reporting towards the UE in RRC_CONNECTED state\nNOTE 1: In this signalling flow, it is assumed that RAN TSS reporting is already enabled at the gNB-DU.\n1. The AMF sends the INITIAL CONTEXT SETUP REQUEST message to the gNB-CU, containing the Clock\nQuality Reporting Control Information IE within the Time Synchronization Assistance Information IE. The clock\nquality reporting control information indicates the clock quality detail level to provide to the UE, i.e. “metrics”\nor “acceptable/not acceptable indication”. If clock quality detail level equals “acceptable/not acceptable\nindication”, the clock quality reporting control information also contains the clock quality acceptance criteria.\nNOTE 2: The clock quality reporting control informat ion can also be provided in the UE CONTEXT\nMODIFICATION REQUEST, HANDOVER REQUEST, or PATH SWITCH REQUEST\nACKNOWLEDGE messages.\n2. The gNB-CU replies to the AMF by sending the INITIAL CONTEXT SETUP RESPONSE message.\n3. The gNB-CU sends the latest clock quality information to the UE by sending the DLInformationTransfer\nmessage. The clock quality information provided to the UE depends on the clock quality detail level received in\nstep 1 (i.e., “metrics” or “acceptable/not acceptable indication”).\n4. Later, the gNB-DU detects a primary source event:\na) a RAN TSS attribute cannot meet a pre-confi gured threshold (i.e. status is degraded);\nb) a RAN TSS attribute meets the pre-configured thre shold again (i.e. status is no longer degraded);\nc) event a) occurred and b) has not yet been reached for a RAN TSS attribute, and either an implementation-\ndependent time interval has passed or a previously reported value can no longer be met.\nNOTE 3: Additional primary source events, if any, are up to gNB-DU implementation.\n5. Upon detecting the primary source event, the gNB-DU provides an updated RAN TSS report to the gNB-CU by\nsending a TIMING SYNCHRONISATION STATUS REPORT message.\n6. Same as step 3.",
+      "metadata": {
+        "doc_id": "ts_138401v180600p",
+        "level": 2,
+        "parent_section_id": "8",
+        "child_section_ids": [],
+        "page_numbers": [
+          152,
+          153,
+          154
+        ],
+        "knowledge_source": "ts_138401v180600p"
+      }
+    },
+    {
+      "section_id": "8.1",
+      "section_title": "UE Initial Access",
+      "content": "8.1 UE Initial Access\nThe signalling flow for UE Initial access is shown in Figure 8.1-1.\nUE gNB-DU gNB-CU\n1.RRCSetupRequest\n4.RRCSetup\n5.RRCSetupComplete\n2.INITIAL UL RRC MESSAGE\nTRA NSFER\nAMF\n7.INITIAL UE MESSAGE\n8.INITIAL CONTEXT SETUP\nREQUEST\n3. DL RRC MESSAGE TRANSFER\n15.RRCReconfiguration\n11.UE CONTEXT SETUP RESPONSE\n16.RRCReconfigurationComplete\n18.INITIAL CONTEXT SETUP\nRESPONSE\n6.UL RRC MESSAGE TRANSFER\n14.DL RRC MESSAGE TRANSFER\n17.UL RRC MESSAGE TRANSFER\n10.SecurityModeCommand\n12.SecurityModeComplete\n9.UE CONTEXT SETUP REQUEST\n13.UL RRC MESSAGE TRANSFER\n\nFigure 8.1-1: UE Initial Access procedure\n1. The UE sends an RRCSetupRequest  message to the gNB-DU.\n2. The gNB-DU includes the RRC message and, if the UE is admitted, the corresponding low layer configuration\nfor the UE in the INITIAL UL RRC MESSAGE TRANSFER message and transfers to the gNB-CU. The\nINITIAL UL RRC MESSAGE TRANSFER message includes the C-RNTI allocated by the gNB-DU. If the\ngNB-DU identifies the UE as a Reduced Capability UE during the random access procedure, a NR RedCap UE\nIndication or a NR eRedCap UE Indication is provided in the INITIAL UL RRC MESSAGE TRANSFER\nmessage.\n3. The gNB-CU allocates a gNB-CU UE F1AP ID for the UE and generates a  RRCSetup message towards UE. The\nRRC message is encapsulated in -the DL RRC MESSAGE TRANSFER message.\n4. The gNB-DU sends the RRCSetup  message to the UE.\n5. The UE sends the RRC CONNECTION SETUP COMPLETE message to the gNB-DU.\n6. The gNB-DU encapsulates the RRC message in the UL RRC MESSAGE TRANSFER message and sends it to\nthe gNB-CU.\n7. The gNB-CU sends the INITIAL UE MESSAGE message to the AMF.\n8. The AMF sends the INITIAL CONTEXT SETUP REQUEST message to the gNB-CU.\n9. The gNB-CU sends the UE CONTEXT SETUP REQUEST message to establish the UE context in the gNB-DU.\nIn this message, it may also encapsulate the SecurityModeCommand message. In case of NG-RAN sharing, the\ngNB-CU includes the serving PLMN ID (for SNPNs the serving SNPN ID).\n10. The gNB-DU sends the SecurityModeCommand message to the UE.\n11. The gNB-DU sends the UE CONTEXT SETUP RESPONSE message to the gNB-CU.\n12. The UE responds with the SecurityModeComplete message.\n13. The gNB-DU encapsulates the RRC message in the UL RRC MESSAGE TRANSFER message and sends it to\nthe gNB-CU.\n14. The gNB-CU generates the RRCReconfiguration message and encapsulates it in the DL RRC MESSAGE\nTRANSFER message.\n15. The gNB-DU sends RRCReconfiguration message to the UE.\n16. The UE sends RRCReconfigurationComplete message to the gNB-DU.\n17. The gNB-DU encapsulates the RRC message in the UL RRC MESSAGE TRANSFER message and send it to\nthe gNB-CU.\n18. The gNB-CU sends the INITIAL CONTEXT SETUP RESPONSE message to the AMF.",
+      "metadata": {
+        "doc_id": "ts_138401v180600p",
+        "level": 2,
+        "parent_section_id": "8",
+        "child_section_ids": [],
+        "page_numbers": [
+          32,
+          33
+        ],
+        "knowledge_source": "ts_138401v180600p"
+      }
+    },
+    {
+      "section_id": "8.10",
+      "section_title": "Multiple TNLAs for E1",
+      "content": "8.10 Multiple TNLAs for E1\nNOTE 0: The general principles and procedures described in  this clause also apply to ng-eNB and W1/E1 interface,\ni.e. W1 interface between ng-eNB-DU and ng-eNB-CU-CP/ng-eNB-CU-UP, E1 interface between ng-\neNB-CU-CP and ng-eNB-CU-UP, if not explicitly specified otherwise.\nIn the following, the procedure for managing multiple TNLAs for E1 is described.\n\ngNB-CU-UP gNB-CU-CP\n3. GNB-CU-UP E1 SETUP RESPONSE\n2. GNB-CU-UP E1 SETUP REQUEST\n4. GNB-CU-CP  CONFIGURATION UPDATE\n6. GNB-CU-CP CONFIGURATION UPATE ACK\n1. TNLA establishment (TNLA1)\n3. GNB-CU-CP E1 SETUP RESPONSE\n2. GNB-CU-CP E1 SETUP REQUEST\n(A)\n(B)\n8. GNB-CU-UP  CONFIGURATION UPDATE\n9. GNB-CU-UP CONFIGURATION UPATE ACK\n5. TNLA establishment (TNLA2)\n7. TNLA establishment (TNLA3)\n\nFigure 8.10-1: Managing multiple TNLAs for E1.\n1. Either the gNB-CU-CP or gNB-CU-UP establishes the first SCTP association with the gNB-CU-UP or gNB-\nCU-CP respectively using a configured TNL address.\nNOTE 1: The gNB-CU-UP/gNB-CU-CP may use different source and/or destination IP end point(s) if the TNL\nestablishment towards one IP end point fails. How the gNB-CU-UP/gNB-CU-CP gets the remote IP end\npoint(s) and its own IP address are outside the scope of this specification.\n2-3 (A). Once the TNLA (gNB-CU-UP initiated) has been established, the gNB-CU-UP initiates the E1 Setup\nprocedure to exchange application level configuration data.\n2-3 (B). Once the TNLA (gNB-CU-CP initiated) has been established, the gNB-CU-CP initiates the E1 Setup\nprocedure to exchange application level configuration data.\n4-6. The gNB-CU-CP may add additional SCTP Endpoint(s) to be used for E1 signalling between the gNB-CU-\nCP and the gNB-CU-UP pair using the gNB-CU-CP Configuration Update procedure. The gNB-CU-CP\nConfiguration Update procedure also allows the gNB-CU-CP to request the gNB-CU-UP to modify or release\nTNLA(s).\n7-9. The gNB-CU-UP may add additional TNL association(s) to be used for E1 signalling using a gNB-CU-CP\nendpoint already in use for existing TNL associations between the gNB-CU-CP and the gNB-CU-UP pair. The\ngNB-CU-UP CONFIGURATION UPDATE message including the gNB-CU-UP ID shall be the first E1AP\nmessage sent on an additional TNLA of an already setup E1 interface instance after the TNL association has\nbecome operational. The E1AP UE TNLA binding is a binding between a E1AP UE association and a specific\nTNL association for a given UE. After the E1AP UE TNLA binding is created, the gNB-CU-CP can update the\nUE TNLA binding by sending the E1AP message for the UE to the gNB-CU-UP via a different TNLA. The\ngNB-CU-UP shall update the E1AP UE TNLA binding with the new TNLA. The gNB-CU-UP Configuration\nUpdate procedure also allows the gNB-CU-UP to inform the gNB-CU-CP that the indicated TNLA(s) will be\nremoved by the gNB-CU-UP.",
+      "metadata": {
+        "doc_id": "ts_138401v180600p",
+        "level": 2,
+        "parent_section_id": "8",
+        "child_section_ids": [],
+        "page_numbers": [
+          87,
+          88
+        ],
+        "knowledge_source": "ts_138401v180600p"
+      }
+    },
+    {
+      "section_id": "8.23",
+      "section_title": "Mobile IAB migration procedures",
+      "content": "8.23 Mobile IAB migration procedures",
+      "metadata": {
+        "doc_id": "ts_138401v180600p",
+        "level": 2,
+        "parent_section_id": "8",
+        "child_section_ids": [
+          "8.23.1",
+          "8.23.4"
+        ],
+        "page_numbers": [],
+        "knowledge_source": "ts_138401v180600p"
+      }
+    },
+    {
+      "section_id": "8.11",
+      "section_title": "Support of Network Sharing with multiple cell-ID broadcast",
+      "content": "8.11 Support of Network Sharing with multiple cell-ID broadcast",
+      "metadata": {
+        "doc_id": "ts_138401v180600p",
+        "level": 2,
+        "parent_section_id": "8",
+        "child_section_ids": [
+          "8.11.1",
+          "8.11.2",
+          "8.11.3",
+          "8.11.4"
+        ],
+        "page_numbers": [],
+        "knowledge_source": "ts_138401v180600p"
+      }
+    },
+    {
+      "section_id": "8.9",
+      "section_title": "Overall procedures involving E1 and F1",
+      "content": "8.9 Overall procedures involving E1 and F1\nThe following clauses describe the overall procedures involving E1 and F1.\nNOTE: The general principles and procedures described in this clause also apply to ng-eNB and W1/E1 interface,\ni.e. W1 interface between ng-eNB-DU and ng-eNB-CU-CP/ng-eNB-CU-UP, E1 interface between ng-\neNB-CU-CP and ng-eNB-CU-UP, if not explicitly specified otherwise.",
+      "metadata": {
+        "doc_id": "ts_138401v180600p",
+        "level": 2,
+        "parent_section_id": "8",
+        "child_section_ids": [
+          "8.9.1",
+          "8.9.2",
+          "8.9.3",
+          "8.9.4",
+          "8.9.5",
+          "8.9.6",
+          "8.9.7",
+          "8.9.8",
+          "8.9.9",
+          "8.9.10",
+          "8.9.11",
+          "8.9.12",
+          "8.9.13",
+          "8.9.14",
+          "8.9.15",
+          "8.9.16",
+          "8.9.17"
+        ],
+        "page_numbers": [],
+        "knowledge_source": "ts_138401v180600p"
+      }
+    },
+    {
+      "section_id": "8.13",
+      "section_title": "Overall procedures for MDT",
+      "content": "8.13 Overall procedures for MDT",
+      "metadata": {
+        "doc_id": "ts_138401v180600p",
+        "level": 2,
+        "parent_section_id": "8",
+        "child_section_ids": [
+          "8.13.0",
+          "8.13.1",
+          "8.13.2",
+          "8.13.3",
+          "8.13.4"
+        ],
+        "page_numbers": [],
+        "knowledge_source": "ts_138401v180600p"
+      }
+    },
+    {
+      "section_id": "8.14",
+      "section_title": "Self-optimisation",
+      "content": "8.14 Self-optimisation",
+      "metadata": {
+        "doc_id": "ts_138401v180600p",
+        "level": 2,
+        "parent_section_id": "8",
+        "child_section_ids": [
+          "8.14.1"
+        ],
+        "page_numbers": [],
+        "knowledge_source": "ts_138401v180600p"
+      }
+    },
+    {
+      "section_id": "8.19",
+      "section_title": "Overall procedures for L2 UE-to-Network Relay",
+      "content": "8.19 Overall procedures for L2 UE-to-Network Relay",
+      "metadata": {
+        "doc_id": "ts_138401v180600p",
+        "level": 2,
+        "parent_section_id": "8",
+        "child_section_ids": [
+          "8.19.1",
+          "8.19.2",
+          "8.19.3",
+          "8.19.4"
+        ],
+        "page_numbers": [],
+        "knowledge_source": "ts_138401v180600p"
+      }
+    },
+    {
+      "section_id": "8.18",
+      "section_title": "Overall procedure for Small Data Transmission during RRC Inactive",
+      "content": "8.18 Overall procedure for Small Data Transmission during RRC Inactive\nInactive",
+      "metadata": {
+        "doc_id": "ts_138401v180600p",
+        "level": 2,
+        "parent_section_id": "8",
+        "child_section_ids": [
+          "8.18.1",
+          "8.18.2",
+          "8.18.3",
+          "8.18.4"
+        ],
+        "page_numbers": [],
+        "knowledge_source": "ts_138401v180600p"
+      }
+    },
+    {
+      "section_id": "8.2.2",
+      "section_title": "EN-DC Mobility",
+      "content": "8.2.2 EN-DC Mobility",
+      "metadata": {
+        "doc_id": "ts_138401v180600p",
+        "level": 3,
+        "parent_section_id": "8.2",
+        "child_section_ids": [
+          "8.2.2.1",
+          "8.2.2.2",
+          "8.2.2.3"
+        ],
+        "page_numbers": [],
+        "knowledge_source": "ts_138401v180600p"
+      }
+    },
+    {
+      "section_id": "7.9",
+      "section_title": "Support for CCO",
+      "content": "7.9 Support for CCO",
+      "metadata": {
+        "doc_id": "ts_138401v180600p",
+        "level": 2,
+        "parent_section_id": "7",
+        "child_section_ids": [
+          "7.9.1",
+          "7.9.2",
+          "7.9.3"
+        ],
+        "page_numbers": [],
+        "knowledge_source": "ts_138401v180600p"
+      }
+    },
+    {
+      "section_id": "8.4.2.1",
+      "section_title": "EN-DC",
+      "content": "8.4.2.1 EN-DC\nThis clause gives the SgNB release procedure in EN-DC given that the en-gNB consists of a gNB-CU and gNB-DU(s).\nMN initiated SN Release\nUE\n MeNB\n gNB-CU\n gNB-DU\n S-GW\n3. RRCConnectionReconfiguration\n4. RRCConnectionReconfigurationComplete\n5 .  SN  ST A T U S T R A N S FE R\n6 .  D at a F o r wa r d in g\n7. Path  U p d a te p r o ced u r e\n1.  S G NB R EL EAS E R E Q U ES T\n8 .  UE C O NT EX T  R EL EASE\nMME\na3. U E  C O N TE X T R ELE AS E  C O M MAN D\na 4 .  UE C ON TEX T REL EA S E C OM P L ETE\na1. U E  C ON TE X T M OD IF IC A TIO N R E Q U ES T\na2. U E  C ON TE X T M OD IF IC A TIO N R E S PON S E\n2.  S G N B  REL EA S E R EQ U EST A C K N OWL ED G E\n\nFigure 8.4.2.1-1 SgNB release procedure in EN-DC (MN initiated)\n1~8: refer to TS 37.340 [12].\nNOTE: The timing of sending the Step 2 SGNB RELEASE REQUEST ACKNOWLEDGE message is an\nexample, it may be sent e.g. after step a1 or after a2 and it is up to implementation.\na1. After receiving SGNB RELEASE REQUEST message from MeNB, gNB-CU sends the UE CONTEXT\nMODIFICATION REQUEST message to gNB-DU to stop the data transmission for the UE. It is up to gNB-DU\nimplementation when to stop the UE scheduling.\na2. gNB-DU responds to gNB-CU with UE CONTEXT MODIFICATION RESPONSE message.\na3. After receiving the UE CONTEXT RELEASE message from MeNB, the gNB-CU sends the UE CONTEXT\nRELEASE COMMAND message to the gNB-DU to release the UE context.\na4. The gNB-DU responds to the gNB-CU with the UE CONTEXT RELEASE COMPLETE message.\nSN initiated SN Release\nUE\n MeNB\n gNB-CU\n gNB-DU\n S-GW\n1.  SG N B  RE L E A S E  RE Q U I R E D\n3. RRCConnectionReconfiguration\n4. RRCConnectionReconfigurationComplete\n5 .  SN  ST A T U S T R A N S FE R\n6 .  D at a F o r wa r d in g\n7 .  P a t h  U p da t e  p r o c e du r e\n2. S G NB  R E LEA S E C ON F IR M\n8 .  UE C O NT EX T  R EL EASE\nMME\na3. U E C O NT EX T  R E LEA S E  C O M M A N D\na4. U E C O NT EX T  R E LEA S E  C O M PL E T E\na 1.  UE C ONT EX T  M O D I FI C A TI ON  R E Q U ES T\na 2 .  UE C ONT EX T  M O D I FI C A TI ON  R E S P O NS E\n\nFigure 8.4.2.1-2 SgNB release procedure in EN-DC (SN initiated)\n1~8: refer to TS 37.340 [12].\na1. gNB-CU sends the UE CONTEXT MODIFICATION REQUEST message to gNB-DU to stop the data\ntransmission for the UE. It is up to gNB-DU implementation when to stop the UE scheduling. This step may\noccur before step 1.\na2. gNB-DU responds to gNB-CU with UE CONTEXT MODIFICATION RESPONSE message.\na3. After receiving the UE CONTEXT RELEASE message from MeNB, the gNB-CU sends the UE CONTEXT\nRELEASE COMMAND message to the gNB-DU to release the UE context.\na4. The gNB-DU responds to the gNB-CU with the UE CONTEXT RELEASE COMPLETE message.",
+      "metadata": {
+        "doc_id": "ts_138401v180600p",
+        "level": 4,
+        "parent_section_id": "8.4.2",
+        "child_section_ids": [],
+        "page_numbers": [
+          60
+        ],
+        "knowledge_source": "ts_138401v180600p"
+      }
+    },
+    {
+      "section_id": "8.16.2",
+      "section_title": "MN initiated conditional SN Change",
+      "content": "8.16.2 MN initiated conditional SN Change\nThe procedure for MN initiated conditional SN Change refer to TS 37.340[12]. In case of split gNB architecture, the\nprocedures between gNB-CU and gNB-DU and the procedures between gNB-CU-CP and gNB-CU-UP refer to 8.16.1.",
+      "metadata": {
+        "doc_id": "ts_138401v180600p",
+        "level": 3,
+        "parent_section_id": "8.16",
+        "child_section_ids": [],
+        "page_numbers": [],
+        "knowledge_source": "ts_138401v180600p"
+      }
+    },
+    {
+      "section_id": "8.4.4.1",
+      "section_title": "SN Addition with SCG Activation or Deactivation",
+      "content": "8.4.4.1 SN Addition with SCG Activation or Deactivation\nMN-CU-UP MN-CU-CP SN-CU-CP SN-CU-UP SN-DU\n1. SN Addition Request\n(activate or deactivate the SCG)\n2. BEARER CONTEXT SETUP REQUEST\n(SCG activated or deactivated)\n3. BEARER CONTEXT SETUP RESPONSE\n4. UE CONTEXT SETUP REQUEST\n(activate or deactivate the SCG)\n5. UE CONTEXT SETUP RESPONSE\n(SCG status)\n6. BEARER CONTEXT MODIFICATION REQUEST\n(SCG status)\n7. BEARER CONTEXT MODIFICATION RESPOSE\n8. SN Addition Reqeust Acknowledge\n(SCG status)\n9. BEARER CONTEXT MODIFICATION REQUEST\n(SCG status)\n10. BEARER CONTEXT MODIFICATION RESPONSE\n\nFigure 8.4.4.1-1: SCG Activation or Deactivation in SN Addition procedure\n1. The MN sends the SN Addition Request message to the SN, indicates the request of SCG activation or\ndeactivation.\n2. The SN-CU-CP may send the BEARER CONTEXT SETUP REQUEST message to the SN-CU-UP to setup\nbearer context and notify the activation or deactivation of the SCG.\n3. The SN-CU-UP sends the BEARER CONTEXT SETUP RESPONSE message to the SN-CU-CP.\n4. The SN-CU sends the UE CONTEXT SETUP REQUEST message to the SN-DU to setup UE context and\nindicate the request of SCG activation or deactivation.\n5. The SN-DU sends the UE CONTEXT SETUP RESPONSE message to the SN-CU, indicates the SCG status. In\ncase SCG activation is requested, the SN-DU shall indicate SCG activated in the message.\n6. The SN-CU-CP may send the BEARER CONTEXT MODIFICATION REQUEST message to the SN-CU-UP as\ndescribed in clause 8.9.2 and may notify the SCG status if needed.\n7. The SN-CU-UP sends the BEARER CONTEXT MODIFICATION RESPONSE message to the SN-CU-CP.\n8. The SN sends the SN Addition Request Acknowledge message to the MN, indicates the SCG status. In case SCG\nactivation is requested, the SN shall indicate SCG activated in the message.\n9. The MN-CU-CP may send the BEARER CONTEXT MODIFICATION REQUEST message to the MN-CU-UP\nto notify the SCG status.\n10. The MN-CU-UP sends the BEARER CONTEXT MODIFICATION RESPONSE message to the MN-CU-CP.",
+      "metadata": {
+        "doc_id": "ts_138401v180600p",
+        "level": 4,
+        "parent_section_id": "8.4.4",
+        "child_section_ids": [],
+        "page_numbers": [
+          62
+        ],
+        "knowledge_source": "ts_138401v180600p"
+      }
+    },
+    {
+      "section_id": "8.4.1.1",
+      "section_title": "EN-DC",
+      "content": "8.4.1.1 EN-DC\nThis clause gives the SgNB addition procedure in EN-DC given that en-gNB consists of gNB-CU and gNB-DU(s), as\nshown in Figure 8.4.1.1-1.\nUE\n MeNB\n gNB-CU\n gNB-DU\n S-GW\n2 . S G N B  A D D ITIO N  R E QU ES T  A C K N OW LE D G E\n(c ar r y  CG-Co nfig )\n3. RRCConnectionReconfiguration\n4.  RRCConnectionReconfigurationComplete\n5 .  SG N B RE C O N F I G UR A T I O N  C O M PL E T E\n7. S N  S T AT U S  T R AN S F E R\n8.  D at a F o r w a r d in g\n6 .  R a n dom  A c ce s s  Proc e dur e\n      Pat h  U p d a t e  p r o c e d u r e\nMME\na 1. UE C O NTE X T S E T U P REQ U E S T\n ( ca rry   CG-ConfigInfo )\na 2. U E  C O NTEX T S ET U P R E S PO N S E\nU p lin k  u s e r   d at a\nD o w n li n k  u se r   d at a\nD o w n li n k  u se r   d at a\n1 .  S G N B  A D D I TI ON  R EQ U ES T\n ( c a rry   CG-Co nfigI nfo )\n\nFigure 8.4.1.1-1: SgNB addition procedure in EN-DC\n1~8: refer to TS 37.340 [12].\na1. After receiving the SGNB ADDITION REQUEST message from MeNB, the gNB-CU sends the UE CONTEXT\nSETUP REQUEST message to the gNB-DU to create a UE context. As specified in TS 37.340 [12], in the\ncourse of a Secondary Node Change, the UE CONTEXT SETUP REQUEST message may contain source cell\ngroup configuration to allow gNB-DU to perform delta configuration.\na2. The gNB-DU responds to the gNB-CU with the UE CONTEXT SETUP RESPONSE message. In case the gNB-\nDU receives the UE CONTEXT SETUP REQUEST message without the source cell group configuration or in\nthe course of a Secondary Node Change as specified in TS 37.340 [12] or if the gNB-DU decides to perform full\nconfiguration after receiving the source cell group configuration, it shall perform full configuration and indicate\nthat it has applied full configuration in the UE CONTEXT SETUP RESPONSE message.\nNOTE: On Inter-gNB-CU Mobility, same method is performed to achieve full configuration and delta\nconfiguration.",
+      "metadata": {
+        "doc_id": "ts_138401v180600p",
+        "level": 4,
+        "parent_section_id": "8.4.1",
+        "child_section_ids": [],
+        "page_numbers": [
+          59
+        ],
+        "knowledge_source": "ts_138401v180600p"
+      }
+    },
+    {
+      "section_id": "8.9.6",
+      "section_title": "RRC State transition",
+      "content": "8.9.6 RRC State transition",
+      "metadata": {
+        "doc_id": "ts_138401v180600p",
+        "level": 3,
+        "parent_section_id": "8.9",
+        "child_section_ids": [
+          "8.9.6.1",
+          "8.9.6.2"
+        ],
+        "page_numbers": [],
+        "knowledge_source": "ts_138401v180600p"
+      }
+    },
+    {
+      "section_id": "8.18.2",
+      "section_title": "CG based SDT",
+      "content": "8.18.2 CG based SDT\nThe procedure for CG based small data transmission in RRC Inactive is shown in Figure 8.18.2-1.\nUE gNB-DU gNB-CU-CP gNB-CU-UP\n1.gNB-CU-CP decides to move\nUE into RRC_inactive\n2.UE CONTEXT MODIFICATION REQUEST\n(CG-SDT query indicator)\n3.UE CONTEXT MODIFICATION RESPONSE\n(CG-SDT lower layer resource)\n4.BEARER CONTEXT MODIFICATION REQUEST\n(with suspend indication)\n5.BEARER CONTEXT MODIFICATION RESPONSE\n6.UE CONTEXT RELEASE COMMAND\n(CG-SDT kept indicator, RRCRelease)\n7. RRCRelease\n(suspend indication, CG-SDT config)\n8.UE CONTEXT RELEASE COMPLETE\nAfter a period of time of UE being in RRC_inactive mode\n9. RRCResumeRequest\n+ UL SDT data and/or UL SDT signalling\n10.UL RRC MESSAGE TRANSFER\n(RRCResumeRequest)\n11.BEARER CONTEXT MODIFICATION REQUEST\n(SDT DRB resume)\n12.BEARER CONTEXT MODIFICATION RESPONSE\n13.UL SDT Data\n13a.UL RRC MESSAGE TRANSFER\n(UL SDT Signalling)\nSubsequent SDT Data transmission\n\nFigure 8.18.2-1: CG based Small Data Transmission in RRC Inactive state.\n1. The gNB-CU decides to move UE into RRC_INACTIVE state.\n2. The gNB-CU-CP decides to configure CG-SDT, it sends UE CONTEXT MODIFICATION REQUEST message\nincluding a query indication for CG-SDT related resource configuration associated with the information of SDT\nRadio Bearer(s).\n3. The gNB-DU sends the UE CONTEXT MODIFICATION RESPONSE message including the CG-SDT related\nresource configurations for the requested SDT Radio Bearer(s) within the DU to CU RRC Information IE.\n4. The gNB-CU-CP sends the BEARER CONTEXT MODIFICATION REQUEST towards the gNB-CU-UP, with\nthe suspend indication.\n5. The gNB-CU-UP sends the BEARER CONTEXT MODIFICATION RESPONSE towards the gNB-CU-CP.\n6. The gNB-CU-CP sends the UE CONTEXT RELEASE COMMAND message to the gNB-DU including an\nRRCRelease message to the UE with the CG-SDT information within suspend configuration. The gNB-CU\nnotifies the gNB-DU to keep the SDT RLC config, F1-U tunnels, F1AP UE association, and store the CG\nresource for SDT when the UE is entering RRC_INACTIVE state with an explicit CG-SDT kept indicator.\n7. The gNB-DU sends the RRCRelease  message to UE.\n8. The gNB-DU sends UE CONTEXT RELEASE COMPLETE message. The gNB-DU keeps the SDT RLC\nconfig, F1-U tunnels, F1AP UE association, and stores the CG resource for SDT when the UE entering\nRRC_INACTIVE. The gNB-DU also stores the C-RNTI, CG-SDT-CS-RNTI, and which bearers are CG-SDT\nbearers.\nAfter a period of time of the UE being in RRC_INACTIVE state.\n9. The UE decides to perform CG based SDT procedure, it sends the RRCResumeRequest message together with\nUL SDT data/UL NAS PDU.\n10.The gNB-DU sends the UL RRC MESSAGE TRANSFER message including the RRCResumeRequest message\nto indicate the access due to CG-SDT.\n11/12. If UE context is successfully retrieved as specified in TS 38.300 [2], the gNB-CU-CP initiates the BEARER\nCONTEXT MODIFICATION procedure to resume SDT DRBs.\n13 – 13a. The gNB-DU sends the UL SDT data, if any, to the gNB-CU-UP, and/or sends the UL signalling, if any,\nto the gNB-CU-CP via the UL RRC MESSAGE TRANSFER message, in which any UL NAS PDU is delivered\nto AMF.\nNOTE 1: void.\nUpon receiving the UE INACTIVITY NOTIFICATION message without SDT volume threshold crossed indication\nfrom the gNB-DU and deciding to terminate the ongoing SDT procedure, the gNB-CU shall transmit the UE\nCONTEXT RELEASE COMMAND message to the gNB-DU.\nNOTE 2: void.\nUpon receiving BSR from the UE, in case that UL SDT data size in the BSR is larger than the threshold configured\nfrom the gNB-CU-CP, the gNB-DU sends the UE INACTIVITY NOTIFICATION message with the SDT volume\nthreshold crossed indication to the gNB-CU-CP. Upon receiving such indication, the gNB-CU-CP may terminate the\nongoing SDT procedure, by sending the RRCResume message to move the UE to RRC_CONNECTED.\nIf CG-SDT is re-configured, the gNB-CU may request the gNB-DU to keep CG-SDT configuration and resources in the\nUE CONTEXT RELEASE COMMAND message.\nUpon receiving DL non-SDT data, the gNB-CU-UP shall send the DL DATA NOTIFICATION message to the gNB-\nCU-CP. The gNB-CU-CP shall terminate the ongoing SDT procedure as specified in TS 38.300 [2].\nIf the amount of the received DL SDT data is above the data size threshold configured by the gNB-CU-CP, the gNB-\nCU-UP shall send the DL DATA NOTIFICATION message with the SDT data size threshold crossed indication. The\ngNB-CU-CP may terminate the ongoing SDT procedure as specified in TS 38.300 [2].\nIn case that the gNB-CU-CP terminates the ongoing SDT procedure by sending the RRCResume message to move the\nUE to RRC_CONNECTED as specified in TS 38.300 [2], if non-SDT bearer(s) has been configured but suspended in\nthe gNB-CU-UP, the gNB-CU-CP triggers the Bearer Context Modification procedure to the gNB-CU-UP to resume all\nbearers.",
+      "metadata": {
+        "doc_id": "ts_138401v180600p",
+        "level": 3,
+        "parent_section_id": "8.18",
+        "child_section_ids": [],
+        "page_numbers": [
+          124,
+          125
+        ],
+        "knowledge_source": "ts_138401v180600p"
+      }
+    },
+    {
+      "section_id": "8.18.1",
+      "section_title": "RACH based SDT",
+      "content": "8.18.1 RACH based SDT\nThe procedure for RACH based small data transmission in RRC Inactive is shown in Figure 8.18.1-1.\ngNB-DU gNB-CU-CP gNB-CU-UP\n2. B uffer UL d ata /signal ling\nUE\n1. RRCResumeRequest\n3. INITIAL UL RRC MESSAGE TRANSFER\n+ UL SDT data and/or UL SDT signalling\n4. UE CO NTEXT SETUP REQ UE ST (UL TE IDs)\n5. UE CONTEXT SETUP RESPONSE (DL TEIDs)\n(SDT indication, assistance information)\n6. BEARER CONTEXT MODIFICATION REQUEST\n    (SDT DRB resume, DL TEIDs)\n7. BEAR ER  CONT EXT MODI FIC AT ION R ESPONSE\n\nFigure 8.18.1-1: RACH based Small Data Transmission in RRC Inactive state.\n1. The UE in RRC Inactive sends the RRCResumeRequest  message together with UL SDT data and/or UL SDT\nsignalling.\n2. The gNB-DU buffers the UL SDT data and/or UL SDT signalling.\n3. The step 3 is as defined in step 4 in clause 8.6.2, including an indication of SDT access. The gNB-DU may also\nprovide SDT assistance information.\n4-5. If UE context is successfully retrieved as specified in TS 38.300 [2], the steps 4-5 are as defined in steps 6-7\nin clause 8.9.6.2. The UL SDT data, if any, is forwarded to the gNB-CU-UP, and the UL signalling, if any, is\nforwarded to the gNB-CU-CP via the UL RRC MESSAGE TRANSFER message, in which any UL NAS PDU\nis delivered to AMF.\nNOTE 1: In case that full UE context is retrieved from another gNB-CU-CP as specified in TS 38.300 [2], the\ngNB-CU-CP first establishes the UE context in the gNB-CU-UP via the Bearer Context Setup procedure\nand F1-U UL TEIDs are retrieved before step 4. The BEARER CONTEXT SETUP REQUSET message\nmay include an indication to suspend non-SDT bearers, and in this case, the BEARER CONTEXT\nMODIFICATION REQUEST message in step 6 does not include resume indication for SDT DRBs.\nNOTE 2: In case that only partial UE context for SDT including F1-U UL TEIDs is retrieved from another gNB-\nCU-CP as specified in TS 38.300 [2], the gNB-CU-CP uses those F1-U UL TEIDs for steps 4-5, and the\nsubsequent steps 6-7 are not executed. The F1-U DL TEIDs received from the gNB-DU in step 5 should\nbe forwarded to the other gNB-CU-CP, to be used for transferring of the DL SDT data. In addition, the\nUL SDT data, if any, is forwarded from the gNB-DU to the gNB-CU-UP of the other gNB-CU-CP for\nwhich the partial context is retrieved, and the UL signalling, if any, is forwarded from the gNB-CU-CP to\nthe other gNB-CU-CP (the last serving gNB-CU-CP) via the XnAP RRC TRANSFER message.\nNOTE 3: The other gNB-CU-UP may need to buffer the UL SDT data if received before the SDT bearer(s) are\nresumed.\n6. The gNB-CU-CP sends the BEARER CONTEXT MODIFICATION REQUEST message including an resume\nindication for SDT DRBs. The gNB-CU-CP also includes the F1-U DL TEIDs received from the gNB-DU in\nstep 5.\n7. The gNB-CU-UP responds with the BEARER CONTEXT MODIFICATION RESPONSE message.\nNOTE 4: void.\nUpon receiving the UE INACTIVITY NOTIFICATION message without SDT volume threshold crossed indication\nfrom the gNB-DU, the gNB-CU, if serving the UE and deciding to terminate the ongoing SDT procedure, shall transmit\nthe UE CONTEXT RELEASE COMMAND message to the gNB-DU.\nIf CG-SDT is (re-)configured, the gNB-CU may request the gNB-DU to keep CG-SDT configuration and resources in\nthe UE CONTEXT RELEASE COMMAND message.\nNOTE 5: void.\nUpon receiving BSR from the UE, in case that UL SDT data size in the BSR is larger than the threshold configured\nfrom the gNB-CU-CP, the gNB-DU sends the UE INACTIVITY NOTIFICATION message with the SDT volume\nthreshold crossed indication to the gNB-CU-CP. Upon receiving such indication, the gNB-CU-CP may terminate the\nongoing SDT procedure, by sending the RRCResume message to move the UE to RRC_CONNECTED, or by sending\nthe RRCRelease message to move the UE to RRC_INACTIVE, or by sending the RRCRelease message with resume\nindication to trigger the UE to initiate RRC Resume procedure to move to RRC_CONNECTED state as specified in TS\n38.300 [2].\nUpon receiving DL non-SDT data, the gNB-CU-UP shall send the DL DATA NOTIFICATION message to the gNB-\nCU-CP. The gNB-CU-CP shall terminate the ongoing SDT procedure as specified in TS 38.300 [2].\nIf the amount of the received DL SDT data is above the data size threshold configured by the gNB-CU-CP, the gNB-\nCU-UP shall send the DL DATA NOTIFICATION message with the SDT data size threshold crossed indication. The\ngNB-CU-CP may terminate the ongoing SDT procedure as specified in TS 38.300 [2].\nIn case that the gNB-CU-CP terminates the ongoing SDT procedure by sending the RRCResume message to move the\nUE to RRC_CONNECTED as specified in TS 38.300 [2], if non-SDT bearer(s) has been configured but suspended in\nthe gNB-CU-UP, the gNB-CU-CP triggers the Bearer Context Modification procedure to the gNB-CU-UP to resume all\nbearers.",
+      "metadata": {
+        "doc_id": "ts_138401v180600p",
+        "level": 3,
+        "parent_section_id": "8.18",
+        "child_section_ids": [],
+        "page_numbers": [
+          123
+        ],
+        "knowledge_source": "ts_138401v180600p"
+      }
+    },
+    {
+      "section_id": "8.6.2",
+      "section_title": "RRC inactive to other states",
+      "content": "8.6.2 RRC inactive to other states\nThis clause gives the RRC inactive to other RRC states transition given that gNB consists of gNB-CU and gNB-DU(s),\nas shown in Figure 8.6.2-1.\n\ngNB-CUgNB-DU\n6. UE CONTEXT SETUP RESPONSE\n\nUE\n5. UE CONTEXT SETUP  REQUEST\n3. RRCResumeRequest 4. INITIAL UL RRC MESSAGE TRANSFER\n7. DL RRC MESSAGE TRANSFER\n8. RRCResume/RRCReject/RRCSetup/\nRRCRelease\n9. RRCResumeComplete/RRCSetupComplete 10. UL RRC MESSAGE TRANSFER\n1. PAGING2. Paging\n\nFigure 8.6.2-1: RRC inactive to other RRC states transition procedure\n1. If data is received from 5GC, the gNB-CU sends PAGING message to the gNB-DU.\n2. The gNB-DU sends Paging  message to UE.\nNOTE 1: Step 1 and 2 only exist in case of DL data arrival.\n3. The UE sends RRCResumeRequest message either upon RAN-based paging, UL data arrival or RNA update.\n4. The gNB-DU includes RRCResumeRequest in a non-UE associated INITIAL UL RRC MESSAGE TRANSFER\nmessage and transfer to the gNB-CU.\n5. For UE Inactive to UE Active transitions, excluding transitions due to signalling exchange only, the gNB-CU\nallocates gNB-CU UE F1AP ID and sends UE CONTEXT SETUP REQUEST message to gNB-DU, which may\ninclude SRB ID(s) and DRB ID(s) to be setup, CellGroupConfig stored in gNB-CU or retrieved from the old\nNG-RAN node may also be included. In case of NG-RAN sharing, the gNB-CU includes the serving PLMN ID\n(in case of SNPNs the serving NID).\nNOTE 1a: In case of CP/UP split architecture, if the UE context has been retrieved from the old NG-RAN node, the\nsecurity indication of each PDU Session as communicated to the gNB-CU-UP represents the user plane\nsecurity activation status that the UE used at the last serving cell.\n6. The gNB-DU responds with UE CONTEXT SETUP RESPONSE message, which contains RLC/MAC/PHY\nconfiguration of SRB and DRBs provided by the gNB-DU.\nNOTE 2: Step 5 and step 6 exist for inactive to active transitions, excluding transitions due to signalling exchange\nonly. When gNB-CU successfully retrieves and verifies the UE context, it may decide to let the UE enter\ninto RRC active mode. gNB-CU shall trigger UE context setup procedure between gNB-CU and gNB-\nDU, during which both SRB1, SRB2 and DRB(s) can be setup. For signalling exchange only transitions,\ngNB-CU does not trigger UE Context Setup procedure. For inactive to Idle transitions the gNB-CU does\nnot trigger the UE Context Setup procedure.\n7. The gNB-CU generates RRCResume/RRCSetup/RRCReject/RRCRelease message or receives RRCRelease\nmessage from the old NG-RAN node towards the UE. The RRC message is encapsulated in DL RRC\nMESSAGE TRANSFER message together with SRB ID.\n8. The gNB-DU forwards RRC message to the UE either over SRB0 or SRB1 as indicated by the SRB ID.\nNOTE 3: In step 7, it is expected that gNB-CU takes appropriate action, e.g. generates RRC resume message for\ninactive to active state transition(for both cases of signaling exchange only, and UP data exchange),\ngenerates RRCSetup message for fallback to establish a new RRC connection, and generates or receives\nfrom the old NG-RAN node either RRCRelease message without suspend configuration for inactive to\nidle state transition, or RRCRelease message with suspend configuration to remain in inactive state.\nIf step 5 and 6 are not performed, the gNB-DU deduces the SRB on which to deliver the RRC message in\nstep 7 from the SRB ID, i.e. SRB ID “0” corresponds to SRB0, SRB ID “1” corresponds to SRB1.\n9. The UE sends RRCResumeComplete /RRCSetupComplete message to the gNB-DU.\n10. The gNB-DU encapsulates RRC in UL RRC MESSAGE TRANSFER message and send to the gNB-CU.\nNOTE 4: Step 9 and step 10 exist for inactive to active st ate transition (for both cases of signaling exchange only,\nand UP data exchange). UE generates RRCResumeComplete/RRCSetupComplete message for resume the\nexisting RRC connection or fallback to a new RRC connection respectively.",
+      "metadata": {
+        "doc_id": "ts_138401v180600p",
+        "level": 3,
+        "parent_section_id": null,
+        "child_section_ids": [],
+        "page_numbers": [
+          66,
+          67
+        ],
+        "knowledge_source": "ts_138401v180600p"
+      }
+    },
+    {
+      "section_id": "8.18.4",
+      "section_title": "MT-SDT",
+      "content": "8.18.4 MT-SDT\nThe procedure for mobile terminated small data transmission in RRC Inactive is shown in Figure 8.18.4-1.\nUE gNB-DU gNB-CU-CP gNB-CU-UP\n1. Bearer context setup or modification\n2a-0. DL traffic detected on\nthe NG-U tunnel(s)\n2a-1.DL DATA NOTIFICATION\n(MT-SDT information)\n2b.DL NAS signalling or RAN\nPAGING REQUEST message\nreceived over the NGAP\n2c.RAN Paging with\nMT-SDT information\nreceived over XnAP\n3.PAGING\n(MT-SDT indication)\n4.Paging\n(MT-SDT indicator)\n5.SDT procedures as specified in 8.18.1 or from step9 in 8.18.2 or from step1 in 8.18.3,\nor the RRC connection resume procedure as described in 8.6.2 or 8.9.6.2.\n\nFigure 8.18.4-1: Mobile Terminated Small Data Transmission in RRC Inactive state.\n1. During the setup or modification of the bearer context as specified in 8.9.2, the gNB-CU-CP requests the gNB-\nCU-UP to provide MT-SDT information.\n2a-0. The gNB-CU-UP receives DL data for the UE in RRC Inactive on NG-U interface.\n2a-1. The gNB-CU-UP sends DL DATA NOTIFICATION message to the gNB-CU-CP. If determining that DL\ndata packets are only mapped to SDT bearers, as requested in step 1, the gNB-CU-UP includes the MT-SDT\ninformation in the DL DATA NOTIFICATION message.\n2b. The gNB-CU-CP receives DL NAS signalling or RAN PAGING REQUEST message over NGAP.\n2c. The gNB-CU-CP receives the MT-SDT information in XnAP RAN PAGING message.\n3. After 2a or 2b or 2c, the gNB-CU-CP sends PAGING message to the gNB-DU. The MT-SDT indication may be\nincluded in the PAGING message.\n4. The gNB-DU sends the Paging  message to the UE. In case the MT-SDT indication is received in step 3, the\ngNB-DU includes the MT-SDT indicator in the Paging message.\n5. If the UE has been successfully reached, it initiates th e RRC connection resume procedure as described in 8.6.2\nor 8.9.6.2, or initiates the SDT procedure as described from step 1 in 8.18.1 or from step 9 in 8.18.2 or from step\n1 in 8.18.3 with the following difference:\n- In case SDT procedure is initiated, the UE may indicate MT-SDT in the RRCResumeRequest, which may be\nwithout UL data.",
+      "metadata": {
+        "doc_id": "ts_138401v180600p",
+        "level": 3,
+        "parent_section_id": "8.18",
+        "child_section_ids": [],
+        "page_numbers": [
+          127
+        ],
+        "knowledge_source": "ts_138401v180600p"
+      }
+    },
+    {
+      "section_id": "8.19.3",
+      "section_title": "Remote UE RRC Inactive to other states",
+      "content": "8.19.3 Remote UE RRC Inactive to other states\nThe signalling flow for Remote UE from RRC Inactive to other states is shown in Figure 8.19.3-1.\nRem o t e\nUE Rel a y U E gN B - DU\n2 . RR CRe su meRe q ue st\n1 .  D is co v e r y &  P C 5  C onn e c t io n\nE s t ab lis hm e n t\ngNB -C U\n3.(re l a y  UE)\nSi d e l i n kUEInformati o nNR 4 . (r e la y  U E )  U L  R R C  M E S S AG E\nTRA N SF ER\n11. RRC Re su meRe q u e st\n1 2 .  I N I T I A L U L  R R C  M E S S AG E\nTRA N SF ER\n1 4 .  U E  C O N T E XT  S E T U P R E Q U E S T\n1 3. P rep a re P C5 a n d  U u  RL C  Ch a n nel  fo r S RB1\n15 . UE  CO NTE X T  SE T U P\nR E SP ONSE\n17 . RRC Re su me/R RCRe jec t/ RRC S e tu p /RRC Rel ea se\n1 8. RRC Re su meC o m pl ete /RRC Set u p C o m p l ete\n1 9 . U L  R RC M E S SA GE TR A NS F E R\n2 0 . P r e pa r e  P C 5  and  U u R L C  C h an ne l  f o r  D R B s / S R B s\n5. (rel a y UE) U E C O NT EX T\nM O D IF ICA TIO N  R EQUE ST\n6 .  (r e l ay  U E )  U E  C O N T E X T\nM O D I FICA TIO N  R ES P O NS E\n7 .  (r e l ay  U E )  D L  R R C  M E S S AG E\nTRA N SF ER\n10 . (rel a y  U E) UL  R RC M E SS A G E\nTRA N SF ER\n8 .  ( re la y  U E)  RR CRe co n f ig u r at io n\n9. (re l ay U E)\nRRC Rec o n f i g u ra ti o n C o mp let e\n1 6 .  D L R R C  M E S S AG E  T R AN S F E R\n\nFigure 8.19.3-1: Remote UE RRC Resume procedure\n1. The U2N Remote UE and the U2N Relay UE perform di scovery procedure, and establish PC5 connection using\nNR ProSe procedure. This step may be omitted if PC5 connection was established.\n2. The U2N Remote UE sends an RRCResumeRequest message to the U2N Relay UE via PC5 RLC Relay Channel.\n3~10. The gNB-CU allocates the local ID of the U2N Remote UE if the U2N Relay UE does not have it. The\ndetails of those steps can be referred to clause 8.19.1.\n11. After receiving the local ID of the U2N Remote UE, the U2N Relay UE sends the RRCResumeRequest message\nof the U2N Remote UE to gNB-DU.\n12. The gNB-DU allocates a C-RNTI and a gNB-DU UE F1AP ID for the U2N Remote UE and sends the INITIAL\nUL RRC MESSAGE TRANSFER message to gNB-CU by encapsulating the RRCResumeRequest  message of\nthe U2N Remote UE. In addition, the local ID of the U2N Remote UE, the gNB-DU UE F1AP ID of the U2N\nRelay UE and the sidelink configuration container for at least the PC5 Relay RLC channel configuration for\nrelaying of U2N Remote UE’s SRB1 are included in the INITIAL UL RRC MESSAGE TRANSFER message.\n13. The gNB-CU configures the U2N Relay UE with PC5 Relay RLC channel, Uu Relay RLC channel and bearer\nmapping for relaying of U2N Remote UE’s SRB1. According to the configuration from gNB-CU, the U2N\nRelay UE establishes a PC5 Relay RLC channel for relaying of U2N Remote UE’s SRB1 over PC5 and\nestablishes a Uu Relay RLC channel for relaying of U2N Remote UE’s SRB1 over Uu.\nNOTE 1: This step may be performed earlier, e.g., via steps 5~8.\n14~19. The details of those steps can be referred to Steps 5~10 in clause 8.6.2. For L2 U2N relay, the RRC\nmessage(s) between the U2N Remote UE and the gNB-DU are relayed via the U2N Relay UE; Steps 14~15 may\nadditionally perform the configurations of PC5 Relay RLC channel(s) for relaying of U2N Remote UE’s SRB2\nand DRBs.\n20. The gNB-CU establishes additional Uu Relay RLC channels between the gNB-DU and the U2N Relay UE, and\nadditional PC5 Relay RLC channels for the U2N Relay UE for relaying of U2N Remote UE’s DRBs and SRBs.\nAlso, such step may configure the bearer mapping between U2N Remote UE’s DRB/SRB and PC5/Uu Relay\nRLC channel at the U2N Relay UE.\nNOTE 2: This step may be performed earlier.",
+      "metadata": {
+        "doc_id": "ts_138401v180600p",
+        "level": 3,
+        "parent_section_id": "8.19",
+        "child_section_ids": [],
+        "page_numbers": [
+          133,
+          134
+        ],
+        "knowledge_source": "ts_138401v180600p"
+      }
+    }
+  ]
+}

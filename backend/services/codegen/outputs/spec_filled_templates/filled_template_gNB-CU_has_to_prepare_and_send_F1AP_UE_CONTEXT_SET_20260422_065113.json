@@ -1,0 +1,156 @@
+{
+  "Feature_ID": "INTER_GNB_DU_LTM_HANDOVER_PROCEDURE",
+  "Feature_Name": "Inter-gNB DU LTM Handover Procedure",
+  "Release": "",
+  "3GPP_Reference": {
+    "Spec": "TS 38.401",
+    "Title": "NG-RAN; Architecture and functions",
+    "Section": "8.19.3 (TS 38 401), 8.19 (TS 38 401)"
+  },
+  "Feature_Description": [
+    "This procedure describes the gNB-CU preparing and sending an F1AP 'UE CONTEXT SETUP REQUEST' message to a candidate gNB-DU, and the candidate gNB-DU responding with an F1AP 'UE CONTEXT SETUP RESPONSE' message. This message exchange is handled on the gNB-CU as part of an Inter-gNB DU LTM Handover Procedure. The closest related procedure in the provided context is the 'Remote UE RRC Resume procedure' for L2 UE-to-Network Relay, where a U2N Remote UE transitions from RRC Inactive to other states, involving a U2N Relay UE."
+  ],
+  "Feature_Objectives": [
+    "To establish or modify the UE context in the gNB-DU for a UE undergoing an Inter-gNB DU LTM Handover Procedure, specifically in scenarios related to L2 UE-to-Network Relay, enabling the UE to transition to an active state or resume services."
+  ],
+  "Design_Details": {
+    "Protocol_Layers": [
+      "F1AP (Control Plane)",
+      "RRC (Control Plane)",
+      "PC5 RLC (User Plane for Relay)",
+      "Uu RLC (User Plane for Relay)"
+    ],
+    "Protocol_Interfaces": [
+      "F1-C (between gNB-CU and gNB-DU)",
+      "PC5 (between Remote UE and Relay UE)",
+      "Uu (between Relay UE and gNB-DU)"
+    ]
+  },
+  "Feature_Implementation_Steps": [
+    "The U2N Remote UE and the U2N Relay UE perform discovery procedure, and establish PC5 connection using NR ProSe procedure. This step may be omitted if PC5 connection was established. (Step 1, Section 8.19.3)",
+    "The U2N Remote UE sends an RRCResumeRequest message to the U2N Relay UE via PC5 RLC Relay Channel. (Step 2, Section 8.19.3)",
+    "The gNB-CU allocates the local ID of the U2N Remote UE if the U2N Relay UE does not have it. (Steps 3-10, Section 8.19.3)",
+    "After receiving the local ID of the U2N Remote UE, the U2N Relay UE sends the RRCResumeRequest message of the U2N Remote UE to gNB-DU. (Step 11, Section 8.19.3)",
+    "The gNB-DU allocates a C-RNTI and a gNB-DU UE F1AP ID for the U2N Remote UE and sends the INITIAL UL RRC MESSAGE TRANSFER message to gNB-CU by encapsulating the RRCResumeRequest message of the U2N Remote UE. In addition, the local ID of the U2N Remote UE, the gNB-DU UE F1AP ID of the U2N Relay UE and the sidelink configuration container for at least the PC5 Relay RLC channel configuration for relaying of U2N Remote UE’s SRB1 are included in the INITIAL UL RRC MESSAGE TRANSFER message. (Step 12, Section 8.19.3)",
+    "The gNB-CU configures the U2N Relay UE with PC5 Relay RLC channel, Uu RLC channel for SRB1. (Step 13, Section 8.19.3)",
+    "The gNB-CU prepares and sends F1AP 'UE CONTEXT SETUP REQUEST' message to the candidate gNB-DU. (Step 14, Section 8.19.3)",
+    "The candidate gNB-DU responds with F1AP 'UE CONTEXT SETUP RESPONSE' message. (Step 15, Section 8.19.3)"
+  ],
+  "Call_Flow": [
+    {
+      "Message": "UE CONTEXT SETUP REQUEST",
+      "Actors": [
+        "gNB-CU",
+        "gNB-DU"
+      ],
+      "From": "gNB-CU",
+      "To": "gNB-DU"
+    },
+    {
+      "Message": "UE CONTEXT SETUP RESPONSE",
+      "Actors": [
+        "gNB-DU",
+        "gNB-CU"
+      ],
+      "From": "gNB-DU",
+      "To": "gNB-CU"
+    }
+  ],
+  "Procedure_Implementation_Steps": [
+    "The gNB-CU prepares the F1AP \"UE CONTEXT SETUP REQUEST\" message.",
+    "The gNB-CU sends the F1AP \"UE CONTEXT SETUP REQUEST\" message to the candidate gNB-DU.",
+    "The candidate gNB-DU processes the received \"UE CONTEXT SETUP REQUEST\" message, establishing or modifying the UE context.",
+    "The candidate gNB-DU prepares the F1AP \"UE CONTEXT SETUP RESPONSE\" message.",
+    "The candidate gNB-DU sends the F1AP \"UE CONTEXT SETUP RESPONSE\" message to the gNB-CU.",
+    "The gNB-CU handles the received F1AP \"UE CONTEXT SETUP RESPONSE\" message to complete the Inter-gNB DU LTM Handover Procedure."
+  ],
+  "Code_Artifacts": [],
+  "ASN_IES_File_Path": [
+    {
+      "ASN_Name": "F1AP",
+      "File_Path": "",
+      "File_Name": ""
+    },
+    {
+      "ASN_Name": "RRC",
+      "File_Path": "",
+      "File_Name": ""
+    }
+  ],
+  "ASN_IES_C_Structures_Path": [
+    {
+      "ASN_Name": "F1AP",
+      "File_Path": ""
+    },
+    {
+      "ASN_Name": "RRC",
+      "File_Path": ""
+    }
+  ],
+  "Information_Elements": [],
+  "Piggy_Backed_IES_Info": "Not applicable for the scoped messages in this procedure.",
+  "Piggy_Backed_IES_Mapping": [
+    {
+      "Piggy_Backed_IE_Name": "N/A",
+      "Piggy_Backed_IE_Type": "N/A",
+      "Carrier_Message": "N/A",
+      "Source_IE_Name": "",
+      "Source_IE_Type": ""
+    }
+  ],
+  "Codebase_Metadata": {
+    "Code_Language": "",
+    "Build_System": "",
+    "Repo_Path": "",
+    "Code_Output_Type": "",
+    "Execution_Mode": "",
+    "CI_Pipeline": "",
+    "Version_Control": ""
+  },
+  "Knowledge_Hints": [
+    "8.4.3 (ts_138401v180600p): SCG suspend/resume in RRC_INACTIVE",
+    "8.4 (ts_138401v180600p): Multi-Connectivity operation",
+    "8.4.2 (ts_138401v180600p): Secondary Node Release (MN/SN initiated)",
+    "8.4.4 (ts_138401v180600p): SCG Deactivation and Activation",
+    "8.4.1 (ts_138401v180600p): Secondary Node Addition",
+    "8.9.6.1 (ts_138401v180600p): RRC Connected to RRC Inactive",
+    "8.4.4.3 (ts_138401v180600p): SN initiated SN Modification with SCG Activation or Deactivation",
+    "8.4.4.2 (ts_138401v180600p): MN initiated SN Modification with SCG Activation or Deactivation",
+    "8.9.6.2 (ts_138401v180600p): RRC Inactive to other states",
+    "8 (ts_138401v180600p): Overall procedures in gNB-CU/gNB-DU Architecture",
+    "8.12 (ts_138401v180600p): IAB-node Integration Procedure",
+    "8.17 (ts_138401v180600p): IAB Inter-CU Topology Management",
+    "8.21 (ts_138401v180600p): Overall procedures for Network Controlled Repeater",
+    "8.7 (ts_138401v180600p): RRC connection reestablishment",
+    "8.5 (ts_138401v180600p): F1 Startup and cells activation",
+    "8.8 (ts_138401v180600p): Multiple TNLAs for F1-C",
+    "8.3 (ts_138401v180600p): Mechanism of centralized retransmission of lost PDUs",
+    "8.2 (ts_138401v180600p): Intra-gNB-CU Mobility",
+    "8.16 (ts_138401v180600p): Overall procedures for CPAC",
+    "8.22 (ts_138401v180600p): Overall procedures for multi-path support",
+    "8.20 (ts_138401v180600p): Void",
+    "8.15 (ts_138401v180600p): Overall procedures for NR MBS",
+    "8.24 (ts_138401v180600p): Timing resiliency service",
+    "8.1 (ts_138401v180600p): UE Initial Access",
+    "8.10 (ts_138401v180600p): Multiple TNLAs for E1",
+    "8.23 (ts_138401v180600p): Mobile IAB migration procedures",
+    "8.11 (ts_138401v180600p): Support of Network Sharing with multiple cell-ID broadcast",
+    "8.9 (ts_138401v180600p): Overall procedures involving E1 and F1",
+    "8.13 (ts_138401v180600p): Overall procedures for MDT",
+    "8.14 (ts_138401v180600p): Self-optimisation",
+    "8.19 (ts_138401v180600p): Overall procedures for L2 UE-to-Network Relay",
+    "8.18 (ts_138401v180600p): Overall procedure for Small Data Transmission during RRC Inactive",
+    "8.2.2 (ts_138401v180600p): EN-DC Mobility",
+    "7.9 (ts_138401v180600p): Support for CCO",
+    "8.4.2.1 (ts_138401v180600p): EN-DC",
+    "8.16.2 (ts_138401v180600p): MN initiated conditional SN Change",
+    "8.4.4.1 (ts_138401v180600p): SN Addition with SCG Activation or Deactivation",
+    "8.4.1.1 (ts_138401v180600p): EN-DC",
+    "8.9.6 (ts_138401v180600p): RRC State transition",
+    "8.18.2 (ts_138401v180600p): CG based SDT",
+    "8.18.1 (ts_138401v180600p): RACH based SDT",
+    "8.6.2 (ts_138401v180600p): RRC inactive to other states",
+    "8.18.4 (ts_138401v180600p): MT-SDT",
+    "8.19.3 (ts_138401v180600p): Remote UE RRC Inactive to other states"
+  ]
+}

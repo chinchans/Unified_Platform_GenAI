@@ -1,0 +1,39 @@
+{
+  "code_dir": "C:\\Users\\ChanduVangala\\Desktop\\RCA_Electron-main\\RCA_Electron-main\\Backend\\app\\services\\Error_fixing_pipelin\\openairinterface5g-develop",
+  "fix_suggestion": {
+    "code_dir": "C:\\Users\\ChanduVangala\\Desktop\\RCA_Electron-main\\RCA_Electron-main\\Backend\\app\\services\\Error_fixing_pipelin\\openairinterface5g-develop",
+    "code_patches": [
+      {
+        "function_name": "select_amf",
+        "file_path": "openairinterface5g-develop/openair3/NGAP/ngap_gNB_nas_procedures.c",
+        "patch_type": "targeted_insertion_or_adjustment",
+        "original_code": "if (msg->ue_identity.presenceMask & NGAP_UE_IDENTITIES_guami) {",
+        "patched_code": "if (msg->ue_identity.presenceMask & NGAP_UE_IDENTITIES_guami) {\n    // Additional logging for debugging\n    LOG_I(NGAP, \"Attempting to select AMF using GUAMI\");",
+        "line_numbers": "after line containing \"if (msg->ue_identity.presenceMask & NGAP_UE_IDENTITIES_guami) {\"",
+        "description": "Adding logging to help trace the AMF selection process and identify if the GUAMI is being processed correctly."
+      }
+    ],
+    "config_patches": [
+      {
+        "config_name": "GNB_IPV4_ADDRESS_FOR_NG_AMF",
+        "file_path": "openairinterface5g-develop/targets/PROJECTS/GENERIC-NR-5GC/CONF/cu_gnb.conf",
+        "patch_type": "set_value",
+        "current_value": "\"192.168.18.207\"",
+        "new_value": "\"10.138.77.131\"",
+        "line_number": "43",
+        "relevance_score": 0.8,
+        "description": "Must match deployment context value to ensure the gNB can reach the AMF."
+      },
+      {
+        "config_name": "amf_ip_address",
+        "file_path": "openairinterface5g-develop/targets/PROJECTS/GENERIC-NR-5GC/CONF/cu_gnb.conf",
+        "patch_type": "set_value",
+        "current_value": "({ ipv4 = \"881.168.699.189\"; })",
+        "new_value": "({ ipv4 = \"192.168.70.132\"; })",
+        "line_number": "38",
+        "relevance_score": 0.7,
+        "description": "Must match deployment context value to ensure the gNB can correctly communicate with the AMF."
+      }
+    ]
+  }
+}

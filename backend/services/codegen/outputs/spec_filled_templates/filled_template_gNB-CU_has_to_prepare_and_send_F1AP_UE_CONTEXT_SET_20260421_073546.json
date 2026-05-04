@@ -1,0 +1,221 @@
+{
+  "Feature_ID": "F1AP_UE_CONTEXT_SETUP_PROCEDURE",
+  "Feature_Name": "F1AP UE Context Setup Procedure",
+  "Release": "",
+  "3GPP_Reference": {
+    "Spec": "TS 38.401",
+    "Title": "NG-RAN; Architecture and functional description",
+    "Section": "8.1 (TS 38 401), 8.6.2 (TS 38 401), 8.19.3 (TS 38 401), 8.18.1 (TS 38 401), 8.4.1.1 (TS 38 401), 8.4.4.1 (TS 38 401), 8.9.6.2 (TS 38 401)"
+  },
+  "Feature_Description": [
+    "The F1AP UE Context Setup procedure is initiated by the gNB-CU to establish a UE context in the gNB-DU. This procedure is fundamental for various UE state transitions and mobility events, including UE initial access, RRC inactive to active transitions, SgNB addition, and Small Data Transmission (SDT) procedures.",
+    "The gNB-DU responds to the gNB-CU to confirm the successful setup of the UE context and provide necessary configurations."
+  ],
+  "Feature_Objectives": [
+    "To establish a UE context in the gNB-DU.",
+    "To provide the gNB-DU with necessary information for UE operation (e.g., SRB/DRB IDs, CellGroupConfig, F1 UL TEIDs, serving PLMN ID).",
+    "To receive RLC/MAC/PHY configurations and F1 DL TEIDs from the gNB-DU.",
+    "To support various procedures such as RRC inactive to active transitions, UE initial access, SgNB addition, and SDT."
+  ],
+  "Design_Details": {
+    "Protocol_Layers": [
+      "F1AP (Application Protocol)"
+    ],
+    "Protocol_Interfaces": [
+      "F1-C (Control Plane)"
+    ]
+  },
+  "Feature_Implementation_Steps": [
+    "The gNB-CU initiates the UE Context Setup procedure by preparing and sending the F1AP UE CONTEXT SETUP REQUEST message to the candidate gNB-DU to establish the UE context.",
+    "The UE CONTEXT SETUP REQUEST message may include the gNB-CU UE F1AP ID, SRB ID(s) and DRB ID(s) to be setup, CellGroupConfig, serving PLMN ID (for NG-RAN sharing/SNPNs), stored F1 UL TEIDs, sidelink configuration container for PC5 Relay RLC channel configuration (for U2N Remote UE), source cell group configuration (for SgNB addition), an indication for SCG activation or deactivation (during SN Addition), and may encapsulate the SecurityModeCommand message (during UE Initial Access).",
+    "The candidate gNB-DU receives the UE CONTEXT SETUP REQUEST message and establishes the UE context for the UE.",
+    "The candidate gNB-DU responds to the gNB-CU with the F1AP UE CONTEXT SETUP RESPONSE message.",
+    "The UE CONTEXT SETUP RESPONSE message contains the RLC/MAC/PHY configuration of SRB and DRBs provided by the gNB-DU, F1 DL TEIDs, and the SCG status (if SCG activation was requested).",
+    "The gNB-CU handles the received UE CONTEXT SETUP RESPONSE message, completing the UE context establishment in the gNB-DU."
+  ],
+  "Call_Flow": [
+    {
+      "Message": "UE CONTEXT SETUP REQUEST",
+      "Actors": [
+        "gNB-CU",
+        "gNB-DU"
+      ],
+      "From": "gNB-CU",
+      "To": "gNB-DU"
+    },
+    {
+      "Message": "UE CONTEXT SETUP RESPONSE",
+      "Actors": [
+        "gNB-DU",
+        "gNB-CU"
+      ],
+      "From": "gNB-DU",
+      "To": "gNB-CU"
+    }
+  ],
+  "Procedure_Implementation_Steps": [],
+  "Code_Artifacts": [],
+  "ASN_IES_File_Path": [
+    {
+      "ASN_Name": "F1AP",
+      "File_Path": "",
+      "File_Name": ""
+    },
+    {
+      "ASN_Name": "RRC",
+      "File_Path": "",
+      "File_Name": ""
+    }
+  ],
+  "ASN_IES_C_Structures_Path": [
+    {
+      "ASN_Name": "F1AP",
+      "File_Path": ""
+    },
+    {
+      "ASN_Name": "RRC",
+      "File_Path": ""
+    }
+  ],
+  "Information_Elements": [
+    {
+      "IE_Name": "UECONTEXTSETUPREQUEST",
+      "IE_Definition": "",
+      "IE_Category": "F1AP IE"
+    },
+    {
+      "IE_Name": "gNB-CUUEF1APID",
+      "IE_Definition": "",
+      "IE_Category": "F1AP IE"
+    },
+    {
+      "IE_Name": "SRBID(s)",
+      "IE_Definition": "",
+      "IE_Category": "F1AP IE"
+    },
+    {
+      "IE_Name": "DRBID(s)",
+      "IE_Definition": "",
+      "IE_Category": "F1AP IE"
+    },
+    {
+      "IE_Name": "CellGroupConfig",
+      "IE_Definition": "",
+      "IE_Category": "F1AP IE"
+    },
+    {
+      "IE_Name": "servingPLMNID",
+      "IE_Definition": "",
+      "IE_Category": "F1AP IE"
+    },
+    {
+      "IE_Name": "sidelinkconfigurationcontainerforatleastthePC5RelayRLCchannelconfigurationforrelayingofU2NRemoteUE’sSRB1",
+      "IE_Definition": "",
+      "IE_Category": "F1AP IE"
+    },
+    {
+      "IE_Name": "F1ULTEIDs",
+      "IE_Definition": "",
+      "IE_Category": "F1AP IE"
+    },
+    {
+      "IE_Name": "CG-ConfigInfo",
+      "IE_Definition": "",
+      "IE_Category": "F1AP IE"
+    },
+    {
+      "IE_Name": "SCGactivationordeactivationindication",
+      "IE_Definition": "",
+      "IE_Category": "F1AP IE"
+    },
+    {
+      "IE_Name": "SecurityModeCommandmessage",
+      "IE_Definition": "",
+      "IE_Category": "RRC IE"
+    },
+    {
+      "IE_Name": "UECONTEXTSETUPRESPONSE",
+      "IE_Definition": "",
+      "IE_Category": "F1AP IE"
+    },
+    {
+      "IE_Name": "RLC/MAC/PHYconfigurationofSRBandDRBs",
+      "IE_Definition": "",
+      "IE_Category": "F1AP IE"
+    },
+    {
+      "IE_Name": "F1DLTEIDs",
+      "IE_Definition": "",
+      "IE_Category": "F1AP IE"
+    },
+    {
+      "IE_Name": "SCGstatus",
+      "IE_Definition": "",
+      "IE_Category": "F1AP IE"
+    }
+  ],
+  "Piggy_Backed_IES_Info": "During UE Initial Access, the SecurityModeCommand message may be encapsulated within the F1AP UE CONTEXT SETUP REQUEST message.",
+  "Piggy_Backed_IES_Mapping": [
+    {
+      "Piggy_Backed_IE_Name": "SecurityModeCommand",
+      "Piggy_Backed_IE_Type": "RRC Message",
+      "Source_IE_Name": "UE CONTEXT SETUP REQUEST",
+      "Source_IE_Type": "F1AP Message"
+    }
+  ],
+  "Codebase_Metadata": {
+    "Code_Language": "",
+    "Build_System": "",
+    "Repo_Path": "",
+    "Code_Output_Type": "",
+    "Execution_Mode": "",
+    "CI_Pipeline": "",
+    "Version_Control": ""
+  },
+  "Knowledge_Hints": [
+    "8.4.3 (ts_138401v180600p): SCG suspend/resume in RRC_INACTIVE",
+    "8.4 (ts_138401v180600p): Multi-Connectivity operation",
+    "8.4.2 (ts_138401v180600p): Secondary Node Release (MN/SN initiated)",
+    "8.4.4 (ts_138401v180600p): SCG Deactivation and Activation",
+    "8.4.1 (ts_138401v180600p): Secondary Node Addition",
+    "8.9.6.1 (ts_138401v180600p): RRC Connected to RRC Inactive",
+    "8.4.4.3 (ts_138401v180600p): SN initiated SN Modification with SCG Activation or Deactivation",
+    "8.4.4.2 (ts_138401v180600p): MN initiated SN Modification with SCG Activation or Deactivation",
+    "8.9.6.2 (ts_138401v180600p): RRC Inactive to other states",
+    "8 (ts_138401v180600p): Overall procedures in gNB-CU/gNB-DU Architecture",
+    "8.12 (ts_138401v180600p): IAB-node Integration Procedure",
+    "8.17 (ts_138401v180600p): IAB Inter-CU Topology Management",
+    "8.21 (ts_138401v180600p): Overall procedures for Network Controlled Repeater",
+    "8.7 (ts_138401v180600p): RRC connection reestablishment",
+    "8.5 (ts_138401v180600p): F1 Startup and cells activation",
+    "8.8 (ts_138401v180600p): Multiple TNLAs for F1-C",
+    "8.3 (ts_138401v180600p): Mechanism of centralized retransmission of lost PDUs",
+    "8.2 (ts_138401v180600p): Intra-gNB-CU Mobility",
+    "8.16 (ts_138401v180600p): Overall procedures for CPAC",
+    "8.22 (ts_138401v180600p): Overall procedures for multi-path support",
+    "8.20 (ts_138401v180600p): Void",
+    "8.15 (ts_138401v180600p): Overall procedures for NR MBS",
+    "8.24 (ts_138401v180600p): Timing resiliency service",
+    "8.1 (ts_138401v180600p): UE Initial Access",
+    "8.10 (ts_138401v180600p): Multiple TNLAs for E1",
+    "8.23 (ts_138401v180600p): Mobile IAB migration procedures",
+    "8.11 (ts_138401v180600p): Support of Network Sharing with multiple cell-ID broadcast",
+    "8.9 (ts_138401v180600p): Overall procedures involving E1 and F1",
+    "8.13 (ts_138401v180600p): Overall procedures for MDT",
+    "8.14 (ts_138401v180600p): Self-optimisation",
+    "8.19 (ts_138401v180600p): Overall procedures for L2 UE-to-Network Relay",
+    "8.18 (ts_138401v180600p): Overall procedure for Small Data Transmission during RRC Inactive",
+    "8.2.2 (ts_138401v180600p): EN-DC Mobility",
+    "7.9 (ts_138401v180600p): Support for CCO",
+    "8.4.2.1 (ts_138401v180600p): EN-DC",
+    "8.16.2 (ts_138401v180600p): MN initiated conditional SN Change",
+    "8.4.4.1 (ts_138401v180600p): SN Addition with SCG Activation or Deactivation",
+    "8.4.1.1 (ts_138401v180600p): EN-DC",
+    "8.9.6 (ts_138401v180600p): RRC State transition",
+    "8.18.2 (ts_138401v180600p): CG based SDT",
+    "8.18.1 (ts_138401v180600p): RACH based SDT",
+    "8.6.2 (ts_138401v180600p): RRC inactive to other states",
+    "8.18.4 (ts_138401v180600p): MT-SDT",
+    "8.19.3 (ts_138401v180600p): Remote UE RRC Inactive to other states"
+  ]
+}

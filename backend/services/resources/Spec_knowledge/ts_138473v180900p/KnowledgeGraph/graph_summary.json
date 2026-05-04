@@ -1,0 +1,14 @@
+{
+  "nodes": 576,
+  "edges": 7192,
+  "edge_type_counts": {
+    "USES": 9,
+    "PREREQUISITE_FOR": 125,
+    "RELATED_TO": 1592,
+    "DEPENDS_ON": 125,
+    "CHILD_OF": 553,
+    "SIBLING_OF": 4562,
+    "DEFINES": 9,
+    "PARENT_OF": 553
+  }
+}

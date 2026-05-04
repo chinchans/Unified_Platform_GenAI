@@ -1,0 +1,11 @@
+cu_ip_address=10.138.77.131
+du_ip_address=10.138.77.131
+amf_ip_address=192.168.70.132
+port_ip_address=
+core_network_machine_ip=10.138.77.217
+
+1. Recheck and correct AMF IP, port, and gNB configuration files: openairinterface5g/targets/PROJECTS/GENERIC-NR-5GC/CONF/cu_gnb.conf
+2. Validate network configuration and ensure AMF parameters are correctly set in configuration files like AMF IP, port, 
+3. Check if the AMF is reachable from the gNB "ping <amf_ip_address>"
+4. Ensure PLMN, TAI, and slices in gNB match those in AMF.
+5. Add a static route to the AMF machine if it is running on a different network or interface: ip route add <AMF_IP> via <core_network_machine_ip> dev <interface>

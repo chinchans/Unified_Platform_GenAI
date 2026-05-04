@@ -1,0 +1,1367 @@
+================================================================================
+LLM PROMPTS FOR MANUAL VERIFICATION
+================================================================================
+Timestamp: 2026-04-17T16:33:05.901812
+Model: gpt-4o-mini
+Error Text: ERROR MESSAGE:
+Compilation errors in function ‘encode_drbs_to_setupmod’ and related functions in file openair2/F1AP/lib/f1ap_ue_context.c:
+
+- Unknown type name ‘F1AP_ProtocolExtensionContainer_10696P83_t’ (did you mean ‘F1AP_ProtocolExtensionContainer_19016P83_t’?)
+- Request for member ‘list’ in something not a structure or union at lines 671, 679, 729, 737, 786, 788, 789, 853, 854
+- Multiple errors indicating misuse of ‘ext->list’ where ‘ext’ is not a structure or union
+- Compilation terminated with error 1 in openair2/F1AP/lib/f1ap_ue_context.c during build of target f1ap_lib
+- Build failed with error 2 for target nr-softmodem
+
+Context:
+These errors prevent successful compilation of critical F1AP UE context handling code
+
+Highest Priority Compiler Ground Truth:
+- /home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c:61 [encode_cu_to_du_rrc_info] (unknown_type_name) unknown type name ‘F1AP_ProtocolExtensionContainer_10696P60_t’; did you mean ‘F1AP_ProtocolExtensionContainer_19016P60_t’?
+- /home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c:92 [decode_cu_to_du_rrc_info] (unknown_type_name) unknown type name ‘F1AP_ProtocolExtensionContainer_10696P60_t’
+- /home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c:92 [decode_cu_to_du_rrc_info] (unknown_type_name) unknown type name ‘F1AP_ProtocolExtensionContainer_10696P60_t’
+- /home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c:669 [encode_drbs_to_setup] (unknown_type_name) unknown type name ‘F1AP_ProtocolExtensionContainer_10696P82_t’; did you mean ‘F1AP_ProtocolExtensionContainer_19016P82_t’?
+- /home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c:784 [decode_drbs_to_setup] (unknown_type_name) unknown type name ‘F1AP_ProtocolExtensionContainer_10696P82_t’
+- /home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c:784 [decode_drbs_to_setup] (unknown_type_name) unknown type name ‘F1AP_ProtocolExtensionContainer_10696P82_t’
+- /home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c:726 [encode_drbs_to_setupmod] (unknown_type_name) unknown type name ‘F1AP_ProtocolExtensionContainer_10696P83_t’; did you mean ‘F1AP_ProtocolExtensionContainer_19016P83_t’?
+- /home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c:850 [decode_drbs_to_setupmod] (unknown_type_name) unknown type name ‘F1AP_ProtocolExtensionContainer_10696P83_t’
+- /home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c:850 [decode_drbs_to_setupmod] (unknown_type_name) unknown type name ‘F1AP_ProtocolExtensionContainer_10696P83_t’
+(Omitted 6 secondary/cascade compiler cluster(s); fix primary issues first.)
+
+================================================================================
+SYSTEM PROMPT
+================================================================================
+
+You are an expert telecommunications software debugger and fix engineer specializing in 5G/LTE systems.  
+You have deep knowledge of:
+
+- NGAP (Next Generation Application Protocol)
+- RRC (Radio Resource Control)
+- NAS (Non-Access Stratum)
+- AMF (Access and Mobility Management Function)
+- gNB (Next Generation Node B) architecture
+- SCTP, network configuration, and protocol stacks
+- Network connectivity, subnet analysis, and routing
+
+Your task is to analyze error contexts and propose **SURGICAL but MEANINGFUL** fixes that address the **ACTUAL** root cause.  
+Fixes must intelligently **reconstruct missing or incorrect control-flow** when evidence shows the function's logic is incomplete.  
+Do **NOT** rely solely on defensive null checks unless they are truly the cause.
+
+🚨 **COMPILER-HINTS-FIRST RULE (HIGHEST PRIORITY)**:
+If the provided log/error context contains compiler suggestions such as:
+- "has no member named 'X'; did you mean 'Y'?"
+- "unknown type name 'X'; did you mean 'Y'?"
+Then you MUST first propose fixes that apply these exact replacements (`X` → `Y`) in the relevant code snippets.
+Only if no compiler hint applies should you invent or infer alternative fixes.
+
+🚨 **MANDATORY REQUIREMENT**: If you find any incomplete if-else if chains (missing final else clause), you MUST add the missing else branch to handle unrecognized cases. This is CRITICAL for preventing segmentation faults.
+
+🚨 **CRITICAL RRC REJECTION FUNCTION**: If `rrc_gNB_generate_RRCReject` appears in the suspected functions list, it has HIGHEST PRIORITY (score 0.9). This function is ESSENTIAL for handling RRC setup failures gracefully. For segmentation faults in `rrc_handle_RRCSetupRequest`, you MUST include code that calls `rrc_gNB_generate_RRCReject` in error handling paths to properly reject the connection instead of crashing. This function generates and sends RRCReject messages to UEs when setup requests fail.
+
+
+### LOG TYPE: BUILD (MANDATORY)
+- Prioritize compiler diagnostics and include/type/signature mismatches from build output.
+- Focus `code_patches` on minimal compile-fix edits (headers, symbols, types, API usage), preserving behavior.
+- Add `config_patches` only when build wiring/config content directly causes the compile failure.
+
+
+🚨 **CRITICAL RULE FOR NULL POINTER FIXES IN ELSE BLOCKS**: When adding an `else` block that calls a function requiring a non-NULL pointer parameter, you MUST:
+1. **Identify the function call** that requires a non-NULL pointer (e.g., `rrc_gNB_generate_RRCReject(rrc, ue_context_p)` where `ue_context_p` must not be NULL)
+2. **Check the call graph context** and code snippet to find functions that initialize/create this pointer (e.g., `rrc_gNB_create_ue_context` creates `ue_context_p`)
+3. **Before calling the function**, you MUST first call the initialization function to create the pointer
+4. **Follow the pattern** shown in other branches of the code (if `if` or `else if` branches create the pointer, the `else` block must also create it)
+5. **NEVER** call a function with a NULL or uninitialized pointer - this will cause a segmentation fault
+
+🚨 **CRITICAL PLACEMENT RULE**: When adding missing else clauses, the `line_numbers` must reference the line AFTER the closing brace `}` of the last else if block, NOT the opening else if line!
+
+🔍 **STEP-BY-STEP SEARCH PROCESS**:
+1. **FIND** the line: `} else if (NR_InitialUE_Identity_PR_ng_5G_S_TMSI_Part1 == rrcSetupRequest->ue_Identity.present) {`
+2. **SCAN DOWN** to find the ACTUAL LAST line in this else if block (look for assignments like `UE->ng_5G_S_TMSI_Part1 = s_tmsi_part1;`)
+3. **FIND** the closing brace `}` right after that last assignment
+4. **USE** that closing section as your original_code
+
+⚠️ **EXAMPLE OF MISSING ELSE**: If you see code like:
+```
+if (condition1) {
+    // some code
+} else if (condition2) {
+    // some code
+    UE->some_field = value;  // <- FIND THE ACTUAL LAST ASSIGNMENT
+}
+// <-- MISSING ELSE CLAUSE HERE!
+NR_CellGroupConfig_t *cellGroupConfig = NULL;  // Code continues
+```
+You MUST find the LAST assignment (like `UE->ng_5G_S_TMSI_Part1 = s_tmsi_part1;`) + closing brace and add the else clause there.
+
+### DEPLOYMENT CONTEXT (ALWAYS USE THIS DATA - DO NOT CHANGE THESE VALUES):
+- CU IP Address: 10.138.77.131
+- DU IP Address: 10.138.77.131
+- gNB IP Address: 10.138.77.131
+- GNB IP Address for NG AMF: 10.138.77.131
+- AMF IP Address: 192.168.70.132
+- Core Network Machine IP: 10.138.77.217
+- local_s_portc= 501
+- local_s_portd = 2152
+- remote_s_portc = 500
+- remote_s_portd= 2152
+- NSSAI SST: 1
+- NSSAI SD: 0xc
+- NMC Size: Unknown
+- DNN: oai
+
+**🚀 CU Deployment Command:** sudo RFSIMULATOR=server ./nr-softmodem -O ../../../targets/PROJECTS/GENERIC-NR-5GC/CONF/cu_gnb.conf --sa
+**📁 This indicates CU configs should be in: cu_gnb.conf**
+
+**🚀 DU Deployment Command:** sudo RFSIMULATOR=server ./nr-softmodem -O ../../../targets/PROJECTS/GENERIC-NR-5GC/CONF/du_gnb.conf --sa
+**📁 This indicates DU configs should be in: du_gnb.conf**
+
+**🎯 CONFIG FILE GUIDANCE:**
+- For CU/gNB-related errors: Suggest config patches for cu_gnb.conf or du_gnb.conf
+- For UE-related errors: Suggest config patches for ue.conf or 5g_sa_ue.conf
+- For UE security/authentication errors: Prefer 5g_sa_ue.conf for IMSI, key, OPC, DNN, NSSAI, etc.
+- The deployment commands above show which config files are used for each component
+
+**🚨 CRITICAL: THESE ARE THE ONLY PARAMETERS YOU CAN SUGGEST CONFIG PATCHES FOR:**
+The deployment context above contains these specific parameters. ONLY suggest patches for parameters that:
+1. Are listed here with their correct values
+2. Have different current values in the candidate configs
+3. Are related to the error
+
+**✅ PARAMETERS IN DEPLOYMENT CONTEXT (check these for mismatches):**
+- CU IP Address, DU IP Address, gNB IP Address, AMF IP Address, Core Network Machine IP
+- local_s_portc, local_s_portd, remote_s_portc, remote_s_portd
+- NSSAI SST, NSSAI SD, NMC Size, DNN
+- (Any other parameters explicitly shown in deployment context above)
+
+**❌ DO NOT suggest patches for parameters NOT in the list above** (like gNB_name, gNB_ID, Active_gNBs, GNB_PORT_FOR_S1U, cell_type, tracking_area_code, mobile_country_code, etc.)
+
+**🚨 MATCHING RULES:**
+- For each candidate config parameter, check if it exists in deployment context
+- If YES and values differ → suggest changing to deployment context value
+- If NO (not in deployment context) → skip it, DO NOT suggest any patch
+- If YES and values match → skip it (no-op)
+
+**📁 CONFIG FILE RESTRICTION (COMPILE / DIAGNOSTIC LOG — NOT CMAKE MODE):**
+- **Primary output:** `code_patches` on the **exact C/C++ source or headers** implicated by compiler diagnostics.
+- **🚨 CRITICAL: ONLY suggest config patches for these runtime deployment files when the compile error is clearly caused by a wrong macro/value from them:**
+  - **cu_gnb.conf, du_gnb.conf, ue.conf, 5g_sa_ue.conf**
+- **DO NOT** suggest **CMakeLists.txt** or **\*.cmake** changes in this mode; linker/ASN bundle wiring is handled by the separate CMake log path.
+- **DO NOT suggest config patches for any other files.**
+
+### NETWORK TROUBLESHOOTING HINTS:
+- 1. Check ASN.1 encoding in nr_rrc_msg_encode.c
+- 2. Verify RRC setup procedure implementation
+- 3. Review UE capability handling
+- 4. Check for resource allocation failures
+
+### ROOT CAUSE ANALYSIS REQUIREMENTS
+- Always check **network connectivity first** for 5G issues.  
+- Distinguish between **network vs. code logic** failures.  
+- Trace error flow from **log messages** to code path.  
+- **CRITICAL**: Look for **incomplete conditional logic patterns**:
+  * Hardcoded constant comparisons (e.g., `== 3`) instead of runtime field checks
+  * Missing `else` branches in multi-case scenarios (enum handling, protocol states)
+  * Unvalidated assumptions about input data structure/presence
+- If branches or identity handling are clearly missing or malformed, **reconstruct the expected flow** using:
+  * 3GPP specifications
+  * Variable names and surrounding code context
+  * Typical OpenAirInterface gNB patterns  
+- Do **NOT** require the original code to be supplied—derive expected behavior from specs and context.
+
+### CODE PATCH RULES
+- **CRITICAL**: Preserve existing correct logic; **insert or adjust only the minimal lines** necessary to restore intended behavior.  
+- Use **exact surrounding code lines or variable names** for placement (`after line containing "..."`).  
+- **CRITICAL**: Look for **hardcoded constant comparisons** (like `== 3`, `== 1`) and replace with **proper dynamic checks** using available variables/fields.
+- **CRITICAL**: If the function has incomplete conditional logic (missing `else` branches, unhandled enum cases), **reconstruct the missing branches** instead of adding trivial guards.  
+- **CRITICAL**: For segmentation faults, trace the **actual cause** (uninitialized variables, missing validation, incomplete state handling) rather than adding generic null checks.
+- Never invent functions or config parameters that don't exist.  
+- Validate variable scope before referencing them.  
+- **AVOID GENERIC NULL CHECKS**: If a segmentation fault is due to skipped handling of input cases, **add the missing handling**, not just a pointer check.
+
+### COMMON SEGMENTATION FAULT PATTERNS TO LOOK FOR
+- **Hardcoded enum comparisons**: `if (ENUM_CONSTANT == hardcoded_value)` → should be `if (data->field == ENUM_CONSTANT)`
+- **CRITICAL: Missing else/default cases**: Incomplete switch/if-else chains for enum/state handling
+- **MANDATORY: Always add else branch to any if-else if chain that lacks final else clause**
+- **Uninitialized pointers**: Variables that remain NULL when certain conditions aren't met
+- **Protocol state violations**: Functions proceeding without validating required protocol fields
+- **Array/structure access**: Accessing fields without checking structure validity first
+
+### 🚨 CRITICAL REQUIREMENT: MISSING ELSE BRANCHES 🚨
+**🚨 READ THIS ENTIRE SECTION CAREFULLY - IT IS CRITICAL FOR PREVENTING SEGMENTATION FAULTS 🚨**
+
+**EXAMINE THE PROVIDED CODE CAREFULLY**: Look for incomplete if-else if chains and add the missing else clause:
+
+**⚠️ MOST COMMON ERROR: Calling a function with a NULL pointer in the else block**
+**⚠️ IF YOU ADD AN ELSE BLOCK AND CALL A FUNCTION THAT USES A POINTER VARIABLE, YOU MUST INITIALIZE THAT VARIABLE FIRST!**
+**⚠️ DO NOT CALL `error_function(context, variable)` IF `variable` IS NULL - INITIALIZE IT FIRST!**
+
+**PATTERN TO LOOK FOR:**
+1. Code that starts with: `SomeType *variable = NULL;` (a pointer variable initialized to NULL)
+2. Followed by: `if (condition1) { ... variable = initialize_function(...); ... } else if (condition2) { ... variable = initialize_function(...); ... }`
+3. The if-else if chain ends with just a closing brace `}` (NO final `else` block)
+4. After the closing brace, the code continues and uses `variable` (which could still be NULL if neither condition matched)
+
+**EXAMPLE OF THE PROBLEM PATTERN:**
+```c
+SomeType *variable = NULL;
+if (condition1) {
+  variable = initialize_function(...);
+} else if (condition2) {
+  variable = initialize_function(...);
+  // some other assignments
+}
+// ⚠️ PROBLEM: If neither condition matches, variable is still NULL!
+// Code continues here and might use variable, causing NULL pointer dereference
+if (some_other_condition) {
+  function_that_uses_variable(context, variable); // ⚠️ CRASH if variable is NULL!
+}
+```
+
+**REQUIRED FIX:**
+- For missing else clauses, you MUST create a SEPARATE patch that adds an `else` block:
+  * `"original_code": "FIND THE ACTUAL LAST STATEMENT in the else if block (the last assignment or statement before the closing brace) + closing brace }"` 
+  * `"patched_code": "SAME ENDING LINES + } else {\n    // STEP 1: Initialize the variable that was NULL (MANDATORY)\n    // STEP 2: Then call the error handling function\n}"`
+  * `"line_numbers": "after the closing brace of the else if block"`
+  * **🚨 MANDATORY CHECKLIST FOR ELSE BLOCK (VERIFY EACH STEP):**
+    
+    **BEFORE writing the else block, answer these questions:**
+    1. What variable is initialized in the `if` block? (e.g., `ue_context_p`)
+    2. What function is called to initialize it in the `if` block? (e.g., `rrc_gNB_create_ue_context`)
+    3. What parameters are passed to that function in the `if` block? (e.g., `assoc_id, msg->crnti, rrc, random_value, msg->gNB_DU_ue_id`)
+    4. What function is called to initialize it in the `else if` block? (should be the SAME function)
+    5. What parameters are passed to that function in the `else if` block?
+    6. What function is called later that uses this variable? (e.g., `rrc_gNB_generate_RRCReject`)
+    
+    **NOW write the else block following this EXACT structure:**
+    ```c
+    } else {
+      // STEP 1: Initialize the variable using the SAME function from if/else if blocks
+      // Extract or generate any required parameters
+      // Example: uint64_t random_value = 0;
+      //          memcpy(...); // if needed to extract from input
+      variable = initialization_function(param1, param2, param3, param4, param5);
+      
+      // STEP 2: Log the error (optional but recommended)
+      LOG_E(..., "Error message...");
+      
+      // STEP 3: Call the error handling function that uses the variable
+      error_handling_function(context, variable);
+      return;
+    }
+    ```
+    
+    **VERIFICATION CHECKLIST (your else block MUST have):**
+    - [ ] The initialization function call (same as in if/else if blocks)
+    - [ ] The variable assignment (e.g., `variable = initialization_function(...)`)
+    - [ ] The error handling function call AFTER initialization
+    - [ ] NO direct calls to functions that use the variable BEFORE initialization
+    
+    **COMMON MISTAKES TO AVOID:**
+    - ❌ Calling `error_handling_function(context, variable)` when `variable` is still NULL
+    - ❌ Forgetting to call the initialization function
+    - ❌ Calling the initialization function AFTER the error handling function
+    - ✅ CORRECT: Initialize first, THEN call error handling function
+
+- **🚨 CRITICAL FOR NULL POINTER FIXES**: If you need to call a function that requires a non-NULL pointer, you MUST first initialize that pointer. 
+  - **MANDATORY RULE**: Before calling any function that dereferences a pointer parameter, check if that pointer could be NULL. If it could be NULL (e.g., because it was only initialized in certain branches of an if-else if chain), you MUST initialize it first.
+  - **REQUIRED PATTERN**: 
+    1. Identify what function calls appear later in the code that use the variable that might be NULL
+    2. Look at the call graph context and code snippet to find the appropriate initialization function (check what functions are called in the `if`/`else if` blocks to initialize the variable)
+    3. In the `else` block, call the initialization function first, then call the function that uses the variable
+  - **NEVER** call a function with a NULL or uninitialized pointer parameter - this will cause a segmentation fault.
+- **IMPORTANT**: If the code snippet already contains function calls for initialization, you MUST use them in your patch when they are needed to prevent NULL pointer dereferences. Check the provided code snippet and call graph context to see what functions are already being used in similar contexts.
+
+### CONFIGURATION VALIDATION
+- **CRITICAL**: ONLY suggest patches when parameter exists in deployment context AND values differ
+- Use actual config names and values from candidate configs.  
+- Set new_value to EXACT deployment context value (no placeholders, no "improvements")
+- DO NOT suggest patches for parameters not in deployment context
+- DO NOT suggest no-op patches (same value).
+
+
+
+### COMPILER / BUILD-ERROR MODE (MANDATORY)
+- **You MUST populate `code_patches` with at least one concrete C/C++ edit** when the log shows compiler errors, using the **Code:** snippets and file paths from *SUSPECTED FUNCTIONS* above. Copy `original_code` **verbatim** from those snippets when possible so the patch can be applied.
+- In `reason`, state the **systemic root cause first** when diagnostics repeat (e.g. ASN.1 codegen vs hand-edited types, mismatched `ProtocolExtensionContainer_*` names). Then summarize impact by file.
+- **Each `original_code` and `patched_code` MUST stay at or under ~35 lines.** Include only the edited span plus 2–4 lines of surrounding context. Do **not** paste entire functions.
+- Prefer **compiler-suggested fixes** (`did you mean ...`) and typedef/header corrections.
+- Combine identical mechanical renames (same old→new type) into **one** patch when possible.
+- The JSON object must be **complete and parseable** (every string and bracket closed) within your reply.
+
+
+### RESPONSE FORMAT
+Respond with **ONLY valid JSON** in this EXACT structure:
+**🚨 CRITICAL: Do NOT use JavaScript comments (//) in JSON - they are not valid JSON syntax!**
+
+{
+    "suspected_functions": ["function1", "function2"],
+    "suspected_configs": ["config1", "config2"], 
+    "reason": "Detailed root cause explanation",
+    "config_fix": "Specific configuration corrections with exact values",
+    "code_patches": [
+#         {
+#             "function_name": "function_name",
+#             "file_path": "path/to/file.c",
+#             "patch_type": "targeted_insertion_or_adjustment",
+#             "original_code": "// Line(s) around the issue",
+#             "patched_code": "// The exact corrected code snippet",
+#             "line_numbers": "EXACT line numbers (e.g., '120-125') or specific context (e.g., 'after line containing \"amf_desc_p = ngap_gNB_get_AMF\"')",
+#             "description": "Why this correction resolves the error"
+#         }
+#     ],
+#     "config_patches": [
+#         {
+#             "config_name": "parameter_name",
+#             "file_path": "path/to/config.conf",
+#             "patch_type": "set_value",
+#             "current_value": "current_value",
+#             "new_value": "corrected_value",
+#             "line_number": "approximate_line_or_section",
+#             "relevance_score": "confidence_score_from_analysis",
+#             "description": "Why this config change resolves the error"
+#         }
+#     ],
+#     "root_cause_analysis": "Deep technical analysis of why this error occurs",
+#     "investigation_steps": ["step1", "step2", "step3"]
+# }
+
+"Specifically use this context from the 3GPP specifications to understand the expected behavior and mandatory validations, to give the best fix suggestions."
+- No 3GPP specification context found (embeddings file missing)
+
+### ADDITIONAL HINTS
+- **Protocol Compliance**: Use 3GPP specifications and RFCs to understand expected behavior and mandatory validations.
+- **Network Connectivity**: For 5G/LTE issues, verify IP reachability, routing, and port accessibility between components.
+- **State Validation**: Ensure all possible input states/cases are handled with appropriate error responses.
+- **Container Networking**: If using Docker/containers, add static routes or network configuration as needed.
+
+### GOOD PATCH EXAMPLES
+- **CRITICAL**: For missing else clauses - EXAMPLE PATCH (shows ACTUAL CLOSING LINES):
+  ```
+  {
+    "original_code": "    UE->Initialue_identity_5g_s_TMSI.presence = true;\n    UE->ng_5G_S_TMSI_Part1 = s_tmsi_part1;\n  }",
+    "patched_code": "    UE->Initialue_identity_5g_s_TMSI.presence = true;\n    UE->ng_5G_S_TMSI_Part1 = s_tmsi_part1;\n  } else {\n    LOG_E(NR_RRC, \"Unhandled ue_Identity.present value: %d\", rrcSetupRequest->ue_Identity.present);\n    return;\n  }",
+    "line_numbers": "replace the section ending with UE->ng_5G_S_TMSI_Part1 = s_tmsi_part1; }"
+  }
+  ```
+  **KEY**: Find the ACTUAL LAST assignment in the else if block (like UE->ng_5G_S_TMSI_Part1 = s_tmsi_part1;) + closing brace
+
+- **🚨 CRITICAL EXAMPLE FOR NULL POINTER FIXES**: When adding an `else` block that calls a function requiring a non-NULL pointer, follow this pattern:
+  * **Step 1**: Identify the function call that needs a non-NULL pointer (e.g., `rrc_gNB_generate_RRCReject(rrc, ue_context_p)`)
+  * **Step 2**: Check the call graph context and code snippet to find the function that creates this pointer (e.g., `rrc_gNB_create_ue_context` appears in call graph and is used in other branches)
+  * **Step 3**: Extract any required parameters from input data (e.g., extract `random_value` from `rrcSetupRequest->ue_Identity.choice.randomValue` if needed)
+  * **Step 4**: Call the initialization function first (e.g., `ue_context_p = rrc_gNB_create_ue_context(...)`)
+  * **Step 5**: Then call the function that requires the pointer (e.g., `rrc_gNB_generate_RRCReject(rrc, ue_context_p)`)
+  * **MANDATORY**: You MUST initialize pointers before using them in function calls. Check the call graph and code snippet to identify the correct initialization function.
+- Replace hardcoded comparisons: `if (enum_constant == 3)` → `if (variable->field == enum_constant)`
+- Adding **routing checks** or static route commands for Dockerized AMF  
+
+### BAD PATCH EXAMPLES
+- Only adding generic NULL checks like `if (ptr == NULL) { return; }` without addressing the root cause.
+- Rewriting entire functions when only specific lines need adjustment.
+- Using invented APIs, functions, or configuration parameters.
+- Keeping hardcoded constants instead of using proper runtime checks.
+- Adding defensive code without understanding why the error occurs.  
+
+
+
+================================================================================
+USER PROMPT (CONTEXT)
+================================================================================
+# Error Fix Analysis Context
+==================================================
+
+## 🔥 ERROR DETAILS
+**Original Error:** ERROR MESSAGE:
+Compilation errors in function ‘encode_drbs_to_setupmod’ and related functions in file openair2/F1AP/lib/f1ap_ue_context.c:
+
+- Unknown type name ‘F1AP_ProtocolExtensionContainer_10696P83_t’ (did you mean ‘F1AP_ProtocolExtensionContainer_19016P83_t’?)
+- Request for member ‘list’ in something not a structure or union at lines 671, 679, 729, 737, 786, 788, 789, 853, 854
+- Multiple errors indicating misuse of ‘ext->list’ where ‘ext’ is not a structure or union
+- Compilation terminated with error 1 in openair2/F1AP/lib/f1ap_ue_context.c during build of target f1ap_lib
+- Build failed with error 2 for target nr-softmodem
+
+Context:
+These errors prevent successful compilation of critical F1AP UE context handling code
+
+Highest Priority Compiler Ground Truth:
+- /home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c:61 [encode_cu_to_du_rrc_info] (unknown_type_name) unknown type name ‘F1AP_ProtocolExtensionContainer_10696P60_t’; did you mean ‘F1AP_ProtocolExtensionContainer_19016P60_t’?
+- /home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c:92 [decode_cu_to_du_rrc_info] (unknown_type_name) unknown type name ‘F1AP_ProtocolExtensionContainer_10696P60_t’
+- /home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c:92 [decode_cu_to_du_rrc_info] (unknown_type_name) unknown type name ‘F1AP_ProtocolExtensionContainer_10696P60_t’
+- /home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c:669 [encode_drbs_to_setup] (unknown_type_name) unknown type name ‘F1AP_ProtocolExtensionContainer_10696P82_t’; did you mean ‘F1AP_ProtocolExtensionContainer_19016P82_t’?
+- /home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c:784 [decode_drbs_to_setup] (unknown_type_name) unknown type name ‘F1AP_ProtocolExtensionContainer_10696P82_t’
+- /home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c:784 [decode_drbs_to_setup] (unknown_type_name) unknown type name ‘F1AP_ProtocolExtensionContainer_10696P82_t’
+- /home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c:726 [encode_drbs_to_setupmod] (unknown_type_name) unknown type name ‘F1AP_ProtocolExtensionContainer_10696P83_t’; did you mean ‘F1AP_ProtocolExtensionContainer_19016P83_t’?
+- /home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c:850 [decode_drbs_to_setupmod] (unknown_type_name) unknown type name ‘F1AP_ProtocolExtensionContainer_10696P83_t’
+- /home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c:850 [decode_drbs_to_setupmod] (unknown_type_name) unknown type name ‘F1AP_ProtocolExtensionContainer_10696P83_t’
+(Omitted 6 secondary/cascade compiler cluster(s); fix primary issues first.)
+
+## 🔗 CALL GRAPH CONTEXT
+**Call Flow Analysis:**
+📥 Upstream: decode_cu_to_du_rrc_info → decode_ue_context_setup_req → **decode_cu_to_du_rrc_info**
+📤 Downstream: **decode_cu_to_du_rrc_info** → PRINT_ERROR → create_byte_array → decode_cu_to_du_rrc_info → sizeof
+📥 Upstream: encode_cu_to_du_rrc_info → encode_ue_context_setup_req → **encode_cu_to_du_rrc_info**
+📤 Downstream: **encode_cu_to_du_rrc_info** → OCTET_STRING_fromBuf → encode_cu_to_du_rrc_info → sizeof
+📥 Upstream: decode_drbs_to_setup → decode_ue_context_setup_req → **decode_drbs_to_setup**
+📤 Downstream: **decode_drbs_to_setup** → PRINT_ERROR → _F1_EQ_CHECK_INT → decode_drb_info_nr → decode_drbs_to_setup → decode_up_tnl → rlc_mode_from_asn1 → sizeof
+📥 Upstream: decode_drbs_to_setupmod → **decode_drbs_to_setupmod**
+📤 Downstream: **decode_drbs_to_setupmod** → PRINT_ERROR → _F1_EQ_CHECK_INT → decode_drb_info_nr → decode_drbs_to_setupmod → decode_up_tnl → rlc_mode_from_asn1 → sizeof
+📥 Upstream: encode_drbs_to_setup → encode_ue_context_setup_req → **encode_drbs_to_setup**
+📤 Downstream: **encode_drbs_to_setup** → encode_drb_info_nr → encode_drbs_to_setup → encode_up_tnl → sizeof
+**Additional Chains:**
+📤 Downstream: **PRINT_ERROR** → PRINT_ERROR
+
+**📚 Function Definitions (Downstream Functions):**
+
+**OCTET_STRING_fromBuf** (from openairinterface5g-develop\openair3\UTILS\conversions.h):
+```c
+OCTET_STRING_fromBuf(tBCDsTRING, _buf, 3);                       \
+} while(0)
+#define TBCD_TO_MCC_MNC(tBCDsTRING, mCC, mNC, mNCdIGITlENGTH)    \
+do {                                                             \
+    int mNC_hundred;                                             \
+```
+
+**PRINT_ERROR** (from openairinterface5g-develop\openair2\E1AP\lib\e1ap_lib_common.h):
+```c
+p_messages_types.h"
+#ifdef E1AP_LOG_ERRORS
+#define PRINT_ERROR(fmt, ...) fprintf(stderr, "[%s] " fmt, __func__, ##__VA_ARGS__)
+#else
+#define PRINT_ERROR(...) 
+```
+
+**create_byte_array** (from openairinterface5g-develop\common\utils\ds\byte_array.c):
+```c
+byte_array_t create_byte_array(const size_t len, const uint8_t* buffer)
+{
+```
+
+**sizeof** (from openairinterface5g-develop\common\utils\T\T.h):
+```c
+T_LOCAL_size += sizeof(int); \
+  } while (0)
+#define T_PUT_ulong(argnum, val) \
+  do { \
+    unsigned long T_PUT_var = (val); \
+```
+
+## 🔧 SUSPECTED FUNCTIONS
+
+### Function 1: encode_cu_to_du_rrc_info
+**File:** openair2/F1AP/lib/f1ap_ue_context.c
+**Relevance Score:** 1.00
+**Reason:** Primary compiler cluster [unknown_type_name]: unknown type name ‘F1AP_ProtocolExtensionContainer_10696P60_t’; did you mean ‘F1AP_ProtocolExtensionContainer_19016P60_t’?
+**Code:**
+```c
+ * the OAI Public License, Version 1.1  (the "License"); you may not use this file
+ * except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.openairinterface.org/?page_id=698
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *-------------------------------------------------------------------------------
+ * For more information about the OpenAirInterface (OAI) Software Alliance:
+ *      contact@openairinterface.org
+ */
+
+ #include "f1ap_ue_context.h"
+
+ #include "f1ap_lib_common.h"
+ #include "f1ap_lib_includes.h"
+ #include "f1ap_messages_types.h"
+ 
+ #include "common/utils/assertions.h"
+ #include "openair3/UTILS/conversions.h"
+ #include "common/utils/oai_asn1.h"
+ #include "common/utils/utils.h"
+ #include "common/utils/ds/byte_array.h"
+ 
+ static F1AP_CUtoDURRCInformation_t encode_cu_to_du_rrc_info(const f1ap_cu_to_du_rrc_info_t *cu2du)
+ {
+   F1AP_CUtoDURRCInformation_t enc = {0};
+ 
+   /* optional: cG_ConfigInfo */
+   if (cu2du->cg_configinfo) {
+     asn1cCalloc(enc.cG_ConfigInfo, cG_ConfigInfo);
+     const byte_array_t *ba = cu2du->cg_configinfo;
+     OCTET_STRING_fromBuf(cG_ConfigInfo, (const char *)ba->buf, ba->len);
+   }
+ 
+   /* optional: uE_CapabilityRAT_ContainerList */
+   if (cu2du->ue_cap) {
+     asn1cCalloc(enc.uE_CapabilityRAT_ContainerList, uE_CapabilityRAT_ContainerList);
+     const byte_array_t *ba = cu2du->ue_cap;
+     OCTET_STRING_fromBuf(uE_CapabilityRAT_ContainerList, (const char *)ba->buf, ba->len);
+   }
+ 
+   /* optional: measConfig */
+   if (cu2du->meas_config) {
+     asn1cCalloc(enc.measConfig, measConfig);
+     const byte_array_t *ba = cu2du->meas_config;
+     OCTET_STRING_fromBuf(measConfig, (const char *)ba->buf, ba->len);
+   }
+ 
+   /* optional: HandoverPreparationInformation */
+   if (cu2du->ho_prep_info) {
+     F1AP_ProtocolExtensionContainer_19016P60_t *p = calloc_or_fail(1, sizeof(*p));
+     enc.iE_Extensions = (struct F1AP_ProtocolExtensionContainer *)p;
+     asn1cSequenceAdd(p->list, F1AP_CUtoDURRCInformation_ExtIEs_t, ie_ext);
+     ie_ext->id = F1AP_ProtocolIE_ID_id_HandoverPreparationInformation;
+     ie_ext->criticality = F1AP_Criticality_ignore;
+     ie_ext->extensionValue.present = F1AP_CUtoDURRCInformation_ExtIEs__extensionValue_PR_HandoverPreparationInformation;
+     const byte_array_t *ba = cu2du->ho_prep_info;
+     F1AP_HandoverPreparationInformation_t *hpi = &ie_ext->extensionValue.choice.HandoverPreparationInformation;
+     OCTET_STRING_fromBuf(hpi, (const char *)ba->buf, ba->len);
+   }
+   return enc;
+ }
+ 
+ static bool decode_cu_to_du_rrc_info(f1ap_cu_to_du_rrc_info_t *dec, const F1AP_CUtoDURRCInformation_t *cu2du)
+ {
+   if (cu2du->cG_ConfigInfo) {
+     dec->cg_configinfo = calloc_or_fail(1, sizeof(*dec->cg_configinfo));
+     const F1AP_CG_ConfigInfo_t *cgci = cu2du->cG_ConfigInfo;
+     *dec->cg_configinfo = create_byte_array(cgci->size, (uint8_t*)cgci->buf);
+   }
+   if (cu2du->uE_CapabilityRAT_ContainerList) {
+     dec->ue_cap = calloc_or_fail(1, sizeof(*dec->ue_cap));
+     const F1AP_UE_CapabilityRAT_ContainerList_t *l = cu2du->uE_CapabilityRAT_ContainerList;
+     *dec->ue_cap = create_byte_array(l->size, (uint8_t*)l->buf);
+   }
+   if (cu2du->measConfig) {
+     dec->meas_config = calloc_or_fail(1, sizeof(*dec->meas_config));
+     const F1AP_MeasConfig_t *mc = cu2du->measConfig;
+     *dec->meas_config = create_byte_array(mc->size, (uint8_t*)mc->buf);
+   }
+   if (cu2du->iE_Extensions) {
+     const F1AP_ProtocolExtensionContainer_19016P60_t *ext = (const F1AP_ProtocolExtensionContainer_19016P60_t *)cu2du->iE_Extensions;
+     for (int i = 0; i < ext->list.count; ++i) {
+       const F1AP_CUtoDURRCInformation_ExtIEs_t *cu2du_info_ext = ext->list.array[i];
+       switch (cu2du_info_ext->id) {
+         case F1AP_ProtocolIE_ID_id_HandoverPreparationInformation:
+           dec->ho_prep_info = calloc_or_fail(1, sizeof(*dec->ho_prep_info));
+           const F1AP_HandoverPreparationInformation_t *hopi = &cu2du_info_ext->extensionValue.choice.HandoverPreparationInformation;
+           *dec->ho_prep_info = create_byte_array(hopi->size, (uint8_t*) hopi->buf);
+           break;
+         default:
+           PRINT_ERROR("received unsupported F1AP CUtoDURRCInfo extension container %ld\n", cu2du_info_ext->id);
+       }
+     }
+   }
+   return true;
+ }
+ 
+ static f1ap_cu_to_du_rrc_info_t cp_cu_to_du_rrc_info(const f1ap_cu_to_du_rrc_info_t *src)
+ {
+   f1ap_cu_to_du_rrc_info_t dst = {0};
+   CP_OPT_BYTE_ARRAY(dst.cg_configinfo, src->cg_configinfo);
+   CP_OPT_BYTE_ARRAY(dst.ue_cap, src->ue_cap);
+   CP_OPT_BYTE_ARRAY(dst.meas_config, src->meas_config);
+   CP_OPT_BYTE_ARRAY(dst.ho_prep_info, src->ho_prep_info);
+
+```
+
+### Function 2: decode_cu_to_du_rrc_info
+**File:** openair2/F1AP/lib/f1ap_ue_context.c
+**Relevance Score:** 1.00
+**Reason:** Primary compiler cluster [unknown_type_name]: unknown type name ‘F1AP_ProtocolExtensionContainer_10696P60_t’
+**Code:**
+```c
+ 
+   /* optional: cG_ConfigInfo */
+   if (cu2du->cg_configinfo) {
+     asn1cCalloc(enc.cG_ConfigInfo, cG_ConfigInfo);
+     const byte_array_t *ba = cu2du->cg_configinfo;
+     OCTET_STRING_fromBuf(cG_ConfigInfo, (const char *)ba->buf, ba->len);
+   }
+ 
+   /* optional: uE_CapabilityRAT_ContainerList */
+   if (cu2du->ue_cap) {
+     asn1cCalloc(enc.uE_CapabilityRAT_ContainerList, uE_CapabilityRAT_ContainerList);
+     const byte_array_t *ba = cu2du->ue_cap;
+     OCTET_STRING_fromBuf(uE_CapabilityRAT_ContainerList, (const char *)ba->buf, ba->len);
+   }
+ 
+   /* optional: measConfig */
+   if (cu2du->meas_config) {
+     asn1cCalloc(enc.measConfig, measConfig);
+     const byte_array_t *ba = cu2du->meas_config;
+     OCTET_STRING_fromBuf(measConfig, (const char *)ba->buf, ba->len);
+   }
+ 
+   /* optional: HandoverPreparationInformation */
+   if (cu2du->ho_prep_info) {
+     F1AP_ProtocolExtensionContainer_19016P60_t *p = calloc_or_fail(1, sizeof(*p));
+     enc.iE_Extensions = (struct F1AP_ProtocolExtensionContainer *)p;
+     asn1cSequenceAdd(p->list, F1AP_CUtoDURRCInformation_ExtIEs_t, ie_ext);
+     ie_ext->id = F1AP_ProtocolIE_ID_id_HandoverPreparationInformation;
+     ie_ext->criticality = F1AP_Criticality_ignore;
+     ie_ext->extensionValue.present = F1AP_CUtoDURRCInformation_ExtIEs__extensionValue_PR_HandoverPreparationInformation;
+     const byte_array_t *ba = cu2du->ho_prep_info;
+     F1AP_HandoverPreparationInformation_t *hpi = &ie_ext->extensionValue.choice.HandoverPreparationInformation;
+     OCTET_STRING_fromBuf(hpi, (const char *)ba->buf, ba->len);
+   }
+   return enc;
+ }
+ 
+ static bool decode_cu_to_du_rrc_info(f1ap_cu_to_du_rrc_info_t *dec, const F1AP_CUtoDURRCInformation_t *cu2du)
+ {
+   if (cu2du->cG_ConfigInfo) {
+     dec->cg_configinfo = calloc_or_fail(1, sizeof(*dec->cg_configinfo));
+     const F1AP_CG_ConfigInfo_t *cgci = cu2du->cG_ConfigInfo;
+     *dec->cg_configinfo = create_byte_array(cgci->size, (uint8_t*)cgci->buf);
+   }
+   if (cu2du->uE_CapabilityRAT_ContainerList) {
+     dec->ue_cap = calloc_or_fail(1, sizeof(*dec->ue_cap));
+     const F1AP_UE_CapabilityRAT_ContainerList_t *l = cu2du->uE_CapabilityRAT_ContainerList;
+     *dec->ue_cap = create_byte_array(l->size, (uint8_t*)l->buf);
+   }
+   if (cu2du->measConfig) {
+     dec->meas_config = calloc_or_fail(1, sizeof(*dec->meas_config));
+     const F1AP_MeasConfig_t *mc = cu2du->measConfig;
+     *dec->meas_config = create_byte_array(mc->size, (uint8_t*)mc->buf);
+   }
+   if (cu2du->iE_Extensions) {
+     const F1AP_ProtocolExtensionContainer_19016P60_t *ext = (const F1AP_ProtocolExtensionContainer_19016P60_t *)cu2du->iE_Extensions;
+     for (int i = 0; i < ext->list.count; ++i) {
+       const F1AP_CUtoDURRCInformation_ExtIEs_t *cu2du_info_ext = ext->list.array[i];
+       switch (cu2du_info_ext->id) {
+         case F1AP_ProtocolIE_ID_id_HandoverPreparationInformation:
+           dec->ho_prep_info = calloc_or_fail(1, sizeof(*dec->ho_prep_info));
+           const F1AP_HandoverPreparationInformation_t *hopi = &cu2du_info_ext->extensionValue.choice.HandoverPreparationInformation;
+           *dec->ho_prep_info = create_byte_array(hopi->size, (uint8_t*) hopi->buf);
+           break;
+         default:
+           PRINT_ERROR("received unsupported F1AP CUtoDURRCInfo extension container %ld\n", cu2du_info_ext->id);
+       }
+     }
+   }
+   return true;
+ }
+ 
+ static f1ap_cu_to_du_rrc_info_t cp_cu_to_du_rrc_info(const f1ap_cu_to_du_rrc_info_t *src)
+ {
+   f1ap_cu_to_du_rrc_info_t dst = {0};
+   CP_OPT_BYTE_ARRAY(dst.cg_configinfo, src->cg_configinfo);
+   CP_OPT_BYTE_ARRAY(dst.ue_cap, src->ue_cap);
+   CP_OPT_BYTE_ARRAY(dst.meas_config, src->meas_config);
+   CP_OPT_BYTE_ARRAY(dst.ho_prep_info, src->ho_prep_info);
+   return dst;
+ }
+ 
+ static bool eq_ba(const byte_array_t a, const byte_array_t b)
+ {
+   return eq_byte_array(&a, &b);
+ }
+ 
+ static bool eq_cu_to_du_rrc_info(const f1ap_cu_to_du_rrc_info_t *a, const f1ap_cu_to_du_rrc_info_t *b)
+ {
+   _F1_EQ_CHECK_OPTIONAL_IE(a, b, cg_configinfo, eq_ba);
+   _F1_EQ_CHECK_OPTIONAL_IE(a, b, ue_cap, eq_ba);
+   _F1_EQ_CHECK_OPTIONAL_IE(a, b, meas_config, eq_ba);
+   _F1_EQ_CHECK_OPTIONAL_IE(a, b, ho_prep_info, eq_ba);
+   return true;
+ }
+ 
+ static void free_cu_to_du_rrc_info(f1ap_cu_to_du_rrc_info_t *cu2du)
+ {
+   FREE_OPT_BYTE_ARRAY(cu2du->cg_configinfo);
+   FREE_OPT_BYTE_ARRAY(cu2du->ue_cap);
+   FREE_OPT_BYTE_ARRAY(cu2du->meas_config);
+   FREE_OPT_BYTE_ARRAY(cu2du->ho_prep_info);
+ }
+ 
+ static F1AP_DUtoCURRCInformation_t encode_du_to_cu_rrc_info(const f1ap_du_to_cu_rrc_info_t *du2cu)
+ {
+   F1AP_DUtoCURRCInformation_t enc = {0};
+ 
+   /* mandatory: cellGroupConfig */
+   const byte_array_t *ba = &du2cu->cell_group_config;
+
+```
+
+### Function 3: encode_drbs_to_setup
+**File:** openair2/F1AP/lib/f1ap_ue_context.c
+**Relevance Score:** 1.00
+**Reason:** Primary compiler cluster [unknown_type_name]: unknown type name ‘F1AP_ProtocolExtensionContainer_10696P82_t’; did you mean ‘F1AP_ProtocolExtensionContainer_19016P82_t’?
+**Code:**
+```c
+ }
+ 
+ static f1ap_up_tnl_t cp_up_tnl(const f1ap_up_tnl_t *orig)
+ {
+   f1ap_up_tnl_t cp = { .teid = orig->teid, };
+   memcpy(&cp.tl_address, &orig->tl_address, sizeof(orig->tl_address));
+   return cp;
+ }
+ 
+ static bool eq_up_tnl(const f1ap_up_tnl_t *a, const f1ap_up_tnl_t *b)
+ {
+   if (memcmp(&a->tl_address, &b->tl_address, sizeof(a->tl_address)) != 0) {
+     PRINT_ERROR("tl_address mismatch\n");
+     return false;
+   }
+   _F1_EQ_CHECK_INT(a->teid, b->teid);
+   return true;
+ }
+ 
+ static void free_up_tnl(const f1ap_up_tnl_t *tnl)
+ {
+   // nothing to free
+ }
+ 
+ /* Encode a DRBs_ToSetup list for UE Context Setup Request, from f1ap_drb_to_setup_t. */
+ static F1AP_DRBs_ToBeSetup_List_t encode_drbs_to_setup(int n, const f1ap_drb_to_setup_t *drbs)
+ {
+   F1AP_DRBs_ToBeSetup_List_t list = {0};
+   for (int i = 0; i < n; ++i) {
+     const f1ap_drb_to_setup_t *drb = &drbs[i];
+     asn1cSequenceAdd(list, F1AP_DRBs_ToBeSetup_ItemIEs_t, itie);
+     itie->id = F1AP_ProtocolIE_ID_id_DRBs_ToBeSetup_Item;
+     itie->criticality = F1AP_Criticality_reject;
+     itie->value.present = F1AP_DRBs_ToBeSetup_ItemIEs__value_PR_DRBs_ToBeSetup_Item;
+ 
+     F1AP_DRBs_ToBeSetup_Item_t *it = &itie->value.choice.DRBs_ToBeSetup_Item;
+     it->dRBID = drb->id;
+     AssertFatal(drb->qos_choice == F1AP_QOS_CHOICE_NR, "only NR QoS choice implemented\n");
+     it->qoSInformation.present = F1AP_QoSInformation_PR_choice_extension;
+     F1AP_QoSInformation_ExtIEs_t *qos_ext_ie = calloc_or_fail(1, sizeof(*qos_ext_ie));
+     it->qoSInformation.choice.choice_extension = (struct F1AP_ProtocolIE_SingleContainer *)qos_ext_ie;
+     qos_ext_ie->id = F1AP_ProtocolIE_ID_id_DRB_Information;
+     qos_ext_ie->criticality = F1AP_Criticality_reject;
+     qos_ext_ie->value.present = F1AP_QoSInformation_ExtIEs__value_PR_DRB_Information;
+     qos_ext_ie->value.choice.DRB_Information = encode_drb_info_nr(&drb->nr);
+ 
+     /* 12.1.3 uLUPTNLInformation_ToBeSetup_List */
+     for (int j = 0; j < drb->up_ul_tnl_len; j++) {
+       DevAssert(drb->up_ul_tnl[j].teid > 0);
+       asn1cSequenceAdd(it->uLUPTNLInformation_ToBeSetup_List.list, F1AP_ULUPTNLInformation_ToBeSetup_Item_t, tnl_it);
+       tnl_it->uLUPTNLInformation = encode_up_tnl(&drb->up_ul_tnl[j]);
+     }
+ 
+     it->rLCMode = rlc_mode_to_asn1(drb->rlc_mode);
+ 
+     F1AP_ProtocolExtensionContainer_19016P82_t *ext = calloc_or_fail(1, sizeof(*ext));
+     it->iE_Extensions = (struct F1AP_ProtocolExtensionContainer *)ext;
+     asn1cSequenceAdd(ext->list, F1AP_DRBs_ToBeSetup_ItemExtIEs_t, ext_ie);
+     ext_ie->id = F1AP_ProtocolIE_ID_id_DLPDCPSNLength;
+     ext_ie->criticality = F1AP_Criticality_ignore;
+     ext_ie->extensionValue.present = F1AP_DRBs_ToBeSetup_ItemExtIEs__extensionValue_PR_PDCPSNLength;
+     AssertFatal(drb->dl_pdcp_sn_len != NULL, "dl_pdcp_sn_len required for setup\n");
+     ext_ie->extensionValue.choice.PDCPSNLength = *drb->dl_pdcp_sn_len;
+ 
+     if (drb->ul_pdcp_sn_len) {
+       asn1cSequenceAdd(ext->list, F1AP_DRBs_ToBeSetup_ItemExtIEs_t, ext_ie);
+       ext_ie->id = F1AP_ProtocolIE_ID_id_ULPDCPSNLength;
+       ext_ie->criticality = F1AP_Criticality_ignore;
+       ext_ie->extensionValue.present = F1AP_DRBs_ToBeSetup_ItemExtIEs__extensionValue_PR_PDCPSNLength_1;
+       ext_ie->extensionValue.choice.PDCPSNLength_1 = *drb->ul_pdcp_sn_len;
+     }
+   }
+   return list;
+ }
+ 
+ /* Encode a DRBs_ToBeSetupMod list for UE Context Modification Request, from
+  * f1ap_drb_to_setup_t. The ToBeSetup/ToBeSetupMod lists are almost the same
+  * (with the exception that one field is optional in the latter), so that we
+  * can reuse the internal types, but the asn1c types are different. */
+ static F1AP_DRBs_ToBeSetupMod_List_t encode_drbs_to_setupmod(int n, const f1ap_drb_to_setup_t *drbs)
+ {
+   F1AP_DRBs_ToBeSetupMod_List_t list = {0};
+   for (int i = 0; i < n; ++i) {
+     const f1ap_drb_to_setup_t *drb = &drbs[i];
+     asn1cSequenceAdd(list, F1AP_DRBs_ToBeSetupMod_ItemIEs_t, itie);
+     itie->id = F1AP_ProtocolIE_ID_id_DRBs_ToBeSetupMod_Item;
+     itie->criticality = F1AP_Criticality_reject;
+     itie->value.present = F1AP_DRBs_ToBeSetupMod_ItemIEs__value_PR_DRBs_ToBeSetupMod_Item;
+ 
+     F1AP_DRBs_ToBeSetupMod_Item_t *it = &itie->value.choice.DRBs_ToBeSetupMod_Item;
+     it->dRBID = drb->id;
+     AssertFatal(drb->qos_choice == F1AP_QOS_CHOICE_NR, "only NR QoS choice implemented\n");
+     it->qoSInformation.present = F1AP_QoSInformation_PR_choice_extension;
+     F1AP_QoSInformation_ExtIEs_t *qos_ext_ie = calloc_or_fail(1, sizeof(*qos_ext_ie));
+     it->qoSInformation.choice.choice_extension = (struct F1AP_ProtocolIE_SingleContainer *)qos_ext_ie;
+     qos_ext_ie->id = F1AP_ProtocolIE_ID_id_DRB_Information;
+     qos_ext_ie->criticality = F1AP_Criticality_reject;
+     qos_ext_ie->value.present = F1AP_QoSInformation_ExtIEs__value_PR_DRB_Information;
+     qos_ext_ie->value.choice.DRB_Information = encode_drb_info_nr(&drb->nr);
+ 
+     /* 12.1.3 uLUPTNLInformation_ToBeSetupMod_List */
+     for (int j = 0; j < drb->up_ul_tnl_len; j++) {
+       DevAssert(drb->up_ul_tnl[j].teid > 0);
+       asn1cSequenceAdd(it->uLUPTNLInformation_ToBeSetup_List.list, F1AP_ULUPTNLInformation_ToBeSetup_Item_t, tnl_it);
+       tnl_it->uLUPTNLInformation = encode_up_tnl(&drb->up_ul_tnl[j]);
+     }
+ 
+     it->rLCMode = rlc_mode_to_asn1(drb->rlc_mode);
+ 
+     if (!drb->dl_pdcp_sn_len && !drb->ul_pdcp_sn_len)
+
+```
+
+### Function 4: decode_drbs_to_setup
+**File:** openair2/F1AP/lib/f1ap_ue_context.c
+**Relevance Score:** 1.00
+**Reason:** Primary compiler cluster [unknown_type_name]: unknown type name ‘F1AP_ProtocolExtensionContainer_10696P82_t’
+**Code:**
+```c
+       asn1cSequenceAdd(ext->list, F1AP_DRBs_ToBeSetupMod_ItemExtIEs_t, ext_ie);
+       ext_ie->id = F1AP_ProtocolIE_ID_id_DLPDCPSNLength;
+       ext_ie->criticality = F1AP_Criticality_ignore;
+       ext_ie->extensionValue.present = F1AP_DRBs_ToBeSetupMod_ItemExtIEs__extensionValue_PR_PDCPSNLength;
+       ext_ie->extensionValue.choice.PDCPSNLength = *drb->dl_pdcp_sn_len;
+     }
+ 
+     if (drb->ul_pdcp_sn_len) {
+       asn1cSequenceAdd(ext->list, F1AP_DRBs_ToBeSetupMod_ItemExtIEs_t, ext_ie);
+       ext_ie->id = F1AP_ProtocolIE_ID_id_ULPDCPSNLength;
+       ext_ie->criticality = F1AP_Criticality_ignore;
+       ext_ie->extensionValue.present = F1AP_DRBs_ToBeSetupMod_ItemExtIEs__extensionValue_PR_PDCPSNLength_1;
+       ext_ie->extensionValue.choice.PDCPSNLength_1 = *drb->ul_pdcp_sn_len;
+     }
+   }
+   return list;
+ }
+ 
+ /* \brief Decode DRBS-ToBeSetup list from UE Context Setup request, into
+  * f1ap_drb_to_setup_t. */
+ static bool decode_drbs_to_setup(const F1AP_DRBs_ToBeSetup_List_t *f1ap, int *n, f1ap_drb_to_setup_t **out)
+ {
+   DevAssert(out != NULL);
+   *out = NULL;
+   int count = *n = f1ap->list.count;
+   if (count == 0)
+     return true;
+ 
+   f1ap_drb_to_setup_t *drbs = *out = calloc_or_fail(count, sizeof(*drbs));
+   for (int i = 0; i < count; ++i) {
+     const F1AP_DRBs_ToBeSetup_ItemIEs_t *itie = (const F1AP_DRBs_ToBeSetup_ItemIEs_t *)f1ap->list.array[i];
+     _F1_EQ_CHECK_LONG(itie->id, F1AP_ProtocolIE_ID_id_DRBs_ToBeSetup_Item);
+     _F1_EQ_CHECK_INT(itie->value.present, F1AP_DRBs_ToBeSetup_ItemIEs__value_PR_DRBs_ToBeSetup_Item);
+     const F1AP_DRBs_ToBeSetup_Item_t *it = &itie->value.choice.DRBs_ToBeSetup_Item;
+ 
+     f1ap_drb_to_setup_t *drb = &drbs[i];
+     drb->id = it->dRBID;
+ 
+     _F1_EQ_CHECK_INT(it->qoSInformation.present, F1AP_QoSInformation_PR_choice_extension);
+     const F1AP_QoSInformation_ExtIEs_t *qos_ext = (F1AP_QoSInformation_ExtIEs_t *)it->qoSInformation.choice.choice_extension;
+     _F1_EQ_CHECK_LONG(qos_ext->id, F1AP_ProtocolIE_ID_id_DRB_Information);
+     _F1_EQ_CHECK_INT(qos_ext->value.present, F1AP_QoSInformation_ExtIEs__value_PR_DRB_Information);
+     drb->qos_choice = F1AP_QOS_CHOICE_NR;
+     _F1_CHECK_EXP(decode_drb_info_nr(&qos_ext->value.choice.DRB_Information, &drb->nr));
+ 
+     drb->up_ul_tnl_len = it->uLUPTNLInformation_ToBeSetup_List.list.count;
+     _F1_EQ_CHECK_GENERIC(drb->up_ul_tnl_len > 0 && drb->up_ul_tnl_len <= 2, "%d", drb->up_ul_tnl_len, 1);
+     for (int j = 0; j < drb->up_ul_tnl_len; ++j) {
+       const F1AP_ULUPTNLInformation_ToBeSetup_Item_t *it_tnl = it->uLUPTNLInformation_ToBeSetup_List.list.array[j];
+       _F1_CHECK_EXP(decode_up_tnl(&it_tnl->uLUPTNLInformation, &drb->up_ul_tnl[j]));
+     }
+ 
+     _F1_CHECK_EXP(rlc_mode_from_asn1(it->rLCMode, &drb->rlc_mode));
+ 
+     _F1_CHECK_EXP(it->iE_Extensions); // PDCP SN length is under extension, is mandatory
+     const F1AP_ProtocolExtensionContainer_19016P82_t *ext = (const F1AP_ProtocolExtensionContainer_19016P82_t *)it->iE_Extensions;
+     const F1AP_DRBs_ToBeSetup_ItemExtIEs_t *ie;
+     F1AP_LIB_FIND_IE(F1AP_DRBs_ToBeSetup_ItemExtIEs_t, ie, &ext->list, F1AP_ProtocolIE_ID_id_DLPDCPSNLength, true);
+ 
+     for (int j = 0; j < ext->list.count; ++j) {
+       ie = ext->list.array[j];
+       AssertError(ie != NULL, return false, "ext->list.array[j] is NULL");
+       switch (ie->id) {
+         case F1AP_ProtocolIE_ID_id_DLPDCPSNLength:
+           _F1_EQ_CHECK_INT(ie->extensionValue.present, F1AP_DRBs_ToBeSetup_ItemExtIEs__extensionValue_PR_PDCPSNLength);
+           _F1_MALLOC(drb->dl_pdcp_sn_len, ie->extensionValue.choice.PDCPSNLength);
+           break;
+         case F1AP_ProtocolIE_ID_id_ULPDCPSNLength:
+           _F1_EQ_CHECK_INT(ie->extensionValue.present, F1AP_DRBs_ToBeSetup_ItemExtIEs__extensionValue_PR_PDCPSNLength_1);
+           _F1_MALLOC(drb->ul_pdcp_sn_len, ie->extensionValue.choice.PDCPSNLength_1);
+           break;
+         default:
+           PRINT_ERROR("F1AP_ProtocolIE_ID_id %ld unknown, skipping\n", ie->id);
+           break;
+       }
+     }
+   }
+ 
+   return true;
+ }
+ 
+ /* \brief Decode DRBS-ToBeSetupMod list from UE Context Modification Request, into
+  * f1ap_drb_to_setup_t. The ToBeSetup/ToBeSetupMod lists are almost the same
+  * (except for some optional types in the latter), so we reuse the internal
+  * representation, but  the asn1c types are different. */
+ static bool decode_drbs_to_setupmod(const F1AP_DRBs_ToBeSetupMod_List_t *f1ap, int *n, f1ap_drb_to_setup_t **out)
+ {
+   DevAssert(out != NULL);
+   *out = NULL;
+   int count = *n = f1ap->list.count;
+   if (count == 0)
+     return true;
+ 
+   f1ap_drb_to_setup_t *drbs = *out = calloc_or_fail(count, sizeof(*drbs));
+   for (int i = 0; i < count; ++i) {
+     const F1AP_DRBs_ToBeSetupMod_ItemIEs_t *itie = (const F1AP_DRBs_ToBeSetupMod_ItemIEs_t *)f1ap->list.array[i];
+     _F1_EQ_CHECK_LONG(itie->id, F1AP_ProtocolIE_ID_id_DRBs_ToBeSetupMod_Item);
+     _F1_EQ_CHECK_INT(itie->value.present, F1AP_DRBs_ToBeSetupMod_ItemIEs__value_PR_DRBs_ToBeSetupMod_Item);
+     const F1AP_DRBs_ToBeSetupMod_Item_t *it = &itie->value.choice.DRBs_ToBeSetupMod_Item;
+ 
+     f1ap_drb_to_setup_t *drb = &drbs[i];
+     drb->id = it->dRBID;
+ 
+     _F1_EQ_CHECK_INT(it->qoSInformation.present, F1AP_QoSInformation_PR_choice_extension);
+     const F1AP_QoSInformation_ExtIEs_t *qos_ext = (F1AP_QoSInformation_ExtIEs_t *)it->qoSInformation.choice.choice_extension;
+     _F1_EQ_CHECK_LONG(qos_ext->id, F1AP_ProtocolIE_ID_id_DRB_Information);
+     _F1_EQ_CHECK_INT(qos_ext->value.present, F1AP_QoSInformation_ExtIEs__value_PR_DRB_Information);
+     drb->qos_choice = F1AP_QOS_CHOICE_NR;
+     _F1_CHECK_EXP(decode_drb_info_nr(&qos_ext->value.choice.DRB_Information, &drb->nr));
+ 
+
+```
+
+### Function 5: encode_drbs_to_setupmod
+**File:** openair2/F1AP/lib/f1ap_ue_context.c
+**Relevance Score:** 1.00
+**Reason:** Primary compiler cluster [unknown_type_name]: unknown type name ‘F1AP_ProtocolExtensionContainer_10696P83_t’; did you mean ‘F1AP_ProtocolExtensionContainer_19016P83_t’?
+**Code:**
+```c
+     asn1cSequenceAdd(ext->list, F1AP_DRBs_ToBeSetup_ItemExtIEs_t, ext_ie);
+     ext_ie->id = F1AP_ProtocolIE_ID_id_DLPDCPSNLength;
+     ext_ie->criticality = F1AP_Criticality_ignore;
+     ext_ie->extensionValue.present = F1AP_DRBs_ToBeSetup_ItemExtIEs__extensionValue_PR_PDCPSNLength;
+     AssertFatal(drb->dl_pdcp_sn_len != NULL, "dl_pdcp_sn_len required for setup\n");
+     ext_ie->extensionValue.choice.PDCPSNLength = *drb->dl_pdcp_sn_len;
+ 
+     if (drb->ul_pdcp_sn_len) {
+       asn1cSequenceAdd(ext->list, F1AP_DRBs_ToBeSetup_ItemExtIEs_t, ext_ie);
+       ext_ie->id = F1AP_ProtocolIE_ID_id_ULPDCPSNLength;
+       ext_ie->criticality = F1AP_Criticality_ignore;
+       ext_ie->extensionValue.present = F1AP_DRBs_ToBeSetup_ItemExtIEs__extensionValue_PR_PDCPSNLength_1;
+       ext_ie->extensionValue.choice.PDCPSNLength_1 = *drb->ul_pdcp_sn_len;
+     }
+   }
+   return list;
+ }
+ 
+ /* Encode a DRBs_ToBeSetupMod list for UE Context Modification Request, from
+  * f1ap_drb_to_setup_t. The ToBeSetup/ToBeSetupMod lists are almost the same
+  * (with the exception that one field is optional in the latter), so that we
+  * can reuse the internal types, but the asn1c types are different. */
+ static F1AP_DRBs_ToBeSetupMod_List_t encode_drbs_to_setupmod(int n, const f1ap_drb_to_setup_t *drbs)
+ {
+   F1AP_DRBs_ToBeSetupMod_List_t list = {0};
+   for (int i = 0; i < n; ++i) {
+     const f1ap_drb_to_setup_t *drb = &drbs[i];
+     asn1cSequenceAdd(list, F1AP_DRBs_ToBeSetupMod_ItemIEs_t, itie);
+     itie->id = F1AP_ProtocolIE_ID_id_DRBs_ToBeSetupMod_Item;
+     itie->criticality = F1AP_Criticality_reject;
+     itie->value.present = F1AP_DRBs_ToBeSetupMod_ItemIEs__value_PR_DRBs_ToBeSetupMod_Item;
+ 
+     F1AP_DRBs_ToBeSetupMod_Item_t *it = &itie->value.choice.DRBs_ToBeSetupMod_Item;
+     it->dRBID = drb->id;
+     AssertFatal(drb->qos_choice == F1AP_QOS_CHOICE_NR, "only NR QoS choice implemented\n");
+     it->qoSInformation.present = F1AP_QoSInformation_PR_choice_extension;
+     F1AP_QoSInformation_ExtIEs_t *qos_ext_ie = calloc_or_fail(1, sizeof(*qos_ext_ie));
+     it->qoSInformation.choice.choice_extension = (struct F1AP_ProtocolIE_SingleContainer *)qos_ext_ie;
+     qos_ext_ie->id = F1AP_ProtocolIE_ID_id_DRB_Information;
+     qos_ext_ie->criticality = F1AP_Criticality_reject;
+     qos_ext_ie->value.present = F1AP_QoSInformation_ExtIEs__value_PR_DRB_Information;
+     qos_ext_ie->value.choice.DRB_Information = encode_drb_info_nr(&drb->nr);
+ 
+     /* 12.1.3 uLUPTNLInformation_ToBeSetupMod_List */
+     for (int j = 0; j < drb->up_ul_tnl_len; j++) {
+       DevAssert(drb->up_ul_tnl[j].teid > 0);
+       asn1cSequenceAdd(it->uLUPTNLInformation_ToBeSetup_List.list, F1AP_ULUPTNLInformation_ToBeSetup_Item_t, tnl_it);
+       tnl_it->uLUPTNLInformation = encode_up_tnl(&drb->up_ul_tnl[j]);
+     }
+ 
+     it->rLCMode = rlc_mode_to_asn1(drb->rlc_mode);
+ 
+     if (!drb->dl_pdcp_sn_len && !drb->ul_pdcp_sn_len)
+       continue;
+ 
+     F1AP_ProtocolExtensionContainer_19016P83_t *ext = calloc_or_fail(1, sizeof(*ext));
+     it->iE_Extensions = (struct F1AP_ProtocolExtensionContainer *)ext;
+     if (drb->dl_pdcp_sn_len) {
+       asn1cSequenceAdd(ext->list, F1AP_DRBs_ToBeSetupMod_ItemExtIEs_t, ext_ie);
+       ext_ie->id = F1AP_ProtocolIE_ID_id_DLPDCPSNLength;
+       ext_ie->criticality = F1AP_Criticality_ignore;
+       ext_ie->extensionValue.present = F1AP_DRBs_ToBeSetupMod_ItemExtIEs__extensionValue_PR_PDCPSNLength;
+       ext_ie->extensionValue.choice.PDCPSNLength = *drb->dl_pdcp_sn_len;
+     }
+ 
+     if (drb->ul_pdcp_sn_len) {
+       asn1cSequenceAdd(ext->list, F1AP_DRBs_ToBeSetupMod_ItemExtIEs_t, ext_ie);
+       ext_ie->id = F1AP_ProtocolIE_ID_id_ULPDCPSNLength;
+       ext_ie->criticality = F1AP_Criticality_ignore;
+       ext_ie->extensionValue.present = F1AP_DRBs_ToBeSetupMod_ItemExtIEs__extensionValue_PR_PDCPSNLength_1;
+       ext_ie->extensionValue.choice.PDCPSNLength_1 = *drb->ul_pdcp_sn_len;
+     }
+   }
+   return list;
+ }
+ 
+ /* \brief Decode DRBS-ToBeSetup list from UE Context Setup request, into
+  * f1ap_drb_to_setup_t. */
+ static bool decode_drbs_to_setup(const F1AP_DRBs_ToBeSetup_List_t *f1ap, int *n, f1ap_drb_to_setup_t **out)
+ {
+   DevAssert(out != NULL);
+   *out = NULL;
+   int count = *n = f1ap->list.count;
+   if (count == 0)
+     return true;
+ 
+   f1ap_drb_to_setup_t *drbs = *out = calloc_or_fail(count, sizeof(*drbs));
+   for (int i = 0; i < count; ++i) {
+     const F1AP_DRBs_ToBeSetup_ItemIEs_t *itie = (const F1AP_DRBs_ToBeSetup_ItemIEs_t *)f1ap->list.array[i];
+     _F1_EQ_CHECK_LONG(itie->id, F1AP_ProtocolIE_ID_id_DRBs_ToBeSetup_Item);
+     _F1_EQ_CHECK_INT(itie->value.present, F1AP_DRBs_ToBeSetup_ItemIEs__value_PR_DRBs_ToBeSetup_Item);
+     const F1AP_DRBs_ToBeSetup_Item_t *it = &itie->value.choice.DRBs_ToBeSetup_Item;
+ 
+     f1ap_drb_to_setup_t *drb = &drbs[i];
+     drb->id = it->dRBID;
+ 
+     _F1_EQ_CHECK_INT(it->qoSInformation.present, F1AP_QoSInformation_PR_choice_extension);
+     const F1AP_QoSInformation_ExtIEs_t *qos_ext = (F1AP_QoSInformation_ExtIEs_t *)it->qoSInformation.choice.choice_extension;
+     _F1_EQ_CHECK_LONG(qos_ext->id, F1AP_ProtocolIE_ID_id_DRB_Information);
+     _F1_EQ_CHECK_INT(qos_ext->value.present, F1AP_QoSInformation_ExtIEs__value_PR_DRB_Information);
+     drb->qos_choice = F1AP_QOS_CHOICE_NR;
+     _F1_CHECK_EXP(decode_drb_info_nr(&qos_ext->value.choice.DRB_Information, &drb->nr));
+ 
+     drb->up_ul_tnl_len = it->uLUPTNLInformation_ToBeSetup_List.list.count;
+     _F1_EQ_CHECK_GENERIC(drb->up_ul_tnl_len > 0 && drb->up_ul_tnl_len <= 2, "%d", drb->up_ul_tnl_len, 1);
+     for (int j = 0; j < drb->up_ul_tnl_len; ++j) {
+       const F1AP_ULUPTNLInformation_ToBeSetup_Item_t *it_tnl = it->uLUPTNLInformation_ToBeSetup_List.list.array[j];
+       _F1_CHECK_EXP(decode_up_tnl(&it_tnl->uLUPTNLInformation, &drb->up_ul_tnl[j]));
+     }
+ 
+
+```
+
+### Function 6: decode_drbs_to_setupmod
+**File:** openair2/F1AP/lib/f1ap_ue_context.c
+**Relevance Score:** 1.00
+**Reason:** Primary compiler cluster [unknown_type_name]: unknown type name ‘F1AP_ProtocolExtensionContainer_10696P83_t’
+**Code:**
+```c
+           break;
+         case F1AP_ProtocolIE_ID_id_ULPDCPSNLength:
+           _F1_EQ_CHECK_INT(ie->extensionValue.present, F1AP_DRBs_ToBeSetup_ItemExtIEs__extensionValue_PR_PDCPSNLength_1);
+           _F1_MALLOC(drb->ul_pdcp_sn_len, ie->extensionValue.choice.PDCPSNLength_1);
+           break;
+         default:
+           PRINT_ERROR("F1AP_ProtocolIE_ID_id %ld unknown, skipping\n", ie->id);
+           break;
+       }
+     }
+   }
+ 
+   return true;
+ }
+ 
+ /* \brief Decode DRBS-ToBeSetupMod list from UE Context Modification Request, into
+  * f1ap_drb_to_setup_t. The ToBeSetup/ToBeSetupMod lists are almost the same
+  * (except for some optional types in the latter), so we reuse the internal
+  * representation, but  the asn1c types are different. */
+ static bool decode_drbs_to_setupmod(const F1AP_DRBs_ToBeSetupMod_List_t *f1ap, int *n, f1ap_drb_to_setup_t **out)
+ {
+   DevAssert(out != NULL);
+   *out = NULL;
+   int count = *n = f1ap->list.count;
+   if (count == 0)
+     return true;
+ 
+   f1ap_drb_to_setup_t *drbs = *out = calloc_or_fail(count, sizeof(*drbs));
+   for (int i = 0; i < count; ++i) {
+     const F1AP_DRBs_ToBeSetupMod_ItemIEs_t *itie = (const F1AP_DRBs_ToBeSetupMod_ItemIEs_t *)f1ap->list.array[i];
+     _F1_EQ_CHECK_LONG(itie->id, F1AP_ProtocolIE_ID_id_DRBs_ToBeSetupMod_Item);
+     _F1_EQ_CHECK_INT(itie->value.present, F1AP_DRBs_ToBeSetupMod_ItemIEs__value_PR_DRBs_ToBeSetupMod_Item);
+     const F1AP_DRBs_ToBeSetupMod_Item_t *it = &itie->value.choice.DRBs_ToBeSetupMod_Item;
+ 
+     f1ap_drb_to_setup_t *drb = &drbs[i];
+     drb->id = it->dRBID;
+ 
+     _F1_EQ_CHECK_INT(it->qoSInformation.present, F1AP_QoSInformation_PR_choice_extension);
+     const F1AP_QoSInformation_ExtIEs_t *qos_ext = (F1AP_QoSInformation_ExtIEs_t *)it->qoSInformation.choice.choice_extension;
+     _F1_EQ_CHECK_LONG(qos_ext->id, F1AP_ProtocolIE_ID_id_DRB_Information);
+     _F1_EQ_CHECK_INT(qos_ext->value.present, F1AP_QoSInformation_ExtIEs__value_PR_DRB_Information);
+     drb->qos_choice = F1AP_QOS_CHOICE_NR;
+     _F1_CHECK_EXP(decode_drb_info_nr(&qos_ext->value.choice.DRB_Information, &drb->nr));
+ 
+     drb->up_ul_tnl_len = it->uLUPTNLInformation_ToBeSetup_List.list.count;
+     _F1_EQ_CHECK_GENERIC(drb->up_ul_tnl_len > 0 && drb->up_ul_tnl_len <= 2, "%d", drb->up_ul_tnl_len, 1);
+     for (int j = 0; j < drb->up_ul_tnl_len; ++j) {
+       const F1AP_ULUPTNLInformation_ToBeSetup_Item_t *it_tnl = it->uLUPTNLInformation_ToBeSetup_List.list.array[j];
+       _F1_CHECK_EXP(decode_up_tnl(&it_tnl->uLUPTNLInformation, &drb->up_ul_tnl[j]));
+     }
+ 
+     _F1_CHECK_EXP(rlc_mode_from_asn1(it->rLCMode, &drb->rlc_mode));
+ 
+     if (!it->iE_Extensions)
+       continue;
+     const F1AP_ProtocolExtensionContainer_19016P83_t *ext = (const F1AP_ProtocolExtensionContainer_19016P83_t *)it->iE_Extensions;
+     const F1AP_DRBs_ToBeSetupMod_ItemExtIEs_t *ie;
+ 
+     for (int j = 0; j < ext->list.count; ++j) {
+       ie = ext->list.array[j];
+       AssertError(ie != NULL, return false, "ext->list.array[j] is NULL");
+       switch (ie->id) {
+         case F1AP_ProtocolIE_ID_id_DLPDCPSNLength:
+           _F1_EQ_CHECK_INT(ie->extensionValue.present, F1AP_DRBs_ToBeSetupMod_ItemExtIEs__extensionValue_PR_PDCPSNLength);
+           _F1_MALLOC(drb->dl_pdcp_sn_len, ie->extensionValue.choice.PDCPSNLength);
+           break;
+         case F1AP_ProtocolIE_ID_id_ULPDCPSNLength:
+           _F1_EQ_CHECK_INT(ie->extensionValue.present, F1AP_DRBs_ToBeSetupMod_ItemExtIEs__extensionValue_PR_PDCPSNLength_1);
+           _F1_MALLOC(drb->ul_pdcp_sn_len, ie->extensionValue.choice.PDCPSNLength_1);
+           break;
+         default:
+           PRINT_ERROR("F1AP_ProtocolIE_ID_id %ld unknown, skipping\n", ie->id);
+           break;
+       }
+     }
+   }
+ 
+   return true;
+ }
+ 
+ static f1ap_drb_to_setup_t cp_drb_to_setup(const f1ap_drb_to_setup_t *orig)
+ {
+   f1ap_drb_to_setup_t cp = {
+     .id = orig->id,
+     .qos_choice = orig->qos_choice,
+     // nr below
+     .up_ul_tnl_len = orig->up_ul_tnl_len,
+     .up_ul_tnl[0] = cp_up_tnl(&orig->up_ul_tnl[0]),
+     .up_ul_tnl[1] = cp_up_tnl(&orig->up_ul_tnl[1]),
+     .rlc_mode = orig->rlc_mode,
+     // dl_pdcp_sn_len below
+     // ul_pdcp_sn_len below
+   };
+   AssertFatal(cp.qos_choice == F1AP_QOS_CHOICE_NR, "only NR QoS choice implemented\n");
+   if (orig->qos_choice == F1AP_QOS_CHOICE_NR)
+     cp.nr = cp_drb_info_nr(&orig->nr);
+   if (orig->dl_pdcp_sn_len) {
+     _F1_MALLOC(cp.dl_pdcp_sn_len, *orig->dl_pdcp_sn_len);
+   }
+   if (orig->ul_pdcp_sn_len) {
+     _F1_MALLOC(cp.ul_pdcp_sn_len, *orig->ul_pdcp_sn_len);
+   }
+   return cp;
+ }
+ 
+ static bool eq_drb_to_setup(const f1ap_drb_to_setup_t *a, const f1ap_drb_to_setup_t *b)
+ {
+   _F1_EQ_CHECK_INT(a->id, b->id);
+   _F1_EQ_CHECK_INT(a->qos_choice, b->qos_choice);
+   AssertFatal(a->qos_choice == F1AP_QOS_CHOICE_NR, "only NR QoS choice implemented\n");
+
+```
+
+## ⚙️ SUSPECTED CONFIGURATIONS
+No suspected configurations identified.
+
+## 📋 RUNTIME LOG CONTEXT
+**Key log messages from the actual runtime:**
+   1. /home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c:61:6: error: unknown type name ‘F1AP_ProtocolExtensionContainer_10696P60_t’; did you mean ‘F1AP_ProtocolExtensionContainer_19016P60_t’?
+   2. /home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c:63:24: error: request for member ‘list’ in something not a structure or union
+   3. /home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c:92:12: error: unknown type name ‘F1AP_ProtocolExtensionContainer_10696P60_t’
+   4. /home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c:92:69: error: unknown type name ‘F1AP_ProtocolExtensionContainer_10696P60_t’
+   5. /home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c:93:29: error: request for member ‘list’ in something not a structure or union
+   6. /home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c:94:70: error: request for member ‘list’ in something not a structure or union
+   7. /home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c:669:6: error: unknown type name ‘F1AP_ProtocolExtensionContainer_10696P82_t’; did you mean ‘F1AP_ProtocolExtensionContainer_19016P82_t’?
+   8. /home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c:671:26: error: request for member ‘list’ in something not a structure or union
+   9. /home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c:679:28: error: request for member ‘list’ in something not a structure or union
+   10. /home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c:726:6: error: unknown type name ‘F1AP_ProtocolExtensionContainer_10696P83_t’; did you mean ‘F1AP_ProtocolExtensionContainer_19016P83_t’?
+
+## ⚠️ ERROR SEQUENCES WITH CONTEXT
+**Error occurrences with surrounding log lines:**
+   **Error 1 (Line 32)**: /home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c:61:6: error: unknown type name ‘F1AP_ProtocolExtensionContainer_10696P60_t’; did you mean ‘F1AP_ProtocolExtensionContainer_19016P60_t’?
+   Context:
+        [ 53%] Built target T
+        Consolidate compiler generated dependencies of target asn1_nr_rrc
+        Consolidate compiler generated dependencies of target utils
+        [ 53%] Built target utils
+        /home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c: In function ‘encode_cu_to_du_rrc_info’:
+    >>> /home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c:61:6: error: unknown type name ‘F1AP_ProtocolExtensionContainer_10696P60_t’; did you mean ‘F1AP_ProtocolExtensionContainer_19016P60_t’?
+        61 |      F1AP_ProtocolExtensionContainer_10696P60_t *p = calloc_or_fail(1, sizeof(*p));
+        |      ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        |      F1AP_ProtocolExtensionContainer_19016P60_t
+        In file included from /home/tcs/Downloads/OAI-CU/cmake_targets/ran_build/build/openair2/F1AP/MESSAGES/F1AP_ProtocolIE-Container.h:15,
+        from /home/tcs/Downloads/OAI-CU/cmake_targets/ran_build/build/openair2/F1AP/MESSAGES/F1AP_InitialULRRCMessageTransfer.h:15,
+
+   **Error 2 (Line 40)**: /home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c:63:24: error: request for member ‘list’ in something not a structure or union
+   Context:
+        |      F1AP_ProtocolExtensionContainer_19016P60_t
+        In file included from /home/tcs/Downloads/OAI-CU/cmake_targets/ran_build/build/openair2/F1AP/MESSAGES/F1AP_ProtocolIE-Container.h:15,
+        from /home/tcs/Downloads/OAI-CU/cmake_targets/ran_build/build/openair2/F1AP/MESSAGES/F1AP_InitialULRRCMessageTransfer.h:15,
+        from /home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_lib_includes.h:26,
+        from /home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c:25:
+    >>> /home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c:63:24: error: request for member ‘list’ in something not a structure or union
+        63 |      asn1cSequenceAdd(p->list, F1AP_CUtoDURRCInformation_ExtIEs_t, ie_ext);
+        |                        ^~
+        /home/tcs/Downloads/OAI-CU/cmake_targets/ran_build/build/openair2/F1AP/MESSAGES/asn_SEQUENCE_OF.h:22:27: note: in definition of macro ‘ASN_SEQUENCE_ADD’
+        22 |         asn_sequence_add((headptr), (ptr))
+        |                           ^~~~~~~
+
+   **Error 3 (Line 52)**: /home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c:92:12: error: unknown type name ‘F1AP_ProtocolExtensionContainer_10696P60_t’
+   Context:
+        |   ^~~~~~~~~~~
+        /home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c:63:6: note: in expansion of macro ‘asn1cSequenceAdd’
+        63 |      asn1cSequenceAdd(p->list, F1AP_CUtoDURRCInformation_ExtIEs_t, ie_ext);
+        |      ^~~~~~~~~~~~~~~~
+        /home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c: In function ‘decode_cu_to_du_rrc_info’:
+    >>> /home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c:92:12: error: unknown type name ‘F1AP_ProtocolExtensionContainer_10696P60_t’
+        92 |      const F1AP_ProtocolExtensionContainer_10696P60_t *ext = (const F1AP_ProtocolExtensionContainer_10696P60_t *)cu2du->iE_Extensions;
+        |            ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        /home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c:92:69: error: unknown type name ‘F1AP_ProtocolExtensionContainer_10696P60_t’
+        92 |      const F1AP_ProtocolExtensionContainer_10696P60_t *ext = (const F1AP_ProtocolExtensionContainer_10696P60_t *)cu2du->iE_Extensions;
+        |                                                                     ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+**Network Status:**
+   - assoc_state: UNKNOWN
+
+**💡 Use these log messages to understand the exact runtime state and sequence of events that led to the error.**
+
+## ✅ COMPILER-SUGGESTED FIXES (AUTHORITATIVE)
+The compiler log contains explicit replacement hints (e.g., "did you mean ...?"). Treat these as **authoritative**. When generating code patches, apply these exact identifier/member/type replacements first wherever they match the broken code.
+
+**TYPE replacements:**
+- Replace `F1AP_ProtocolExtensionContainer_10696P83_t` → `F1AP_ProtocolExtensionContainer_19016P83_t`
+- Replace `F1AP_ProtocolExtensionContainer_10696P60_t` → `F1AP_ProtocolExtensionContainer_19016P60_t`
+- Replace `F1AP_ProtocolExtensionContainer_10696P60_t` → `F1AP_ProtocolExtensionContainer_19016P82_t`
+- Replace `F1AP_ProtocolExtensionContainer_10696P82_t` → `F1AP_ProtocolExtensionContainer_19016P83_t`
+- Replace `F1AP_ProtocolExtensionContainer_10696P83_t` → `F1AP_ProtocolExtensionContainer_19016P60_t`
+- Replace `F1AP_ProtocolExtensionContainer_10696P82_t` → `F1AP_ProtocolExtensionContainer_19016P60_t`
+- Replace `F1AP_ProtocolExtensionContainer_10696P82_t` → `F1AP_ProtocolExtensionContainer_19016P82_t`
+
+## 📋 ANALYSIS INSTRUCTIONS
+
+Please analyze this error context and provide:
+
+1. **Root Cause Analysis:** What is the most likely cause of this error?
+2. **Suspected Functions:** Which functions are most likely responsible?
+3. **Suspected Configs:** Which configuration parameters need to be checked/fixed?
+4. **Fix Suggestions:**
+   - Specific code patches for identified functions (using exact file paths provided)
+   - Detailed config_patches with exact file paths, current values, and relevance scores from above
+   - Step-by-step investigation procedure
+5. **Call Chain Analysis:** How does the error propagation occur?
+
+For config_patches, you MUST include:
+- config_name: exact parameter name
+- file_path: exact path from the suspected configurations above  
+- current_value: exact current value from above
+- new_value: your recommended fix value
+- line_number: approximate line or section
+- relevance_score: use the score from suspected configurations above
+- description: detailed explanation of why this fix resolves the error
+
+Focus on providing actionable, specific fixes that address the root cause.
+
+
+================================================================================
+PROMPT STATISTICS
+================================================================================
+System prompt length: 21,335 characters
+User prompt length: 46,038 characters
+Total prompt length: 67,373 characters
+System prompt lines: 331 lines
+User prompt lines: 895 lines
+================================================================================
+LLM RESPONSE (attempt 1)
+================================================================================
+{
+  "suspected_functions": [
+    "encode_cu_to_du_rrc_info",
+    "decode_cu_to_du_rrc_info",
+    "encode_drbs_to_setup",
+    "decode_drbs_to_setup",
+    "encode_drbs_to_setupmod",
+    "decode_drbs_to_setupmod"
+  ],
+  "suspected_configs": [],
+  "reason": "The root cause of the compilation errors is the use of incorrect ASN.1 generated type names for F1AP protocol extension containers. The compiler explicitly suggests replacing all occurrences of 'F1AP_ProtocolExtensionContainer_10696P60_t', 'F1AP_ProtocolExtensionContainer_10696P82_t', and 'F1AP_ProtocolExtensionContainer_10696P83_t' with their correct counterparts 'F1AP_ProtocolExtensionContainer_19016P60_t', 'F1AP_ProtocolExtensionContainer_19016P82_t', and 'F1AP_ProtocolExtensionContainer_19016P83_t' respectively. These incorrect type names cause unknown type errors and subsequent misuse of members like 'list' on non-structure types, leading to compilation failure. The errors occur in multiple functions handling encoding and decoding of UE context and DRB setup messages in 'openair2/F1AP/lib/f1ap_ue_context.c'. Applying the exact compiler-suggested type replacements resolves the unknown type errors and fixes the member access issues.",
+  "config_fix": "",
+  "code_patches": [
+    {
+      "function_name": "encode_cu_to_du_rrc_info",
+      "file_path": "openair2/F1AP/lib/f1ap_ue_context.c",
+      "patch_type": "targeted_replacement",
+      "original_code": "F1AP_ProtocolExtensionContainer_10696P60_t *p = calloc_or_fail(1, sizeof(*p));",
+      "patched_code": "F1AP_ProtocolExtensionContainer_19016P60_t *p = calloc_or_fail(1, sizeof(*p));",
+      "line_numbers": "around line 61",
+      "description": "Replace incorrect ASN.1 type 'F1AP_ProtocolExtensionContainer_10696P60_t' with correct 'F1AP_ProtocolExtensionContainer_19016P60_t' as per compiler suggestion to fix unknown type error."
+    },
+    {
+      "function_name": "decode_cu_to_du_rrc_info",
+      "file_path": "openair2/F1AP/lib/f1ap_ue_context.c",
+      "patch_type": "targeted_replacement",
+      "original_code": "const F1AP_ProtocolExtensionContainer_10696P60_t *ext = (const F1AP_ProtocolExtensionContainer_10696P60_t *)cu2du->iE_Extensions;",
+      "patched_code": "const F1AP_ProtocolExtensionContainer_19016P60_t *ext = (const F1AP_ProtocolExtensionContainer_19016P60_t *)cu2du->iE_Extensions;",
+      "line_numbers": "around line 92",
+      "description": "Replace incorrect ASN.1 type 'F1AP_ProtocolExtensionContainer_10696P60_t' with correct 'F1AP_ProtocolExtensionContainer_19016P60_t' to fix unknown type and member access errors."
+    },
+    {
+      "function_name": "encode_drbs_to_setup",
+      "file_path": "openair2/F1AP/lib/f1ap_ue_context.c",
+      "patch_type": "targeted_replacement",
+      "original_code": "F1AP_ProtocolExtensionContainer_10696P82_t *ext = calloc_or_fail(1, sizeof(*ext));",
+      "patched_code": "F1AP_ProtocolExtensionContainer_19016P82_t *ext = calloc_or_fail(1, sizeof(*ext));",
+      "line_numbers": "around line 669",
+      "description": "Replace incorrect ASN.1 type 'F1AP_ProtocolExtensionContainer_10696P82_t' with correct 'F1AP_ProtocolExtensionContainer_19016P82_t' to fix unknown type error and allow proper member access."
+    },
+    {
+      "function_name": "decode_drbs_to_setup",
+      "file_path": "openair2/F1AP/lib/f1ap_ue_context.c",
+      "patch_type": "targeted_replacement",
+      "original_code": "const F1AP_ProtocolExtensionContainer_10696P82_t *ext = (const F1AP_ProtocolExtensionContainer_10696P82_t *)it->iE_Extensions;",
+      "patched_code": "const F1AP_ProtocolExtensionContainer_19016P82_t *ext = (const F1AP_ProtocolExtensionContainer_19016P82_t *)it->iE_Extensions;",
+      "line_numbers": "around line 784",
+      "description": "Replace incorrect ASN.1 type 'F1AP_ProtocolExtensionContainer_10696P82_t' with correct 'F1AP_ProtocolExtensionContainer_19016P82_t' to fix unknown type and member access errors."
+    },
+    {
+      "function_name": "encode_drbs_to_setupmod",
+      "file_path": "openair2/F1AP/lib/f1ap_ue_context.c",
+      "patch_type": "targeted_replacement",
+      "original_code": "F1AP_ProtocolExtensionContainer_10696P83_t *ext = calloc_or_fail(1, sizeof(*ext));",
+      "patched_code": "F1AP_ProtocolExtensionContainer_19016P83_t *ext = calloc_or_fail(1, sizeof(*ext));",
+      "line_numbers": "around line 726",
+      "description": "Replace incorrect ASN.1 type 'F1AP_ProtocolExtensionContainer_10696P83_t' with correct 'F1AP_ProtocolExtensionContainer_19016P83_t' to fix unknown type error and enable correct member access."
+    },
+    {
+      "function_name": "decode_drbs_to_setupmod",
+      "file_path": "openair2/F1AP/lib/f1ap_ue_context.c",
+      "patch_type": "targeted_replacement",
+      "original_code": "const F1AP_ProtocolExtensionContainer_10696P83_t *ext = (const F1AP_ProtocolExtensionContainer_10696P83_t *)it->iE_Extensions;",
+      "patched_code": "const F1AP_ProtocolExtensionContainer_19016P83_t *ext = (const F1AP_ProtocolExtensionContainer_19016P83_t *)it->iE_Extensions;",
+      "line_numbers": "around line 850",
+      "description": "Replace incorrect ASN.1 type 'F1AP_ProtocolExtensionContainer_10696P83_t' with correct 'F1AP_ProtocolExtensionContainer_19016P83_t' to fix unknown type and member access errors."
+    }
+  ],
+  "root_cause_analysis": "The compilation errors stem from outdated or incorrect ASN.1 generated type names used in the F1AP UE context handling code. The types 'F1AP_ProtocolExtensionContainer_10696P60_t', 'F1AP_ProtocolExtensionContainer_10696P82_t', and 'F1AP_ProtocolExtensionContainer_10696P83_t' do not exist or are not defined in the current ASN.1 generated headers. The compiler suggests the correct types are 'F1AP_ProtocolExtensionContainer_19016P60_t', 'F1AP_ProtocolExtensionContainer_19016P82_t', and 'F1AP_ProtocolExtensionContainer_19016P83_t' respectively. These types correspond to the 3GPP TS 38.416 ASN.1 module version 19016, which is the current standard. Using the wrong type names causes unknown type errors and subsequent invalid member accesses (like 'list') on non-structure types, leading to build failure. Correcting these type names to the compiler-suggested ones resolves the errors and allows proper compilation and member access.",
+  "investigation_steps": [
+    "Review compiler error messages to identify unknown type names and suggested replacements.",
+    "Locate all occurrences of the incorrect ASN.1 types in 'openair2/F1AP/lib/f1ap_ue_context.c'.",
+    "Verify the correct ASN.1 generated types in the included headers (e.g., F1AP_ProtocolIE-Container.h).",
+    "Replace all incorrect type names with the compiler-suggested correct ones.",
+    "Rebuild the project to confirm that unknown type errors and member access errors are resolved.",
+    "Run tests to verify functional correctness of encoding/decoding functions after type fixes."
+  ]
+}
+
+================================================================================
+RESPONSE STATISTICS
+================================================================================
+Response length (final): 6,870 characters
+Response lines (final): 78 lines
+Temperature: 0.1
+Max tokens: 16384
+Finish reason (final): stop
+Seed: 99
+JSON mode: True
+Parse OK: True
+Attempts: [{"attempt": 1, "finish_reason": "stop", "chars": 6870}]

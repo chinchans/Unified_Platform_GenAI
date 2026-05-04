@@ -1,0 +1,2358 @@
+[
+  {
+    "title": "Inter-gNB-DU LTM Procedure - Successful UE Context Setup and Modification",
+    "objective": "Verify that the inter-gNB-DU LTM procedure completes successfully with proper UE CONTEXT SETUP and MODIFICATION messages exchanged between gNB-CU, source gNB-DU, candidate gNB-DU, and UE.",
+    "preconditions": [
+      "UE is connected to source gNB-DU under the same gNB-CU",
+      "UE performs L3 measurement and reports neighboring cells",
+      "Candidate gNB-DU is available and ready to accept UE CONTEXT SETUP"
+    ],
+    "steps": [
+      "UE sends MeasurementReport message to source gNB-DU",
+      "Source gNB-DU forwards MeasurementReport to gNB-CU via UL RRC MESSAGE TRANSFER",
+      "gNB-CU decides to initiate LTM configuration",
+      "gNB-CU sends UE CONTEXT SETUP REQUEST to candidate gNB-DU with candidate cell ID and CSI resource configuration",
+      "Candidate gNB-DU responds with UE CONTEXT SETUP RESPONSE including lower layer RRC configurations",
+      "gNB-CU sends UE CONTEXT MODIFICATION REQUEST to source gNB-DU with early sync info and LTM configuration ID mapping list",
+      "Source gNB-DU responds with UE CONTEXT MODIFICATION RESPONSE including updated lower layer configuration",
+      "gNB-CU sends UE CONTEXT MODIFICATION REQUEST to candidate gNB-DU for subsequent LTM or configuration updates",
+      "Candidate gNB-DU responds with UE CONTEXT MODIFICATION RESPONSE including updated lower layer configuration"
+    ],
+    "expected_results": [
+      "MeasurementReport is correctly forwarded from UE to gNB-CU",
+      "Candidate gNB-DU accepts UE CONTEXT SETUP REQUEST and returns valid UE CONTEXT SETUP RESPONSE",
+      "Source gNB-DU accepts UE CONTEXT MODIFICATION REQUEST and returns valid UE CONTEXT MODIFICATION RESPONSE",
+      "Candidate gNB-DU accepts subsequent UE CONTEXT MODIFICATION REQUEST and returns valid UE CONTEXT MODIFICATION RESPONSE"
+    ],
+    "category": "setup",
+    "id": "TC-5G-001"
+  },
+  {
+    "title": "Inter-gNB-DU LTM Procedure - RRC Reconfiguration and UE Response",
+    "objective": "Verify that RRC Reconfiguration messages are properly transferred from gNB-CU to UE via source gNB-DU and that UE responds with RRCReconfigurationComplete.",
+    "preconditions": [
+      "UE CONTEXT SETUP and MODIFICATION procedures have been completed successfully",
+      "gNB-CU has generated RRCReconfiguration message with LTM configuration"
+    ],
+    "steps": [
+      "gNB-CU sends DL RRC MESSAGE TRANSFER containing RRCReconfiguration to source gNB-DU",
+      "Source gNB-DU forwards RRCReconfiguration message to UE",
+      "UE processes RRCReconfiguration and sends RRCReconfigurationComplete to source gNB-DU",
+      "Source gNB-DU forwards RRCReconfigurationComplete to gNB-CU via UL RRC MESSAGE TRANSFER"
+    ],
+    "expected_results": [
+      "UE receives and applies RRCReconfiguration message",
+      "UE sends RRCReconfigurationComplete message to source gNB-DU",
+      "RRCReconfigurationComplete is correctly forwarded to gNB-CU"
+    ],
+    "category": "setup",
+    "id": "TC-5G-002"
+  },
+  {
+    "title": "Inter-gNB-DU LTM Procedure - Early TA Acquisition and Timing Advance Information Transfer",
+    "objective": "Verify early Timing Advance (TA) acquisition and proper transfer of TA information between candidate gNB-DU, gNB-CU, and source gNB-DU.",
+    "preconditions": [
+      "RRCReconfigurationComplete message has been exchanged",
+      "CU-DU MOBILITY INITIATION REQUEST is triggered based on L3 measurement"
+    ],
+    "steps": [
+      "gNB-CU sends CU-DU MOBILITY INITIATION REQUEST to candidate gNB-DU",
+      "Candidate gNB-DU performs early TA acquisition with UE",
+      "Candidate gNB-DU sends DU-CU TA INFORMATION TRANSFER message to gNB-CU including TA values and PRACH resource info",
+      "gNB-CU forwards CU-DU TA INFORMATION TRANSFER message to source gNB-DU with TA values and PRACH resource info"
+    ],
+    "expected_results": [
+      "Candidate gNB-DU successfully acquires early TA from UE",
+      "TA information and PRACH resource info are correctly transferred from candidate gNB-DU to gNB-CU",
+      "gNB-CU forwards TA information correctly to source gNB-DU"
+    ],
+    "category": "setup",
+    "id": "TC-5G-003"
+  },
+  {
+    "title": "Inter-gNB-DU LTM Procedure - Cell Switch Command and Notifications",
+    "objective": "Verify that the Cell Switch Command is sent to UE and that DU-CU and CU-DU CELL SWITCH NOTIFICATION messages are exchanged correctly between source gNB-DU, gNB-CU, and candidate gNB-DU.",
+    "preconditions": [
+      "Early TA acquisition and timing advance information transfer completed",
+      "L1 measurement report received and LTM cell switch decision made"
+    ],
+    "steps": [
+      "Source gNB-DU sends Cell Switch Command to UE",
+      "Source gNB-DU sends DU-CU CELL SWITCH NOTIFICATION to gNB-CU with target cell ID and TCI state ID(s)",
+      "gNB-CU forwards CU-DU CELL SWITCH NOTIFICATION to candidate gNB-DU with target cell ID, TCI state ID(s), and TA info"
+    ],
+    "expected_results": [
+      "UE receives and processes Cell Switch Command",
+      "DU-CU CELL SWITCH NOTIFICATION is correctly sent from source gNB-DU to gNB-CU",
+      "CU-DU CELL SWITCH NOTIFICATION is correctly forwarded from gNB-CU to candidate gNB-DU"
+    ],
+    "category": "setup",
+    "id": "TC-5G-004"
+  },
+  {
+    "title": "Inter-gNB-DU LTM Procedure - UE Access Detection and Access Success",
+    "objective": "Verify that candidate gNB-DU detects UE access and sends ACCESS SUCCESS message to gNB-CU after cell switch command execution.",
+    "preconditions": [
+      "Candidate gNB-DU received CU-DU CELL SWITCH NOTIFICATION",
+      "UE received and processed Cell Switch Command"
+    ],
+    "steps": [
+      "Candidate gNB-DU detects UE access as per TS 38.300",
+      "Candidate gNB-DU sends ACCESS SUCCESS message to gNB-CU with target cell ID"
+    ],
+    "expected_results": [
+      "Candidate gNB-DU successfully detects UE access",
+      "ACCESS SUCCESS message is correctly sent to gNB-CU with accurate target cell ID"
+    ],
+    "category": "setup",
+    "id": "TC-5G-005"
+  },
+  {
+    "title": "Inter-gNB-DU LTM Procedure - UE RRC Reconfiguration Complete on Target Cell",
+    "objective": "Verify that UE sends RRCReconfigurationComplete message to candidate gNB-DU after cell switch and that it is forwarded to gNB-CU.",
+    "preconditions": [
+      "Candidate gNB-DU detected UE access and sent ACCESS SUCCESS",
+      "UE has switched to target cell"
+    ],
+    "steps": [
+      "UE sends RRCReconfigurationComplete message to candidate gNB-DU",
+      "Candidate gNB-DU forwards RRCReconfigurationComplete to gNB-CU via UL RRC MESSAGE TRANSFER"
+    ],
+    "expected_results": [
+      "UE sends RRCReconfigurationComplete message successfully",
+      "Candidate gNB-DU forwards RRCReconfigurationComplete message correctly to gNB-CU"
+    ],
+    "category": "setup",
+    "id": "TC-5G-006"
+  },
+  {
+    "title": "Inter-gNB-DU LTM Procedure - UE Context Release on Source gNB-DU",
+    "objective": "Verify that after successful cell switch, gNB-CU sends UE CONTEXT RELEASE COMMAND to source gNB-DU and source gNB-DU responds with UE CONTEXT RELEASE COMPLETE.",
+    "preconditions": [
+      "UE has successfully switched to target gNB-DU and RRCReconfigurationComplete has been forwarded to gNB-CU"
+    ],
+    "steps": [
+      "gNB-CU sends UE CONTEXT RELEASE COMMAND to source gNB-DU to release prepared cells",
+      "Source gNB-DU responds with UE CONTEXT RELEASE COMPLETE message"
+    ],
+    "expected_results": [
+      "UE CONTEXT RELEASE COMMAND is correctly received by source gNB-DU",
+      "Source gNB-DU releases resources and sends UE CONTEXT RELEASE COMPLETE message"
+    ],
+    "category": "release",
+    "id": "TC-5G-007"
+  },
+  {
+    "title": "F1AP UE CONTEXT SETUP during Intra-NR Mobility",
+    "objective": "Verify that the F1AP UE CONTEXT SETUP procedure is correctly performed when a UE moves within the same NR cell or between NR cells under the same gNB-DU",
+    "preconditions": [
+      "UE is registered and connected to the source gNB-DU",
+      "UE initiates intra-NR mobility (handover) to a target cell within the same gNB-DU",
+      "F1AP interface between gNB-CU and gNB-DU is established and operational"
+    ],
+    "steps": [
+      "Trigger intra-NR mobility event for the UE",
+      "gNB-CU sends F1AP UE CONTEXT SETUP REQUEST to the target gNB-DU",
+      "Target gNB-DU processes the UE CONTEXT SETUP REQUEST",
+      "Target gNB-DU responds with F1AP UE CONTEXT SETUP RESPONSE",
+      "gNB-CU completes the UE CONTEXT SETUP procedure",
+      "Verify UE context is established on the target gNB-DU"
+    ],
+    "expected_results": [
+      "F1AP UE CONTEXT SETUP REQUEST is correctly formatted and sent by gNB-CU",
+      "Target gNB-DU successfully processes the UE CONTEXT SETUP REQUEST",
+      "F1AP UE CONTEXT SETUP RESPONSE is received by gNB-CU without errors",
+      "UE context is correctly established on the target gNB-DU",
+      "No protocol errors or message retransmissions occur during the procedure"
+    ],
+    "category": "Intra-NR Mobility",
+    "id": "TC-5G-008"
+  },
+  {
+    "title": "LTM Procedure with gNB-CU-UP Change - Successful Bearer Context Setup",
+    "objective": "Verify that the LTM procedure with gNB-CU-UP change completes successfully including bearer context setup, RRC reconfiguration, and path switch.",
+    "preconditions": [
+      "UE is connected to source gNB-DU and source gNB-CU-UP",
+      "Measurement report is available at source gNB-DU",
+      "Target gNB-DU and target gNB-CU-UP are reachable and configured",
+      "AMF and UPF are operational"
+    ],
+    "steps": [
+      "Source gNB-DU forwards Measurement Report to gNB-CU-CP",
+      "gNB-CU-CP decides to initiate LTM configuration",
+      "gNB-CU-CP sends BEARER CONTEXT SETUP REQUEST to target gNB-CU-UP with UL TNL address for NG-U",
+      "Target gNB-CU-UP responds with BEARER CONTEXT SETUP RESPONSE including UL TNL for F1-U, DL TNL for NG-U, and data forwarding TNL addresses",
+      "Perform LTM configuration procedures between gNB-CU and candidate gNB-DUs and source gNB-DU",
+      "gNB-CU-CP sends RRC Reconfiguration message to source gNB-DU via DL RRC MESSAGE TRANSFER",
+      "Source gNB-DU sends RRCReconfigurationComplete message via UL RRC MESSAGE TRANSFER to gNB-CU-CP",
+      "If LTM triggered by L3 measurement, gNB-CU-CP sends CU-DU MOBILITY INITIATION REQUEST to gNB-DU",
+      "UE sends lower layer measurement result to source gNB-DU if L1 measurement configured",
+      "Source gNB-DU decides to execute LTM to target cell",
+      "Source gNB-DU sends DU-CU CELL SWITCH NOTIFICATION with target cell ID to gNB-CU-CP",
+      "gNB-CU-CP forwards CU-DU CELL SWITCH NOTIFICATION with target cell ID to target gNB-DU",
+      "gNB-CU-CP sends BEARER CONTEXT MODIFICATION REQUEST to source gNB-CU-UP to stop packet delivery and exchange PDCP UL/DL status and TNL info",
+      "Source gNB-CU-UP responds with BEARER CONTEXT MODIFICATION RESPONSE",
+      "gNB-CU-CP sends BEARER CONTEXT MODIFICATION REQUEST to target gNB-CU-UP with DL TNL info and PDCP UL/DL status",
+      "Target gNB-CU-UP responds with BEARER CONTEXT MODIFICATION RESPONSE",
+      "Data forwarding occurs from source gNB-CU-UP to target gNB-CU-UP",
+      "Target gNB-DU detects UE in target cell",
+      "Target gNB-DU sends ACCESS SUCCESS message to gNB-CU-CP and Downlink Data Delivery Status to target gNB-CU-UP",
+      "Path Switch procedure is performed to update DL TNL address towards core network",
+      "Bearer Context Release procedure is performed to release UE context in source gNB-CU-UP"
+    ],
+    "expected_results": [
+      "Measurement Report is successfully forwarded to gNB-CU-CP",
+      "LTM configuration decision is made and bearer context setup request is sent",
+      "Target gNB-CU-UP responds with correct bearer context setup response including all required TNL addresses",
+      "LTM configuration procedures complete without errors",
+      "RRC Reconfiguration and ReconfigurationComplete messages are exchanged successfully",
+      "CU-DU MOBILITY INITIATION REQUEST is sent if L3 measurement triggered LTM",
+      "Source gNB-DU correctly decides and initiates LTM to target cell",
+      "DU-CU CELL SWITCH NOTIFICATION messages are exchanged correctly with target cell ID",
+      "Bearer Context Modification procedures complete successfully with correct PDCP status and TNL address exchange",
+      "Data forwarding from source to target gNB-CU-UP is performed without packet loss",
+      "Target gNB-DU detects UE and sends ACCESS SUCCESS and Downlink Data Delivery Status",
+      "Path Switch procedure updates DL TNL address towards core network successfully",
+      "Bearer Context Release procedure releases UE context in source gNB-CU-UP without issues"
+    ],
+    "category": "LTM Procedure",
+    "id": "TC-5G-009"
+  },
+  {
+    "title": "LTM Procedure with gNB-CU-UP Change - CU-DU Mobility Initiation Request Handling",
+    "objective": "Verify that the CU-DU MOBILITY INITIATION REQUEST message is correctly sent and handled when LTM is triggered based on L3 measurement.",
+    "preconditions": [
+      "LTM is triggered based on L3 measurement",
+      "Source gNB-DU, gNB-CU-CP, and gNB-DU are operational",
+      "UE is connected and measurement reports are available"
+    ],
+    "steps": [
+      "Source gNB-DU forwards Measurement Report to gNB-CU-CP",
+      "gNB-CU-CP decides to initiate LTM configuration",
+      "gNB-CU-CP sends BEARER CONTEXT SETUP REQUEST to target gNB-CU-UP",
+      "Target gNB-CU-UP responds with BEARER CONTEXT SETUP RESPONSE",
+      "LTM configuration procedures are performed",
+      "gNB-CU-CP sends RRC Reconfiguration message to source gNB-DU",
+      "Source gNB-DU sends RRCReconfigurationComplete message",
+      "gNB-CU-CP sends CU-DU MOBILITY INITIATION REQUEST message to gNB-DU",
+      "Verify that gNB-DU triggers early synchronization and/or cell switch upon receiving CU-DU MOBILITY INITIATION REQUEST"
+    ],
+    "expected_results": [
+      "CU-DU MOBILITY INITIATION REQUEST message is sent by gNB-CU-CP after RRC ReconfigurationComplete",
+      "gNB-DU receives CU-DU MOBILITY INITIATION REQUEST and triggers early synchronization and/or cell switch",
+      "No errors or delays occur in handling CU-DU MOBILITY INITIATION REQUEST"
+    ],
+    "category": "LTM Procedure - Mobility Initiation",
+    "id": "TC-5G-010"
+  },
+  {
+    "title": "Bearer Context Modification Procedure During LTM with gNB-CU-UP Change",
+    "objective": "Verify that Bearer Context Modification procedures between gNB-CU-CP and source/target gNB-CU-UP are correctly performed including PDCP UL/DL status exchange and TNL address updates.",
+    "preconditions": [
+      "LTM procedure is ongoing with gNB-CU-UP change",
+      "Source and target gNB-CU-UP are reachable",
+      "Bearer contexts are established"
+    ],
+    "steps": [
+      "gNB-CU-CP sends BEARER CONTEXT MODIFICATION REQUEST to source gNB-CU-UP to stop packet delivery and exchange PDCP UL/DL status and TNL info",
+      "Source gNB-CU-UP responds with BEARER CONTEXT MODIFICATION RESPONSE",
+      "gNB-CU-CP sends BEARER CONTEXT MODIFICATION REQUEST to target gNB-CU-UP with DL TNL address and PDCP UL/DL status",
+      "Target gNB-CU-UP responds with BEARER CONTEXT MODIFICATION RESPONSE"
+    ],
+    "expected_results": [
+      "Bearer Context Modification Request messages contain correct PDCP UL/DL status and TNL address information",
+      "Source gNB-CU-UP stops packet delivery upon request",
+      "Target gNB-CU-UP updates bearer context with new DL TNL address and PDCP status",
+      "Modification responses are received without errors"
+    ],
+    "category": "Bearer Context Modification",
+    "id": "TC-5G-011"
+  },
+  {
+    "title": "Data Forwarding Verification During LTM with gNB-CU-UP Change",
+    "objective": "Verify that data forwarding from source gNB-CU-UP to target gNB-CU-UP is correctly performed during LTM procedure.",
+    "preconditions": [
+      "Bearer Context Modification procedures completed successfully",
+      "Source and target gNB-CU-UP are connected",
+      "UE context is active"
+    ],
+    "steps": [
+      "Initiate data forwarding from source gNB-CU-UP to target gNB-CU-UP",
+      "Monitor data packets forwarded during LTM",
+      "Verify integrity and sequence of forwarded data"
+    ],
+    "expected_results": [
+      "Data forwarding occurs without packet loss or duplication",
+      "Forwarded data maintains integrity and correct sequence",
+      "No impact on UE data session continuity"
+    ],
+    "category": "Data Forwarding",
+    "id": "TC-5G-012"
+  },
+  {
+    "title": "Path Switch and Bearer Context Release After LTM with gNB-CU-UP Change",
+    "objective": "Verify that path switch procedure updates DL TNL address towards core network and bearer context release procedure releases UE context in source gNB-CU-UP after LTM.",
+    "preconditions": [
+      "LTM procedure with gNB-CU-UP change completed",
+      "Target gNB-DU has detected UE and sent ACCESS SUCCESS",
+      "Data forwarding is completed"
+    ],
+    "steps": [
+      "Perform Path Switch procedure to update DL TNL address for NG-U towards core network",
+      "Perform Bearer Context Release procedure to release UE context in source gNB-CU-UP",
+      "Verify signaling messages and responses during these procedures"
+    ],
+    "expected_results": [
+      "Path Switch procedure successfully updates DL TNL address in core network",
+      "Bearer Context Release procedure completes and UE context is removed from source gNB-CU-UP",
+      "No residual data or signaling errors remain after release"
+    ],
+    "category": "Path Switch and Context Release",
+    "id": "TC-5G-013"
+  },
+  {
+    "title": "Intra-gNB-DU LTM Procedure - Successful UE Context Setup and Cell Switch",
+    "objective": "Verify the correct execution of the intra-gNB-DU LTM procedure including UE context modification, RRC reconfiguration, early TA acquisition, cell switch command, and resource release.",
+    "preconditions": [
+      "UE is connected and camped on a source cell within the same gNB-DU.",
+      "gNB-CU and gNB-DU are properly connected and synchronized.",
+      "L1 and L3 measurements are configured and enabled on the UE."
+    ],
+    "steps": [
+      "UE sends MeasurementReport message with L3 measurement results to gNB-DU.",
+      "gNB-DU forwards MeasurementReport to gNB-CU via UL RRC MESSAGE TRANSFER.",
+      "gNB-CU decides to initiate LTM configuration.",
+      "gNB-CU sends UE CONTEXT MODIFICATION REQUEST to gNB-DU with candidate cell ID and CSI resource configuration.",
+      "gNB-DU responds with UE CONTEXT MODIFICATION RESPONSE including lower layer RRC configurations.",
+      "gNB-CU sends another UE CONTEXT MODIFICATION REQUEST with updated CSI resource configuration and/or LTM configuration ID mapping list.",
+      "gNB-DU responds with UE CONTEXT MODIFICATION RESPONSE with updated lower layer configuration.",
+      "gNB-CU sends DL RRC MESSAGE TRANSFER containing RRCReconfiguration message to gNB-DU.",
+      "gNB-DU forwards RRCReconfiguration message to UE.",
+      "UE sends RRCReconfigurationComplete message to gNB-DU.",
+      "gNB-DU forwards RRCReconfigurationComplete message to gNB-CU via UL RRC MESSAGE TRANSFER.",
+      "gNB-CU sends CU-DU MOBILITY INITIATION REQUEST to gNB-DU to trigger early synchronization and/or cell switch.",
+      "UE performs early TA acquisition to candidate cell(s).",
+      "UE sends L1 measurement report to gNB-DU.",
+      "gNB-DU decides to execute LTM and sends Cell Switch Command to UE.",
+      "gNB-DU sends DU-CU CELL SWITCH NOTIFICATION with target cell ID to gNB-CU.",
+      "gNB-DU detects UE access in target cell.",
+      "gNB-DU sends ACCESS SUCCESS message with target cell ID to gNB-CU.",
+      "UE sends RRCReconfigurationComplete message to gNB-DU.",
+      "gNB-DU forwards RRCReconfigurationComplete message to gNB-CU via UL RRC MESSAGE TRANSFER.",
+      "gNB-CU sends UE CONTEXT MODIFICATION REQUEST to gNB-DU to release resources of prepared cells.",
+      "gNB-DU responds with UE CONTEXT MODIFICATION RESPONSE."
+    ],
+    "expected_results": [
+      "MeasurementReport is successfully received and forwarded by gNB-DU and gNB-CU.",
+      "UE CONTEXT MODIFICATION REQUEST and RESPONSE messages are exchanged correctly with valid configurations.",
+      "RRCReconfiguration message is correctly delivered to UE and RRCReconfigurationComplete is received and forwarded.",
+      "CU-DU MOBILITY INITIATION REQUEST triggers early TA acquisition successfully.",
+      "Cell Switch Command is correctly received and executed by UE.",
+      "DU-CU CELL SWITCH NOTIFICATION and ACCESS SUCCESS messages are correctly exchanged with valid target cell ID.",
+      "UE successfully accesses the target cell and completes RRC reconfiguration.",
+      "Resources of prepared cells are released properly after cell switch.",
+      "No message loss or protocol errors occur during the procedure."
+    ],
+    "category": "Functional",
+    "id": "TC-5G-014"
+  },
+  {
+    "title": "Intra-gNB-DU LTM Procedure - Handling Multiple Candidate Cells",
+    "objective": "Verify that the intra-gNB-DU LTM procedure correctly handles multiple candidate cells by performing multiple UE CONTEXT MODIFICATION REQUEST and RESPONSE exchanges.",
+    "preconditions": [
+      "UE is connected and camped on a source cell within the same gNB-DU.",
+      "gNB-CU and gNB-DU are properly connected and synchronized.",
+      "Multiple candidate cells are available within the same gNB-DU for LTM.",
+      "L1 and L3 measurements are configured and enabled on the UE."
+    ],
+    "steps": [
+      "UE sends MeasurementReport message with L3 measurement results to gNB-DU.",
+      "gNB-DU forwards MeasurementReport to gNB-CU via UL RRC MESSAGE TRANSFER.",
+      "gNB-CU decides to initiate LTM configuration for multiple candidate cells.",
+      "For each candidate cell, gNB-CU sends UE CONTEXT MODIFICATION REQUEST to gNB-DU with candidate cell ID and CSI resource configuration.",
+      "gNB-DU responds with UE CONTEXT MODIFICATION RESPONSE including lower layer RRC configurations for each candidate cell.",
+      "gNB-CU sends UE CONTEXT MODIFICATION REQUEST with updated CSI resource configuration and/or LTM configuration ID mapping list.",
+      "gNB-DU responds with UE CONTEXT MODIFICATION RESPONSE with updated lower layer configuration.",
+      "gNB-CU sends DL RRC MESSAGE TRANSFER containing RRCReconfiguration message to gNB-DU.",
+      "gNB-DU forwards RRCReconfiguration message to UE.",
+      "UE sends RRCReconfigurationComplete message to gNB-DU.",
+      "gNB-DU forwards RRCReconfigurationComplete message to gNB-CU via UL RRC MESSAGE TRANSFER.",
+      "gNB-CU sends CU-DU MOBILITY INITIATION REQUEST to gNB-DU to trigger early synchronization and/or cell switch.",
+      "UE performs early TA acquisition to candidate cell(s).",
+      "UE sends L1 measurement report to gNB-DU.",
+      "gNB-DU decides to execute LTM and sends Cell Switch Command to UE.",
+      "gNB-DU sends DU-CU CELL SWITCH NOTIFICATION with target cell ID to gNB-CU.",
+      "gNB-DU detects UE access in target cell.",
+      "gNB-DU sends ACCESS SUCCESS message with target cell ID to gNB-CU.",
+      "UE sends RRCReconfigurationComplete message to gNB-DU.",
+      "gNB-DU forwards RRCReconfigurationComplete message to gNB-CU via UL RRC MESSAGE TRANSFER.",
+      "gNB-CU sends UE CONTEXT MODIFICATION REQUEST to gNB-DU to release resources of prepared cells.",
+      "gNB-DU responds with UE CONTEXT MODIFICATION RESPONSE."
+    ],
+    "expected_results": [
+      "Multiple UE CONTEXT MODIFICATION REQUEST and RESPONSE messages are correctly exchanged for each candidate cell.",
+      "Lower layer RRC configurations for all candidate cells are correctly generated and accepted.",
+      "RRCReconfiguration and RRCReconfigurationComplete messages are correctly exchanged.",
+      "Early TA acquisition and cell switch procedures are successfully completed for the selected target cell.",
+      "Resources for non-selected candidate cells are properly released after cell switch.",
+      "No message loss or protocol errors occur during multiple candidate cell handling."
+    ],
+    "category": "Functional",
+    "id": "TC-5G-015"
+  },
+  {
+    "title": "Intra-gNB-DU LTM Procedure - Negative Test: UE CONTEXT MODIFICATION RESPONSE Rejection",
+    "objective": "Verify system behavior when gNB-DU rejects the UE CONTEXT MODIFICATION REQUEST during LTM configuration.",
+    "preconditions": [
+      "UE is connected and camped on a source cell within the same gNB-DU.",
+      "gNB-CU and gNB-DU are properly connected and synchronized.",
+      "L1 and L3 measurements are configured and enabled on the UE.",
+      "gNB-DU is configured to reject UE CONTEXT MODIFICATION REQUEST for testing."
+    ],
+    "steps": [
+      "UE sends MeasurementReport message with L3 measurement results to gNB-DU.",
+      "gNB-DU forwards MeasurementReport to gNB-CU via UL RRC MESSAGE TRANSFER.",
+      "gNB-CU decides to initiate LTM configuration.",
+      "gNB-CU sends UE CONTEXT MODIFICATION REQUEST to gNB-DU with candidate cell ID and CSI resource configuration.",
+      "gNB-DU rejects the request and sends UE CONTEXT MODIFICATION RESPONSE indicating rejection or failure.",
+      "gNB-CU handles the rejection accordingly and does not proceed with further LTM configuration.",
+      "Verify that no RRCReconfiguration message is sent to UE.",
+      "Verify that no cell switch command is issued."
+    ],
+    "expected_results": [
+      "gNB-DU sends UE CONTEXT MODIFICATION RESPONSE indicating rejection or failure.",
+      "gNB-CU correctly handles the rejection and aborts LTM configuration.",
+      "No RRCReconfiguration or cell switch commands are sent to UE.",
+      "UE remains camped on the source cell without interruption.",
+      "No protocol errors or crashes occur in gNB-CU or gNB-DU."
+    ],
+    "category": "Negative",
+    "id": "TC-5G-016"
+  },
+  {
+    "title": "Intra-gNB-DU LTM Procedure - Early TA Acquisition Failure Handling",
+    "objective": "Verify system behavior when UE fails early TA acquisition during intra-gNB-DU LTM procedure.",
+    "preconditions": [
+      "UE is connected and camped on a source cell within the same gNB-DU.",
+      "gNB-CU and gNB-DU are properly connected and synchronized.",
+      "L1 and L3 measurements are configured and enabled on the UE.",
+      "UE is configured or forced to fail early TA acquisition."
+    ],
+    "steps": [
+      "Complete steps 1 to 10a as per normal intra-gNB-DU LTM procedure.",
+      "UE attempts early TA acquisition to candidate cell(s) but fails.",
+      "UE sends L1 measurement report indicating failure or no valid measurements.",
+      "gNB-DU decides on LTM execution based on failed TA acquisition.",
+      "Verify if gNB-DU aborts LTM procedure or retries early TA acquisition.",
+      "Verify that no Cell Switch Command is sent to UE if TA acquisition fails.",
+      "Verify system stability and proper error handling."
+    ],
+    "expected_results": [
+      "UE reports failure or invalid L1 measurements to gNB-DU.",
+      "gNB-DU either aborts LTM procedure or triggers retry mechanisms as per implementation.",
+      "No Cell Switch Command is sent to UE if early TA acquisition fails.",
+      "System logs appropriate error or warning messages.",
+      "No protocol deadlocks or crashes occur.",
+      "UE remains connected on the source cell without disruption."
+    ],
+    "category": "Negative",
+    "id": "TC-5G-017"
+  },
+  {
+    "title": "Inter-gNB-DU Conditional Handover UE Context Setup Request and Response",
+    "objective": "Verify that the gNB-CU correctly sends UE CONTEXT SETUP REQUEST to candidate gNB-DU and receives UE CONTEXT SETUP RESPONSE with requested target cell ID during conditional handover or conditional PSCell change.",
+    "preconditions": [
+      "UE is connected to source gNB-DU under the same gNB-CU",
+      "UE has sent MeasurementReport to gNB-CU indicating candidate cells",
+      "Conditional handover or conditional PSCell change conditions are met"
+    ],
+    "steps": [
+      "gNB-CU sends UE CONTEXT SETUP REQUEST message to candidate gNB-DU including HandoverPreparationInformation or CG-ConfigInfo",
+      "Candidate gNB-DU processes the request and responds with UE CONTEXT SETUP RESPONSE message including requested target cell ID"
+    ],
+    "expected_results": [
+      "Candidate gNB-DU successfully creates UE context and data bearers as requested",
+      "UE CONTEXT SETUP RESPONSE message contains the correct target cell ID",
+      "No errors or rejections in UE CONTEXT SETUP RESPONSE"
+    ],
+    "category": "setup",
+    "id": "TC-5G-018"
+  },
+  {
+    "title": "DL and UL RRC Message Transfer for Conditional Handover Execution",
+    "objective": "Validate the DL and UL RRC MESSAGE TRANSFER procedures between gNB-CU, source gNB-DU, and UE during conditional handover or PSCell change.",
+    "preconditions": [
+      "UE CONTEXT SETUP RESPONSE has been received by gNB-CU",
+      "UE is connected to source gNB-DU"
+    ],
+    "steps": [
+      "gNB-CU sends DL RRC MESSAGE TRANSFER containing RRCReconfiguration to source gNB-DU",
+      "Source gNB-DU forwards RRCReconfiguration to UE",
+      "UE applies RRCReconfiguration and sends RRCReconfigurationComplete to source gNB-DU",
+      "Source gNB-DU forwards RRCReconfigurationComplete to gNB-CU via UL RRC MESSAGE TRANSFER"
+    ],
+    "expected_results": [
+      "UE successfully applies RRCReconfiguration",
+      "RRCReconfigurationComplete messages are correctly forwarded without loss",
+      "No protocol errors during RRC message transfer"
+    ],
+    "category": "setup",
+    "id": "TC-5G-019"
+  },
+  {
+    "title": "Conditional Handover Execution and Random Access Procedure at Candidate gNB-DU",
+    "objective": "Ensure that upon fulfillment of execution conditions, UE performs Random Access at candidate gNB-DU and target gNB-DU informs gNB-CU of access success and downlink data delivery status.",
+    "preconditions": [
+      "RRCReconfigurationComplete has been received by gNB-CU",
+      "Execution condition for conditional handover or PSCell change is fulfilled"
+    ],
+    "steps": [
+      "UE initiates Random Access procedure at candidate gNB-DU",
+      "Candidate gNB-DU processes Random Access and upon success becomes target gNB-DU",
+      "Target gNB-DU sends Downlink Data Delivery Status frame to gNB-CU",
+      "Target gNB-DU sends ACCESS SUCCESS message to gNB-CU indicating the accessed cell"
+    ],
+    "expected_results": [
+      "Random Access procedure completes successfully",
+      "Downlink Data Delivery Status frame is correctly sent and received by gNB-CU",
+      "ACCESS SUCCESS message correctly indicates the target cell",
+      "No data loss or protocol errors during access"
+    ],
+    "category": "execution",
+    "id": "TC-5G-020"
+  },
+  {
+    "title": "UE Context Modification Request and Response after Conditional Handover",
+    "objective": "Verify that gNB-CU sends UE CONTEXT MODIFICATION REQUEST to source gNB-DU to stop data transmission and source gNB-DU responds with UE CONTEXT MODIFICATION RESPONSE.",
+    "preconditions": [
+      "UE has successfully accessed target gNB-DU",
+      "Downlink Data Delivery Status and ACCESS SUCCESS messages have been exchanged"
+    ],
+    "steps": [
+      "gNB-CU sends UE CONTEXT MODIFICATION REQUEST to source gNB-DU indicating to stop data transmission",
+      "Source gNB-DU sends Downlink Data Delivery Status frame to gNB-CU about unsuccessfully transmitted downlink data",
+      "gNB-CU forwards downlink packets including PDCP PDUs not successfully transmitted to target gNB-DU",
+      "Source gNB-DU responds with UE CONTEXT MODIFICATION RESPONSE to gNB-CU"
+    ],
+    "expected_results": [
+      "Source gNB-DU stops data transmission as requested",
+      "Downlink Data Delivery Status frame correctly informs gNB-CU",
+      "Unsuccessfully transmitted PDCP PDUs are forwarded to target gNB-DU",
+      "UE CONTEXT MODIFICATION RESPONSE is received without errors"
+    ],
+    "category": "modification",
+    "id": "TC-5G-021"
+  },
+  {
+    "title": "UE Context Release Procedure Post Conditional Handover",
+    "objective": "Confirm that gNB-CU initiates UE CONTEXT RELEASE COMMAND and receives UE CONTEXT RELEASE COMPLETE from source gNB-DU when applicable after conditional handover or PSCell change.",
+    "preconditions": [
+      "UE CONTEXT MODIFICATION RESPONSE has been received from source gNB-DU",
+      "Conditional handover or PSCell change has been successfully executed",
+      "Not all PSCells in source gNB-DU remain configured as candidate PSCells in subsequent CPAC"
+    ],
+    "steps": [
+      "gNB-CU sends UE CONTEXT RELEASE COMMAND to source gNB-DU",
+      "Source gNB-DU releases UE context and sends UE CONTEXT RELEASE COMPLETE to gNB-CU"
+    ],
+    "expected_results": [
+      "UE context is successfully released at source gNB-DU",
+      "UE CONTEXT RELEASE COMPLETE message is received by gNB-CU",
+      "No residual data transmission or signaling related to released UE context"
+    ],
+    "category": "release",
+    "id": "TC-5G-022"
+  },
+  {
+    "title": "Intra-gNB-DU Handover with UL and DL GTP TEID Update",
+    "objective": "Verify that during intra-gNB-DU handover, the gNB-CU and gNB-DU correctly update UL and DL GTP TEIDs and handle PDCP PDU transmission accordingly.",
+    "preconditions": [
+      "UE is connected to a cell served by gNB-DU and gNB-CU.",
+      "UE supports intra-gNB-DU handover and UE Context Modification procedure as per TS 38.473.",
+      "Initial UL and DL GTP TEIDs are established between gNB-CU and gNB-DU."
+    ],
+    "steps": [
+      "Trigger intra-gNB-DU handover (inter-cell or intra-cell) for the UE.",
+      "gNB-CU provides new UL GTP TEID to gNB-DU.",
+      "gNB-DU provides new DL GTP TEID to gNB-CU.",
+      "gNB-DU continues sending UL PDCP PDUs to gNB-CU using previous UL GTP TEID until RLC is re-established.",
+      "After RLC re-establishment, gNB-DU starts sending UL PDCP PDUs using new UL GTP TEID.",
+      "gNB-CU continues sending DL PDCP PDUs to gNB-DU using previous DL GTP TEID until PDCP re-establishment or PDCP data recovery is performed.",
+      "After PDCP re-establishment or data recovery, gNB-CU starts sending DL PDCP PDUs using new DL GTP TEID."
+    ],
+    "expected_results": [
+      "gNB-DU receives and applies new UL GTP TEID from gNB-CU.",
+      "gNB-CU receives and applies new DL GTP TEID from gNB-DU.",
+      "UL PDCP PDUs are transmitted using previous UL GTP TEID until RLC re-establishment.",
+      "UL PDCP PDUs are transmitted using new UL GTP TEID after RLC re-establishment.",
+      "DL PDCP PDUs are transmitted using previous DL GTP TEID until PDCP re-establishment or data recovery.",
+      "DL PDCP PDUs are transmitted using new DL GTP TEID after PDCP re-establishment or data recovery.",
+      "No loss or duplication of PDCP PDUs during the handover procedure."
+    ],
+    "category": "handover",
+    "id": "TC-5G-023"
+  },
+  {
+    "title": "Inter-gNB-DU Mobility - Successful UE Context Setup and Handover",
+    "objective": "Verify that the UE context is successfully setup at the target gNB-DU and the UE performs handover within the same gNB-CU.",
+    "preconditions": [
+      "UE is connected to source gNB-DU under the same gNB-CU",
+      "UE is in connected mode and capable of sending MeasurementReport",
+      "gNB-CU, source gNB-DU and target gNB-DU are properly configured and reachable"
+    ],
+    "steps": [
+      "UE sends MeasurementReport to source gNB-DU",
+      "Source gNB-DU forwards MeasurementReport to gNB-CU via UL RRC MESSAGE TRANSFER",
+      "gNB-CU optionally sends UE CONTEXT MODIFICATION REQUEST to source gNB-DU to query latest config",
+      "Source gNB-DU responds with UE CONTEXT MODIFICATION RESPONSE including full configuration",
+      "gNB-CU sends UE CONTEXT SETUP REQUEST to target gNB-DU with HandoverPreparationInformation",
+      "Target gNB-DU responds with UE CONTEXT SETUP RESPONSE",
+      "gNB-CU sends UE CONTEXT MODIFICATION REQUEST with RRCReconfiguration to source gNB-DU and indicates to stop data transmission",
+      "Source gNB-DU sends Downlink Data Delivery Status frame to gNB-CU",
+      "Source gNB-DU forwards RRCReconfiguration message to UE",
+      "Source gNB-DU sends UE CONTEXT MODIFICATION RESPONSE to gNB-CU",
+      "UE performs Random Access procedure at target gNB-DU",
+      "Target gNB-DU sends Downlink Data Delivery Status frame to gNB-CU",
+      "UE sends RRCReconfigurationComplete to target gNB-DU",
+      "Target gNB-DU forwards RRCReconfigurationComplete to gNB-CU via UL RRC MESSAGE TRANSFER",
+      "gNB-CU sends UE CONTEXT RELEASE COMMAND to source gNB-DU",
+      "Source gNB-DU releases UE context and sends UE CONTEXT RELEASE COMPLETE to gNB-CU"
+    ],
+    "expected_results": [
+      "MeasurementReport is successfully received and forwarded by source gNB-DU and gNB-CU",
+      "UE CONTEXT MODIFICATION REQUEST/RESPONSE exchange completes successfully",
+      "UE CONTEXT SETUP REQUEST is accepted by target gNB-DU with UE CONTEXT SETUP RESPONSE",
+      "RRCReconfiguration message is correctly delivered to UE via source gNB-DU",
+      "Downlink Data Delivery Status frames are correctly sent to gNB-CU from source and target gNB-DUs",
+      "Random Access procedure at target gNB-DU completes successfully",
+      "UE sends RRCReconfigurationComplete and it is forwarded to gNB-CU",
+      "UE CONTEXT RELEASE COMMAND and RELEASE COMPLETE messages are exchanged successfully",
+      "UE context is correctly released at source gNB-DU",
+      "UE successfully hands over from source gNB-DU to target gNB-DU within the same gNB-CU"
+    ],
+    "category": "handover",
+    "id": "TC-5G-024"
+  },
+  {
+    "title": "Inter-gNB-DU Mobility - UE CONTEXT MODIFICATION REQUEST without stopping data transmission (DAPS Handover scenario)",
+    "objective": "Verify that during DAPS handover, UE CONTEXT MODIFICATION REQUEST may not indicate stopping data transmission and handover command is delivered via DL RRC Message Transfer.",
+    "preconditions": [
+      "UE is connected to source gNB-DU under the same gNB-CU",
+      "DAPS handover is configured and supported by gNB-CU and gNB-DUs",
+      "UE is in connected mode and capable of sending MeasurementReport"
+    ],
+    "steps": [
+      "UE sends MeasurementReport to source gNB-DU",
+      "Source gNB-DU forwards MeasurementReport to gNB-CU",
+      "gNB-CU sends UE CONTEXT SETUP REQUEST to target gNB-DU with HandoverPreparationInformation",
+      "Target gNB-DU responds with UE CONTEXT SETUP RESPONSE",
+      "gNB-CU sends UE CONTEXT MODIFICATION REQUEST to source gNB-DU without indication to stop data transmission or only for DRBs not subject to DAPS handover",
+      "Handover command is sent to UE via DL RRC Message Transfer procedure",
+      "Source gNB-DU sends Downlink Data Delivery Status frame to gNB-CU after UE accesses target gNB-DU",
+      "UE performs Random Access procedure at target gNB-DU",
+      "UE sends RRCReconfigurationComplete to target gNB-DU",
+      "Target gNB-DU forwards RRCReconfigurationComplete to gNB-CU",
+      "gNB-CU sends UE CONTEXT RELEASE COMMAND to source gNB-DU",
+      "Source gNB-DU releases UE context and sends UE CONTEXT RELEASE COMPLETE"
+    ],
+    "expected_results": [
+      "UE CONTEXT MODIFICATION REQUEST does not stop data transmission for DRBs subject to DAPS handover",
+      "Handover command is successfully delivered to UE via DL RRC Message Transfer",
+      "Downlink Data Delivery Status frames are correctly sent after UE accesses target gNB-DU",
+      "Random Access procedure completes successfully at target gNB-DU",
+      "RRCReconfigurationComplete message is forwarded correctly",
+      "UE context is released at source gNB-DU after successful handover"
+    ],
+    "category": "handover",
+    "id": "TC-5G-025"
+  },
+  {
+    "title": "Inter-gNB-DU Mobility - UE Context Setup Failure at Target gNB-DU",
+    "objective": "Verify system behavior when UE CONTEXT SETUP REQUEST is rejected or fails at target gNB-DU.",
+    "preconditions": [
+      "UE is connected to source gNB-DU under the same gNB-CU",
+      "Target gNB-DU is reachable but unable to setup UE context (e.g. resource constraints)"
+    ],
+    "steps": [
+      "UE sends MeasurementReport to source gNB-DU",
+      "Source gNB-DU forwards MeasurementReport to gNB-CU",
+      "gNB-CU sends UE CONTEXT SETUP REQUEST to target gNB-DU",
+      "Target gNB-DU rejects or fails to respond with UE CONTEXT SETUP RESPONSE",
+      "gNB-CU handles failure accordingly (e.g. abort handover, notify source gNB-DU and UE)"
+    ],
+    "expected_results": [
+      "UE CONTEXT SETUP REQUEST is sent to target gNB-DU",
+      "No UE CONTEXT SETUP RESPONSE or negative response is received",
+      "gNB-CU detects failure and does not proceed with UE CONTEXT MODIFICATION REQUEST to source gNB-DU",
+      "UE remains connected to source gNB-DU without interruption",
+      "Appropriate error handling or recovery procedures are triggered"
+    ],
+    "category": "setup",
+    "id": "TC-5G-026"
+  },
+  {
+    "title": "Inter-gNB-DU Mobility - UE Context Release at Source gNB-DU after Successful Handover",
+    "objective": "Verify that UE context is properly released at source gNB-DU after successful handover to target gNB-DU.",
+    "preconditions": [
+      "UE has successfully completed handover to target gNB-DU",
+      "gNB-CU is aware of successful UE access at target gNB-DU"
+    ],
+    "steps": [
+      "gNB-CU sends UE CONTEXT RELEASE COMMAND to source gNB-DU",
+      "Source gNB-DU releases UE context",
+      "Source gNB-DU sends UE CONTEXT RELEASE COMPLETE message to gNB-CU"
+    ],
+    "expected_results": [
+      "UE CONTEXT RELEASE COMMAND is received and processed by source gNB-DU",
+      "UE context is cleared and resources are freed at source gNB-DU",
+      "UE CONTEXT RELEASE COMPLETE message is sent to gNB-CU confirming release"
+    ],
+    "category": "release",
+    "id": "TC-5G-027"
+  },
+  {
+    "title": "Verify RLF Report signalling from UE to gNB-CU via RRC UE Information Request/Response",
+    "objective": "Ensure that a UE with a logged RLF Report correctly sends the RLF Report to the connected gNB-CU using the RRC UE Information Request/Response procedure.",
+    "preconditions": [
+      "UE has a logged RLF Report",
+      "UE is connected to a cell served by gNB-CU (gNB2 in example)"
+    ],
+    "steps": [
+      "Trigger UE to initiate RRC UE Information Request/Response procedure to send RLF Report",
+      "Monitor RRC messages exchanged between UE and gNB-CU"
+    ],
+    "expected_results": [
+      "UE sends RLF Report within RRC UE Information Request/Response message to gNB-CU",
+      "gNB-CU successfully receives and processes the RLF Report"
+    ],
+    "category": "RRC Signalling",
+    "id": "TC-5G-028"
+  },
+  {
+    "title": "Verify Xn: Failure Indication message carrying RLF Report from gNB-CU to previous gNB-CU",
+    "objective": "Validate that the gNB-CU receiving the RLF Report from the UE sends an Xn: Failure Indication message including the RLF Report to the previous gNB-CU where the UE was connected before failure.",
+    "preconditions": [
+      "gNB-CU (gNB2) has received RLF Report from UE",
+      "Previous gNB-CU (gNB1-CU) is reachable via Xn interface"
+    ],
+    "steps": [
+      "gNB-CU sends Xn: Failure Indication message to previous gNB-CU",
+      "Monitor Xn interface messages between gNB-CU and previous gNB-CU"
+    ],
+    "expected_results": [
+      "Xn: Failure Indication message includes the RLF Report",
+      "Previous gNB-CU receives and processes the Failure Indication with RLF Report"
+    ],
+    "category": "Xn Interface Signalling",
+    "id": "TC-5G-029"
+  },
+  {
+    "title": "Verify F1: Access and Mobility Indication message carrying RLF Report from gNB-CU to gNB-DU",
+    "objective": "Ensure that the gNB-CU sends the F1: Access and Mobility Indication message including the RLF Report to the gNB-DU.",
+    "preconditions": [
+      "gNB-CU has received RLF Report from UE or from Xn: Failure Indication",
+      "gNB-DU is connected and reachable via F1 interface"
+    ],
+    "steps": [
+      "gNB-CU sends F1: Access and Mobility Indication message to gNB-DU including RLF Report",
+      "Monitor F1 interface messages between gNB-CU and gNB-DU"
+    ],
+    "expected_results": [
+      "F1: Access and Mobility Indication message contains the RLF Report",
+      "gNB-DU receives and processes the RLF Report correctly"
+    ],
+    "category": "F1 Interface Signalling",
+    "id": "TC-5G-030"
+  },
+  {
+    "title": "Verify direct signalling of RLF Report from gNB-CU to gNB-DU via F1: Access and Mobility Indication",
+    "objective": "Validate that gNB-CU can directly signal the RLF Report received from UE to gNB-DU using the F1: Access and Mobility Indication procedure without intermediate Xn signalling.",
+    "preconditions": [
+      "gNB-CU has received RLF Report from UE",
+      "gNB-DU is connected and reachable via F1 interface"
+    ],
+    "steps": [
+      "gNB-CU sends F1: Access and Mobility Indication message including RLF Report directly to gNB-DU",
+      "Monitor F1 interface messages"
+    ],
+    "expected_results": [
+      "F1: Access and Mobility Indication message includes RLF Report",
+      "gNB-DU receives and processes the RLF Report"
+    ],
+    "category": "F1 Interface Signalling",
+    "id": "TC-5G-031"
+  },
+  {
+    "title": "Verify UE Context Setup during Intra-gNB-CU Mobility",
+    "objective": "Ensure that the F1AP UE CONTEXT SETUP procedure is correctly performed when a UE moves within the same gNB-CU",
+    "preconditions": [
+      "UE is registered and connected to the source gNB-CU",
+      "Source gNB-CU and target gNB-CU are part of the same physical gNB infrastructure",
+      "F1 interface between gNB-CU and gNB-DU is established and operational"
+    ],
+    "steps": [
+      "Trigger UE mobility event within the same gNB-CU (Intra-gNB-CU mobility)",
+      "Source gNB-CU initiates UE CONTEXT SETUP procedure towards the target gNB-CU",
+      "Send F1AP UE CONTEXT SETUP REQUEST message with necessary UE context information",
+      "Target gNB-CU processes the UE CONTEXT SETUP REQUEST and allocates required resources",
+      "Target gNB-CU sends UE CONTEXT SETUP RESPONSE message back to source gNB-CU",
+      "Source gNB-CU confirms successful UE CONTEXT SETUP and updates UE context accordingly"
+    ],
+    "expected_results": [
+      "UE CONTEXT SETUP REQUEST is correctly formatted and contains all mandatory IE fields",
+      "Target gNB-CU successfully processes the request and allocates resources without errors",
+      "UE CONTEXT SETUP RESPONSE is received by source gNB-CU confirming successful setup",
+      "UE context is updated correctly in both source and target gNB-CU",
+      "No message loss or protocol errors occur during the procedure"
+    ],
+    "category": "Intra-gNB-CU Mobility",
+    "id": "TC-5G-032"
+  },
+  {
+    "title": "F1AP UE CONTEXT SETUP Procedure for EN-DC Mobility",
+    "objective": "Verify that the F1AP UE CONTEXT SETUP procedure is correctly performed during EN-DC mobility scenarios to establish UE context on the target gNB.",
+    "preconditions": [
+      "UE is connected to a source gNB with EN-DC configured.",
+      "Source gNB and target gNB are connected via F1 interface.",
+      "UE is in connected mode with active data sessions."
+    ],
+    "steps": [
+      "Trigger EN-DC mobility event requiring UE context setup on target gNB.",
+      "Source gNB sends F1AP UE CONTEXT SETUP REQUEST message to target gNB.",
+      "Target gNB processes the UE CONTEXT SETUP REQUEST and allocates necessary resources.",
+      "Target gNB sends F1AP UE CONTEXT SETUP RESPONSE message back to source gNB.",
+      "Source gNB forwards necessary signaling to UE to complete mobility."
+    ],
+    "expected_results": [
+      "Target gNB successfully receives and processes UE CONTEXT SETUP REQUEST.",
+      "Target gNB allocates resources and establishes UE context without errors.",
+      "UE CONTEXT SETUP RESPONSE is sent successfully to source gNB.",
+      "UE continues data session seamlessly after mobility.",
+      "No protocol errors or message retransmissions occur during the procedure."
+    ],
+    "category": "EN-DC Mobility",
+    "id": "TC-5G-033"
+  },
+  {
+    "title": "Intra-CU Topology Adaptation Procedure in Standalone (SA) Mode",
+    "objective": "Verify correct execution of the intra-CU topology adaptation procedure for a migrating IAB-node within the same IAB-donor-CU in SA mode, including UE context setup, modification, and release between source and target parent IAB-DUs.",
+    "preconditions": [
+      "Migrating IAB-MT is connected to source parent IAB-DU under the same IAB-donor-CU.",
+      "Measurement Configuration is provided to migrating IAB-MT by IAB-donor-CU.",
+      "Source and target parent IAB-DUs may use different IAB-donor-DUs.",
+      "F1AP and RRC protocols are operational between involved nodes."
+    ],
+    "steps": [
+      "Migrating IAB-MT sends MeasurementReport to source parent IAB-DU.",
+      "Source parent IAB-DU forwards MeasurementReport to IAB-donor-CU via UL RRC MESSAGE TRANSFER.",
+      "IAB-donor-CU sends UE CONTEXT SETUP REQUEST to target parent IAB-DU.",
+      "Target parent IAB-DU responds with UE CONTEXT SETUP RESPONSE.",
+      "IAB-donor-CU sends UE CONTEXT MODIFICATION REQUEST with RRCReconfiguration message to source parent IAB-DU, including BH RLC channel and BAP Routing ID configuration for target path.",
+      "Source parent IAB-DU forwards RRCReconfiguration to migrating IAB-MT.",
+      "Source parent IAB-DU sends UE CONTEXT MODIFICATION RESPONSE to IAB-donor-CU.",
+      "Migrating IAB-MT performs Random Access procedure at target parent IAB-DU.",
+      "Migrating IAB-MT sends RRCReconfigurationComplete to target parent IAB-DU.",
+      "Target parent IAB-DU forwards RRCReconfigurationComplete to IAB-donor-CU via UL RRC MESSAGE TRANSFER.",
+      "IAB-donor-CU configures BH RLC channels and BAP routing on target path and updates F1-U tunnels with new TNL addresses.",
+      "IAB-donor-CU switches migrating IAB-node's F1 association to new TNL addresses and updates UL BH information.",
+      "IAB-donor-CU sends UE CONTEXT RELEASE COMMAND to source parent IAB-DU.",
+      "Source parent IAB-DU releases migrating IAB-MT context and sends UE CONTEXT RELEASE COMPLETE to IAB-donor-CU.",
+      "IAB-donor-CU releases BH RLC channels and BAP routing entries on source path."
+    ],
+    "expected_results": [
+      "MeasurementReport is successfully received and forwarded to IAB-donor-CU.",
+      "UE CONTEXT SETUP REQUEST and RESPONSE messages are exchanged successfully between IAB-donor-CU and target parent IAB-DU.",
+      "UE CONTEXT MODIFICATION REQUEST with correct RRCReconfiguration is delivered to migrating IAB-MT via source parent IAB-DU.",
+      "Random Access procedure at target parent IAB-DU completes successfully.",
+      "RRCReconfigurationComplete is received and forwarded to IAB-donor-CU.",
+      "BH RLC channels and BAP routing entries are correctly configured on target path.",
+      "F1-C and F1-U tunnels are switched to new TNL addresses without data loss or race conditions.",
+      "UE CONTEXT RELEASE COMMAND and COMPLETE messages are exchanged successfully between IAB-donor-CU and source parent IAB-DU.",
+      "BH RLC channels and BAP routing entries on source path are released properly, except for common nodes if applicable."
+    ],
+    "category": "setup",
+    "id": "TC-5G-034"
+  },
+  {
+    "title": "Intra-CU Topology Adaptation Procedure in Non-Standalone (NSA) Mode Using MCG SRB",
+    "objective": "Validate the intra-CU topology adaptation procedure for a migrating IAB-node using MCG SRB during EN-DC operation within the same IAB-donor-CU, including context setup, modification, SGNB modification, and release.",
+    "preconditions": [
+      "Migrating IAB-MT is connected to source parent IAB-DU under the same IAB-donor-CU with only MCG SRB available.",
+      "EN-DC operation is active with MeNB and IAB-donor-CU.",
+      "Source and target parent IAB-DUs may use different IAB-donor-DUs.",
+      "F1AP and RRC protocols are operational between involved nodes."
+    ],
+    "steps": [
+      "Migrating IAB-MT sends ULInformationTransferMRDC message containing NR RRC MeasurementReport to MeNB.",
+      "MeNB forwards RRC TRANSFER message to IAB-donor-CU.",
+      "IAB-donor-CU sends UE CONTEXT MODIFICATION REQUEST to source parent IAB-DU to query SCG configuration.",
+      "Source parent IAB-DU responds with UE CONTEXT MODIFICATION RESPONSE including full configuration.",
+      "IAB-donor-CU sends UE CONTEXT SETUP REQUEST with CG-ConfigInfo to target parent IAB-DU.",
+      "Target parent IAB-DU responds with UE CONTEXT SETUP RESPONSE.",
+      "IAB-donor-CU sends UE CONTEXT MODIFICATION REQUEST with Transmission Action Indicator to source parent IAB-DU and receives Downlink Data Delivery Status.",
+      "Source parent IAB-DU responds with UE CONTEXT MODIFICATION RESPONSE.",
+      "IAB-donor-CU sends SGNB MODIFICATION REQUIRED to MeNB.",
+      "MeNB and SgNB perform SGNB MODIFICATION REQUEST and ACK procedures.",
+      "MeNB and migrating IAB-MT perform RRC Connection Reconfiguration procedure using MCG SRB.",
+      "MeNB sends SGNB MODIFICATION CONFIRM to IAB-donor-CU.",
+      "Migrating IAB-MT performs Random Access procedure at target parent IAB-DU.",
+      "IAB-donor-CU configures BH RLC channels, BAP routing, and redirects F1 association to new TNL addresses on target path.",
+      "IAB-donor-CU sends UE CONTEXT RELEASE COMMAND to source parent IAB-DU.",
+      "Source parent IAB-DU releases migrating IAB-MT context and sends UE CONTEXT RELEASE COMPLETE.",
+      "IAB-donor-CU releases BH RLC channels and BAP routing entries on source path."
+    ],
+    "expected_results": [
+      "ULInformationTransferMRDC and RRC TRANSFER messages are successfully exchanged.",
+      "UE CONTEXT MODIFICATION REQUEST and RESPONSE messages correctly query and provide SCG configuration.",
+      "UE CONTEXT SETUP REQUEST and RESPONSE messages are exchanged successfully between IAB-donor-CU and target parent IAB-DU.",
+      "Transmission Action Indicator correctly instructs source parent IAB-DU to stop data transmission.",
+      "Downlink Data Delivery Status is correctly reported to IAB-donor-CU.",
+      "SGNB MODIFICATION REQUIRED, REQUEST, ACK, and CONFIRM messages are successfully exchanged between IAB-donor-CU and MeNB.",
+      "RRC Connection Reconfiguration procedure completes successfully using MCG SRB.",
+      "Random Access procedure at target parent IAB-DU completes successfully.",
+      "BH RLC channels and BAP routing entries are correctly configured on target path.",
+      "F1-C and F1-U tunnels are switched to new TNL addresses without data loss or race conditions.",
+      "UE CONTEXT RELEASE COMMAND and COMPLETE messages are exchanged successfully between IAB-donor-CU and source parent IAB-DU.",
+      "BH RLC channels and BAP routing entries on source path are released properly."
+    ],
+    "category": "setup",
+    "id": "TC-5G-035"
+  },
+  {
+    "title": "Intra-CU Backhaul RLF Recovery Procedure for IAB-node in SA Mode",
+    "objective": "Verify that an IAB-node undergoing backhaul RLF recovery in SA mode successfully migrates to a new parent node under the same IAB-donor-CU and establishes RRC connection with updated TNL addresses and UL mappings.",
+    "preconditions": [
+      "IAB-node is connected to an initial parent node served by an initial IAB-donor-DU under an IAB-donor-CU.",
+      "IAB-MT is configured to detect backhaul RLF as per TS 38.331 clause 5.3.10.3.",
+      "The network supports intra-CU topology adaptation procedure as per clause 8.2.3.1."
+    ],
+    "steps": [
+      "Simulate backhaul RLF occurrence on the initial path for the IAB-MT.",
+      "IAB-MT declares BH RLF for the MCG according to TS 38.331 clause 5.3.10.3.",
+      "Trigger RRC re-establishment procedure at the new parent IAB-node DU as defined in clause 8.7.",
+      "Verify that the IAB-donor-CU provides new TNL address(es) anchored at the new IAB-donor-DU via RRC signalling.",
+      "Verify that the IAB-donor-CU provides new default UL mapping including default BH RLC channel and default BAP Routing ID for UL F1-C/non-F1 traffic via RRCReconfiguration message.",
+      "Execute steps 11-15 of the intra-CU topology adaptation procedure (clause 8.2.3.1) to complete recovery.",
+      "Verify that descendant nodes of the recovering IAB-node switch to new TNL address(es) and receive new default UL mapping via RRC."
+    ],
+    "expected_results": [
+      "IAB-MT successfully declares BH RLF upon backhaul failure.",
+      "RRC re-establishment is successfully completed at the new parent IAB-node DU.",
+      "New TNL address(es) anchored at the new IAB-donor-DU are received and applied by the IAB-MT.",
+      "New default UL mapping including BH RLC channel and BAP Routing ID is received and applied.",
+      "Intra-CU topology adaptation steps complete without errors.",
+      "Descendant nodes switch to new TNL address(es) and apply new UL mappings as expected.",
+      "Downlink and uplink user data flow resumes correctly over the recovery path."
+    ],
+    "category": "5G F1AP UE CONTEXT SETUP",
+    "id": "TC-5G-036"
+  },
+  {
+    "title": "Establishment of Redundant Path in IAB Topology",
+    "objective": "Verify the procedure for establishing a second redundant path in the IAB topology under the same IAB-donor-CU.",
+    "preconditions": [
+      "IAB nodes operate in Standalone (SA) mode supporting NR-DC.",
+      "Dual-connecting IAB-node is connected to the first parent IAB-DU and IAB-donor-CU.",
+      "Measurement Configuration is provided to the dual-connecting IAB-MT by the IAB-donor-CU.",
+      "First and second parent IAB-DUs and IAB-donor-CU are operational."
+    ],
+    "steps": [
+      "Dual-connecting IAB-MT sends MeasurementReport to the first parent IAB-DU.",
+      "First parent IAB-DU forwards MeasurementReport to IAB-donor-CU via UL RRC MESSAGE TRANSFER.",
+      "IAB-donor-CU sends UE CONTEXT SETUP REQUEST to the second parent IAB-DU to create UE context and set up bearers.",
+      "Second parent IAB-DU responds with UE CONTEXT SETUP RESPONSE to IAB-donor-CU.",
+      "IAB-donor-CU sends DL RRC MESSAGE TRANSFER with RRCReconfiguration (including TNL addresses if applicable) to first parent IAB-DU.",
+      "First parent IAB-DU forwards RRCReconfiguration to dual-connecting IAB-MT.",
+      "Dual-connecting IAB-MT sends RRCReconfigurationComplete to first parent IAB-DU.",
+      "First parent IAB-DU forwards RRCReconfigurationComplete to IAB-donor-CU via UL RRC MESSAGE TRANSFER.",
+      "Random Access procedure is performed at the second parent IAB-DU.",
+      "IAB-donor-CU configures BH RLC channels and BAP-layer route entries on the second path.",
+      "New TNL addresses are added to dual-connecting IAB-DU’s F1-C associations; F1AP gNB-DU CONFIGURATION UPDATE is sent if needed.",
+      "IAB-donor-CU sends UE CONTEXT MODIFICATION REQUEST to migrate F1-U tunnels to the second path.",
+      "Dual-connecting IAB-DU responds with UE CONTEXT MODIFICATION RESPONSE."
+    ],
+    "expected_results": [
+      "MeasurementReport is successfully received and forwarded to IAB-donor-CU.",
+      "UE context and bearers are successfully created on the second parent IAB-DU.",
+      "RRCReconfiguration message with correct TNL addresses is delivered to dual-connecting IAB-MT.",
+      "RRCReconfigurationComplete is received and forwarded to IAB-donor-CU.",
+      "Random Access procedure completes successfully on the second parent IAB-DU.",
+      "BH RLC channels and BAP-layer route entries are configured correctly on the second path.",
+      "New TNL addresses are correctly added to F1-C associations and F1AP configuration update is sent if applicable.",
+      "F1-U tunnels are migrated to the second path as requested.",
+      "UE CONTEXT MODIFICATION RESPONSE confirms successful migration."
+    ],
+    "category": "setup",
+    "id": "TC-5G-037"
+  },
+  {
+    "title": "Redundant Path Establishment for Descendant IAB Nodes",
+    "objective": "Verify that redundant path establishment procedure correctly configures descendant IAB-DUs when the second path uses a different IAB-donor-DU.",
+    "preconditions": [
+      "Dual-connecting IAB-node has descendant IAB-DUs connected via the first path.",
+      "Second path uses a different IAB-donor-DU than the first path.",
+      "IAB-donor-CU and involved IAB-DUs are operational."
+    ],
+    "steps": [
+      "IAB-donor-CU configures descendant IAB-DUs with new TNL addresses anchored on the second path IAB-donor-DU.",
+      "IAB-donor-CU configures BH RLC channels and BAP-layer route entries on the second path for descendant nodes.",
+      "New TNL addresses are added to descendant IAB-DUs’ F1-C associations.",
+      "IAB-donor-CU configures UL BH information for the second path to carry F1AP messages for descendant nodes.",
+      "IAB-donor-CU migrates F1-U tunnels for descendant nodes from first path to second path."
+    ],
+    "expected_results": [
+      "Descendant IAB-DUs receive and apply new TNL addresses correctly.",
+      "BH RLC channels and BAP-layer route entries are configured properly on the second path for descendant nodes.",
+      "F1-C associations of descendant IAB-DUs are updated with new TNL addresses.",
+      "UL BH information is configured to support F1AP message transport on the second path.",
+      "F1-U tunnels for descendant nodes are successfully migrated to the second path."
+    ],
+    "category": "setup",
+    "id": "TC-5G-038"
+  },
+  {
+    "title": "Release of Redundant Path in IAB Topology",
+    "objective": "Verify that the IAB-donor-CU can initiate and complete the release of a redundant path by releasing BAP routing entries and modifying/releasing BH RLC channels.",
+    "preconditions": [
+      "Redundant path between dual-connecting IAB-node and second path IAB-donor-DU is established and active.",
+      "IAB-donor-CU and involved IAB-DUs are operational."
+    ],
+    "steps": [
+      "IAB-donor-CU initiates release of the redundant path.",
+      "IAB-donor-CU releases BAP routing entries associated with the redundant path.",
+      "IAB-donor-CU modifies or releases BH RLC channels on the redundant path.",
+      "IAB-donor-CU updates F1-C associations to remove TNL addresses related to the redundant path if applicable."
+    ],
+    "expected_results": [
+      "BAP routing entries for the redundant path are successfully released.",
+      "BH RLC channels on the redundant path are correctly modified or released.",
+      "F1-C associations are updated to reflect the removal of the redundant path.",
+      "Redundant path is no longer used for user or signaling traffic."
+    ],
+    "category": "release",
+    "id": "TC-5G-039"
+  },
+  {
+    "title": "Verify UE Context Setup during Multicast Mobility Procedure",
+    "objective": "To validate the correct setup of UE context on the F1 interface during a multicast mobility procedure in 5G network.",
+    "preconditions": [
+      "UE is registered and connected to the source gNB.",
+      "Multicast session is active for the UE.",
+      "Source gNB and target gNB are connected via F1 interface."
+    ],
+    "steps": [
+      "Trigger a multicast mobility event for the UE (e.g., UE moves from source gNB to target gNB).",
+      "Source gNB initiates UE Context Setup Request over F1AP to target gNB.",
+      "Target gNB processes the UE Context Setup Request and allocates necessary resources.",
+      "Target gNB sends UE Context Setup Response to source gNB.",
+      "Source gNB forwards multicast data to target gNB for the UE."
+    ],
+    "expected_results": [
+      "UE Context Setup Request is correctly formatted and contains all necessary multicast context information.",
+      "Target gNB successfully allocates resources and responds with UE Context Setup Response.",
+      "Multicast data flow is uninterrupted and correctly forwarded to the UE via the target gNB.",
+      "No errors or protocol violations occur during the UE Context Setup procedure."
+    ],
+    "category": "Mobility - Multicast",
+    "id": "TC-5G-040"
+  },
+  {
+    "title": "Inter-gNB-DU Mobility with SCG SRB (SRB3) UE CONTEXT SETUP",
+    "objective": "Verify that the UE CONTEXT SETUP procedure correctly handles inter-gNB-DU mobility when SCG SRB (SRB3) is available during EN-DC operation, including the presence of CG-ConfigInfo in the UE CONTEXT SETUP REQUEST message.",
+    "preconditions": [
+      "UE is in EN-DC operation with SCG SRB (SRB3) established",
+      "UE is connected to source gNB-DU",
+      "Target gNB-DU is prepared to receive UE CONTEXT SETUP REQUEST",
+      "Inter-gNB-DU mobility scenario is triggered"
+    ],
+    "steps": [
+      "Trigger UE movement from source gNB-DU to target gNB-DU",
+      "Source gNB-DU sends UE CONTEXT SETUP REQUEST message to target gNB-DU",
+      "Verify that UE CONTEXT SETUP REQUEST message includes CG-ConfigInfo IE",
+      "Target gNB-DU processes UE CONTEXT SETUP REQUEST and responds accordingly",
+      "Verify that the procedure follows the inter-gNB-DU mobility procedure as defined in clause 8.2.1.1 with the addition of CG-ConfigInfo"
+    ],
+    "expected_results": [
+      "UE CONTEXT SETUP REQUEST message is received by target gNB-DU with CG-ConfigInfo included",
+      "Target gNB-DU successfully processes the UE CONTEXT SETUP REQUEST message",
+      "Inter-gNB-DU mobility procedure completes without errors",
+      "UE context is correctly established on the target gNB-DU with SCG SRB (SRB3) maintained"
+    ],
+    "category": "Inter-gNB-DU Mobility",
+    "id": "TC-5G-041"
+  },
+  {
+    "title": "Inter-gNB Handover with gNB-CU-UP Change - Basic Procedure",
+    "objective": "Verify the inter-gNB handover procedure involving gNB-CU-UP change as per TS 37.340, including message exchanges and context setup.",
+    "preconditions": [
+      "UE is attached and connected to source gNB-CU-CP and gNB-CU-UP via source gNB-DU.",
+      "Source and target gNB-CU-CP and gNB-CU-UP are reachable over F1 and Xn interfaces.",
+      "Bearer contexts are established on source gNB."
+    ],
+    "steps": [
+      "Source gNB-CU-CP sends HANDOVER REQUEST to target gNB-CU-CP.",
+      "Target gNB-CU-CP performs Bearer Context Setup procedure (steps 2-4).",
+      "Target gNB-CU-CP sends HANDOVER REQUEST ACKNOWLEDGE to source gNB-CU-CP.",
+      "Source gNB-CU-CP performs F1 UE Context Modification procedure to send handover command to UE and indicate stop of data transmission.",
+      "Source gNB-CU-CP initiates Bearer Context Modification procedure to retrieve PDCP UL/DL status and exchange data forwarding info.",
+      "Source gNB-CU-CP sends SN STATUS TRANSFER message to target gNB-CU-CP.",
+      "Target gNB-CU-CP performs Bearer Context Modification procedure as per clause 8.9.2.",
+      "Data forwarding is performed from source gNB-CU-UP to target gNB-CU-UP.",
+      "Path Switch procedure is performed to update DL TNL address towards core network.",
+      "Target gNB-CU-CP sends UE CONTEXT RELEASE to source gNB-CU-CP.",
+      "Bearer Context Release and F1 UE Context Release procedures are performed on source gNB-DU."
+    ],
+    "expected_results": [
+      "HANDOVER REQUEST and HANDOVER REQUEST ACKNOWLEDGE messages are successfully exchanged.",
+      "Bearer contexts are successfully setup on target gNB.",
+      "UE receives handover command and stops data transmission as indicated.",
+      "PDCP UL/DL status and data forwarding information are correctly exchanged.",
+      "SN STATUS TRANSFER message is correctly sent and processed.",
+      "Data forwarding from source to target gNB-CU-UP occurs without loss.",
+      "Path Switch updates DL TNL address correctly in NG-U towards core network.",
+      "UE context is released on source gNB-CU-CP and source gNB-DU.",
+      "Bearer contexts are released on source gNB."
+    ],
+    "category": "handover",
+    "id": "TC-5G-042"
+  },
+  {
+    "title": "Inter-gNB Conditional Handover with gNB-CU-UP Change",
+    "objective": "Validate the inter-gNB handover procedure involving Conditional Handover (CHO) with gNB-CU-UP change, ensuring correct handling of EARLY STATUS TRANSFER and conditional resource release.",
+    "preconditions": [
+      "UE is attached and connected to source gNB-CU-CP and gNB-CU-UP.",
+      "Target gNB is configured as candidate gNB for Conditional Handover.",
+      "F1 and Xn interfaces are established between source and target gNB components."
+    ],
+    "steps": [
+      "Source gNB-CU-CP sends HANDOVER REQUEST to target gNB-CU-CP (target regarded as candidate gNB).",
+      "Target gNB-CU-CP performs Bearer Context Setup procedure.",
+      "Target gNB-CU-CP sends HANDOVER REQUEST ACKNOWLEDGE with data forwarding info.",
+      "Source gNB-CU-CP performs F1 UE Context Modification procedure without indicating stop of data transmission.",
+      "Bearer Context Modification procedure is performed to retrieve PDCP UL/DL status and exchange data forwarding info.",
+      "Source gNB-CU-CP sends EARLY STATUS TRANSFER message to target gNB-CU-CP.",
+      "Target gNB-CU-CP performs Bearer Context Modification procedure providing COUNT info to target gNB-CU-UP.",
+      "UE performs RACH upon fulfillment of CHO conditions and accesses target gNB-DU.",
+      "Target gNB-DU sends ACCESS SUCCESS message to target gNB-CU-CP.",
+      "Target gNB-CU-CP forwards necessary info to target gNB-CU-UP and releases resources on other candidate gNB-CU-UPs if any.",
+      "Target gNB-CU-CP sends HANDOVER SUCCESS to source gNB-CU-CP.",
+      "F1 UE Context Modification procedure is performed to indicate stop of data transmission.",
+      "Bearer Context Modification procedures are performed to stop packet delivery and retrieve PDCP UL/DL status.",
+      "SN STATUS TRANSFER message is sent from source to target gNB-CU-CP.",
+      "Bearer Context Modification procedure provides PDCP UL/DL status to target gNB-CU-UP if needed.",
+      "Inactivity monitoring is performed after bearer context modifications.",
+      "Path Switch procedure updates DL TNL address towards core network.",
+      "UE CONTEXT RELEASE and Bearer Context Release procedures are performed on source gNB."
+    ],
+    "expected_results": [
+      "HANDOVER REQUEST and ACKNOWLEDGE messages are exchanged with candidate gNB.",
+      "EARLY STATUS TRANSFER message is correctly forwarded to appropriate gNB-CU-UP.",
+      "UE successfully performs RACH and accesses target gNB-DU.",
+      "ACCESS SUCCESS message is received and processed by target gNB-CU-CP.",
+      "Conditional handover resources on other candidate gNB-CU-UPs are released.",
+      "HANDOVER SUCCESS message is sent to source gNB-CU-CP.",
+      "Data transmission stop is correctly indicated after UE access.",
+      "PDCP UL/DL status is correctly exchanged and preserved if required.",
+      "Inactivity monitoring is triggered appropriately.",
+      "Path Switch updates DL TNL address correctly.",
+      "UE context and bearer contexts are released on source gNB."
+    ],
+    "category": "handover",
+    "id": "TC-5G-043"
+  },
+  {
+    "title": "Inter-gNB DAPS Handover with gNB-CU-UP Change",
+    "objective": "Test the inter-gNB handover procedure involving Dual Active Protocol Stack (DAPS) handover with gNB-CU-UP change, focusing on data forwarding and status transfer.",
+    "preconditions": [
+      "UE is attached and connected to source gNB-CU-CP and gNB-CU-UP with DAPS configured DRBs.",
+      "Source and target gNB-CU-CP and gNB-CU-UP are connected over F1 and Xn interfaces.",
+      "Bearer contexts are established with DAPS support."
+    ],
+    "steps": [
+      "Source gNB-CU-CP sends HANDOVER REQUEST to target gNB-CU-CP.",
+      "Target gNB-CU-CP performs Bearer Context Setup procedure.",
+      "Target gNB-CU-CP sends HANDOVER REQUEST ACKNOWLEDGE with data forwarding info.",
+      "Source gNB-CU-CP performs F1 UE Context Modification procedure without stopping data transmission.",
+      "Bearer Context Modification procedure is performed to retrieve PDCP UL/DL status and exchange data forwarding info.",
+      "Source gNB-CU-CP sends EARLY STATUS TRANSFER message for DAPS DRBs to target gNB-CU-CP.",
+      "Target gNB-CU-CP performs Bearer Context Modification procedure providing COUNT info to target gNB-CU-UP.",
+      "Target gNB-CU-CP sends HANDOVER SUCCESS message to source gNB-CU-CP.",
+      "F1 UE Context Modification procedure is performed to indicate stop of data transmission.",
+      "Bearer Context Modification procedures are performed to stop packet delivery and retrieve PDCP UL/DL status.",
+      "SN STATUS TRANSFER message is sent from source to target gNB-CU-CP.",
+      "Bearer Context Modification procedure provides PDCP UL/DL status to target gNB-CU-UP if preservation is needed.",
+      "Path Switch procedure updates DL TNL address towards core network.",
+      "UE CONTEXT RELEASE and Bearer Context Release procedures are performed on source gNB."
+    ],
+    "expected_results": [
+      "HANDOVER REQUEST and ACKNOWLEDGE messages are exchanged successfully.",
+      "EARLY STATUS TRANSFER message is sent and processed for DAPS DRBs.",
+      "Data transmission continues until explicitly stopped after HANDOVER SUCCESS.",
+      "PDCP UL/DL status is correctly exchanged and preserved as needed.",
+      "HANDOVER SUCCESS message is received by source gNB-CU-CP.",
+      "Data transmission stop is correctly indicated and executed.",
+      "SN STATUS TRANSFER message is sent and processed.",
+      "Path Switch updates DL TNL address correctly.",
+      "UE context and bearer contexts are released on source gNB."
+    ],
+    "category": "handover",
+    "id": "TC-5G-044"
+  },
+  {
+    "title": "Verify Change of gNB-CU-UP Trigger and Bearer Context Setup",
+    "objective": "Ensure that the change of gNB-CU-UP is correctly triggered in gNB-CU-CP and Bearer Context Setup procedure is performed successfully.",
+    "preconditions": [
+      "UE is registered and connected with active PDU sessions.",
+      "gNB-CU-CP and gNB-CU-UP (source) are operational.",
+      "Measurement report from UE triggers the change."
+    ],
+    "steps": [
+      "Trigger change of gNB-CU-UP in gNB-CU-CP based on UE measurement report.",
+      "Verify that Bearer Context Setup Request is sent from gNB-CU-CP to target gNB-CU-UP.",
+      "Verify Bearer Context Setup Response is received from target gNB-CU-UP."
+    ],
+    "expected_results": [
+      "Change of gNB-CU-UP is initiated in gNB-CU-CP.",
+      "Bearer Context Setup Request is correctly formatted and sent to target gNB-CU-UP.",
+      "Bearer Context Setup Response is received confirming setup success."
+    ],
+    "category": "setup",
+    "id": "TC-5G-045"
+  },
+  {
+    "title": "Validate F1 UE Context Modification for UL TNL Address Update",
+    "objective": "Verify that F1 UE Context Modification procedure updates the UL TNL address information for F1-U in gNB-DU.",
+    "preconditions": [
+      "Bearer Context Setup procedure completed successfully.",
+      "gNB-DU is connected and operational."
+    ],
+    "steps": [
+      "Perform F1 UE Context Modification procedure to change UL TNL address for one or more bearers in gNB-DU.",
+      "Verify that gNB-DU acknowledges the UL TNL address update."
+    ],
+    "expected_results": [
+      "F1 UE Context Modification message is sent with correct UL TNL address information.",
+      "gNB-DU updates UL TNL address and responds with success."
+    ],
+    "category": "setup",
+    "id": "TC-5G-046"
+  },
+  {
+    "title": "Test Bearer Context Modification Procedures for Data Forwarding and PDCP Status Exchange",
+    "objective": "Ensure Bearer Context Modification procedures enable PDCP UL/DL status retrieval and data forwarding information exchange between source and target gNB-CU-UP.",
+    "preconditions": [
+      "F1 UE Context Modification completed successfully.",
+      "Bearer Context Setup completed."
+    ],
+    "steps": [
+      "Send Bearer Context Modification Request from gNB-CU-CP to source gNB-CU-UP to retrieve PDCP UL/DL status and exchange data forwarding info.",
+      "Receive Bearer Context Modification Response from source gNB-CU-UP.",
+      "Send Bearer Context Modification Request to target gNB-CU-UP.",
+      "Receive Bearer Context Modification Response from target gNB-CU-UP."
+    ],
+    "expected_results": [
+      "Bearer Context Modification Request messages are correctly formatted and sent.",
+      "PDCP UL/DL status and data forwarding info are successfully exchanged.",
+      "Bearer Context Modification Responses confirm successful processing."
+    ],
+    "category": "session",
+    "id": "TC-5G-047"
+  },
+  {
+    "title": "Verify Data Forwarding from Source to Target gNB-CU-UP",
+    "objective": "Check that data forwarding is correctly performed from source gNB-CU-UP to target gNB-CU-UP during CU-UP change.",
+    "preconditions": [
+      "Bearer Context Modification procedures completed successfully.",
+      "Source and target gNB-CU-UP are connected."
+    ],
+    "steps": [
+      "Initiate data forwarding from source gNB-CU-UP to target gNB-CU-UP.",
+      "Monitor data packets forwarded and verify integrity and sequence.",
+      "Check for End Marker Packet signaling end of forwarding."
+    ],
+    "expected_results": [
+      "Data forwarding occurs without loss or corruption.",
+      "End Marker Packet is received indicating completion of forwarding."
+    ],
+    "category": "session",
+    "id": "TC-5G-048"
+  },
+  {
+    "title": "Validate PDU Session Resource Modify Indication Procedure",
+    "objective": "Ensure that PDU Session Resource Modify Indication updates the DL TNL address information towards the core network.",
+    "preconditions": [
+      "Data forwarding is ongoing or completed.",
+      "AMF and UPF are reachable and operational."
+    ],
+    "steps": [
+      "Send PDU Session Resource Modify Indication from gNB-CU-CP to AMF/UPF.",
+      "Verify that DL TNL address information is updated in NG-U interface."
+    ],
+    "expected_results": [
+      "PDU Session Resource Modify Indication message is correctly sent and acknowledged.",
+      "DL TNL address information is updated successfully in core network."
+    ],
+    "category": "session",
+    "id": "TC-5G-049"
+  },
+  {
+    "title": "Test Bearer Context Release Procedure After CU-UP Change",
+    "objective": "Verify that Bearer Context Release procedure is correctly performed by gNB-CU-CP after successful CU-UP change.",
+    "preconditions": [
+      "PDU Session Resource Modify Indication completed successfully.",
+      "Data forwarding and bearer modifications are completed."
+    ],
+    "steps": [
+      "Send Bearer Context Release Command from gNB-CU-CP to source gNB-CU-UP.",
+      "Receive Bearer Context Release Complete from source gNB-CU-UP."
+    ],
+    "expected_results": [
+      "Bearer Context Release Command is correctly sent and received.",
+      "Bearer Context Release Complete confirms successful release of old bearer context."
+    ],
+    "category": "release",
+    "id": "TC-5G-050"
+  },
+  {
+    "title": "Verify U2N Remote UE Direct-to-Indirect Path Switch without gNB-DU Change",
+    "objective": "To validate the successful switching of U2N Remote UE from direct to indirect path via a target U2N Relay UE under the same gNB-DU without changing the gNB-DU.",
+    "preconditions": [
+      "U2N Remote UE is in RRC_CONNECTED state with gNB-CU and gNB-DU.",
+      "Target U2N Relay UE is in RRC_CONNECTED state under the same gNB-DU.",
+      "Measurement configuration and reporting between U2N Remote UE and gNB-CU is functional.",
+      "PC5 interface capability is supported by U2N Remote UE and U2N Relay UE."
+    ],
+    "steps": [
+      "Perform Uu measurement configuration and reporting between U2N Remote UE and gNB-CU to discover candidate U2N Relay UE(s).",
+      "gNB-CU decides to switch the U2N Remote UE to the target U2N Relay UE under the same gNB-DU.",
+      "If target U2N Relay UE is in RRC_CONNECTED state, gNB-CU sends RRCReconfiguration message to target U2N Relay UE to perform reconfiguration.",
+      "gNB-CU sends UE CONTEXT MODIFICATION REQUEST message to gNB-DU containing path switch configuration for U2N Remote UE.",
+      "gNB-DU responds with UE CONTEXT MODIFICATION RESPONSE message to gNB-CU.",
+      "gNB-CU sends DL RRC MESSAGE TRANSFER message including RRCReconfiguration message to gNB-DU.",
+      "gNB-DU forwards RRCReconfiguration message to U2N Remote UE.",
+      "U2N Remote UE stops UP and CP transmission over Uu interface upon receiving RRCReconfiguration message.",
+      "U2N Remote UE establishes PC5 connection with target U2N Relay UE.",
+      "U2N Remote UE sends RRCReconfigurationComplete message to gNB-DU via target U2N Relay UE.",
+      "If target U2N Relay UE was in RRC_IDLE/INACTIVE state, verify RRC setup/resume procedure is triggered to enter RRC_CONNECTED state.",
+      "gNB-DU sends UL RRC MESSAGE TRANSFER message including RRCReconfigurationComplete message to gNB-CU."
+    ],
+    "expected_results": [
+      "Measurement reports correctly received by gNB-CU with candidate U2N Relay UE(s) and Uu measurements.",
+      "gNB-CU successfully decides and initiates switch to target U2N Relay UE.",
+      "RRCReconfiguration message is correctly sent and received by target U2N Relay UE if in RRC_CONNECTED state.",
+      "UE CONTEXT MODIFICATION REQUEST and RESPONSE messages are exchanged successfully between gNB-CU and gNB-DU.",
+      "DL RRC MESSAGE TRANSFER with RRCReconfiguration message is successfully delivered to U2N Remote UE.",
+      "U2N Remote UE stops Uu transmissions and establishes PC5 connection with target U2N Relay UE.",
+      "RRCReconfigurationComplete message is sent by U2N Remote UE and received by gNB-DU.",
+      "If target U2N Relay UE was idle/inactive, RRC setup/resume procedure is triggered and completed successfully.",
+      "UL RRC MESSAGE TRANSFER with RRCReconfigurationComplete message is successfully sent from gNB-DU to gNB-CU.",
+      "Data transmission continues seamlessly via the indirect path through the target U2N Relay UE without gNB-DU change."
+    ],
+    "category": "F1AP UE CONTEXT SETUP - Path Switch",
+    "id": "TC-5G-051"
+  },
+  {
+    "title": "Verify Path Switch Procedure when Target U2N Relay UE is in RRC_IDLE/INACTIVE State",
+    "objective": "To verify the behavior of the path switch procedure when the target U2N Relay UE is in RRC_IDLE or RRC_INACTIVE state at the time of switching.",
+    "preconditions": [
+      "U2N Remote UE is in RRC_CONNECTED state with gNB-CU and gNB-DU.",
+      "Target U2N Relay UE is in RRC_IDLE or RRC_INACTIVE state under the same gNB-DU.",
+      "Measurement configuration and reporting between U2N Remote UE and gNB-CU is functional."
+    ],
+    "steps": [
+      "Perform Uu measurement configuration and reporting between U2N Remote UE and gNB-CU to discover candidate U2N Relay UE(s).",
+      "gNB-CU decides to switch the U2N Remote UE to the target U2N Relay UE under the same gNB-DU.",
+      "Skip RRCReconfiguration message to target U2N Relay UE as it is in RRC_IDLE/INACTIVE state.",
+      "gNB-CU sends UE CONTEXT MODIFICATION REQUEST message to gNB-DU containing path switch configuration for U2N Remote UE.",
+      "gNB-DU responds with UE CONTEXT MODIFICATION RESPONSE message to gNB-CU.",
+      "gNB-CU sends DL RRC MESSAGE TRANSFER message including RRCReconfiguration message to gNB-DU.",
+      "gNB-DU forwards RRCReconfiguration message to U2N Remote UE.",
+      "U2N Remote UE stops UP and CP transmission over Uu interface upon receiving RRCReconfiguration message.",
+      "U2N Remote UE establishes PC5 connection with target U2N Relay UE.",
+      "U2N Remote UE sends RRCReconfigurationComplete message to gNB-DU via target U2N Relay UE.",
+      "Reception of RRCReconfigurationComplete message triggers RRC setup/resume procedure for target U2N Relay UE to enter RRC_CONNECTED state.",
+      "gNB-DU sends UL RRC MESSAGE TRANSFER message including RRCReconfigurationComplete message to gNB-CU."
+    ],
+    "expected_results": [
+      "Measurement reports correctly received by gNB-CU with candidate U2N Relay UE(s) and Uu measurements.",
+      "gNB-CU successfully decides and initiates switch to target U2N Relay UE.",
+      "No RRCReconfiguration message sent to target U2N Relay UE prior to path switch.",
+      "UE CONTEXT MODIFICATION REQUEST and RESPONSE messages are exchanged successfully between gNB-CU and gNB-DU.",
+      "DL RRC MESSAGE TRANSFER with RRCReconfiguration message is successfully delivered to U2N Remote UE.",
+      "U2N Remote UE stops Uu transmissions and establishes PC5 connection with target U2N Relay UE.",
+      "RRCReconfigurationComplete message is sent by U2N Remote UE and received by gNB-DU.",
+      "RRC setup/resume procedure is triggered and completed successfully for target U2N Relay UE to enter RRC_CONNECTED state.",
+      "UL RRC MESSAGE TRANSFER with RRCReconfigurationComplete message is successfully sent from gNB-DU to gNB-CU.",
+      "Data transmission continues seamlessly via the indirect path through the target U2N Relay UE after it transitions to RRC_CONNECTED state."
+    ],
+    "category": "F1AP UE CONTEXT SETUP - Path Switch",
+    "id": "TC-5G-052"
+  },
+  {
+    "title": "Inter-gNB-DU Conditional PSCell Change using MCG SRB without MN negotiation - Successful Procedure",
+    "objective": "Verify the successful execution of inter-gNB-DU conditional PSCell change procedure using MCG SRB without MN negotiation during EN-DC operation.",
+    "preconditions": [
+      "UE is connected to source gNB-DU under the same gNB-CU.",
+      "Only MCG SRB is available; MN configuration remains unchanged.",
+      "EN-DC operation is active.",
+      "Candidate gNB-DU is available and ready to accept UE context setup."
+    ],
+    "steps": [
+      "UE sends ULInformationTransferMRDC containing NR RRC MeasurementReport to source gNB-DU.",
+      "Source gNB-DU forwards RRC TRANSFER message to gNB-CU.",
+      "gNB-CU sends UE CONTEXT MODIFICATION REQUEST to source gNB-DU.",
+      "Source gNB-DU responds with UE CONTEXT MODIFICATION RESPONSE.",
+      "gNB-CU sends UE CONTEXT SETUP REQUEST (including CG-ConfigInfo) to candidate gNB-DU for each candidate cell.",
+      "Candidate gNB-DU responds with UE CONTEXT SETUP RESPONSE including requested target cell ID.",
+      "gNB-CU sends SGNB MODIFICATION REQUIRED message with generated RRCReconfiguration to MeNB.",
+      "MeNB and UE perform RRC Connection Reconfiguration/Complete procedure.",
+      "MeNB sends SGNB MODIFICATION CONFIRM message to gNB-CU.",
+      "Execution condition for conditional PSCell change is fulfilled.",
+      "UE performs Random Access procedure at candidate gNB-DU.",
+      "Candidate gNB-DU sends Downlink Data Delivery Status and ACCESS SUCCESS messages to gNB-CU.",
+      "UE sends RRCReconfigurationComplete embedded in ULInformationTransferMRDC to MeNB; MeNB forwards RRC TRANSFER to gNB-CU.",
+      "gNB-CU sends UE CONTEXT MODIFICATION REQUEST to source gNB-DU to stop data transmission.",
+      "Source gNB-DU sends Downlink Data Delivery Status to gNB-CU and forwards unsuccessfully transmitted downlink packets to target gNB-DU.",
+      "Source gNB-DU responds with UE CONTEXT MODIFICATION RESPONSE.",
+      "gNB-CU may initiate UE CONTEXT RELEASE procedure toward other candidate gNB-DUs if applicable.",
+      "Source gNB-DU sends UE CONTEXT RELEASE COMMAND to UE.",
+      "UE responds with UE CONTEXT RELEASE COMPLETE."
+    ],
+    "expected_results": [
+      "UE context is successfully setup at candidate gNB-DU with correct CG-ConfigInfo.",
+      "MeNB and UE complete RRC Connection Reconfiguration/Complete procedure successfully.",
+      "Candidate gNB-DU successfully performs Random Access procedure and becomes target gNB-DU.",
+      "Downlink and uplink data flows are correctly switched from source gNB-DU to target gNB-DU.",
+      "Source gNB-DU stops data transmission and forwards unsuccessfully transmitted packets to target gNB-DU.",
+      "UE CONTEXT MODIFICATION and RELEASE procedures complete without errors.",
+      "gNB-CU maintains consistent UE context across involved nodes.",
+      "Conditional PSCell change is completed without MN negotiation."
+    ],
+    "category": "Functional",
+    "id": "TC-5G-053"
+  },
+  {
+    "title": "Inter-gNB-DU Conditional PSCell Change using MCG SRB without MN negotiation - UE Context Setup Failure at Candidate gNB-DU",
+    "objective": "Verify system behavior when UE CONTEXT SETUP REQUEST to candidate gNB-DU fails during inter-gNB-DU conditional PSCell change.",
+    "preconditions": [
+      "UE is connected to source gNB-DU under the same gNB-CU.",
+      "Only MCG SRB is available; MN configuration remains unchanged.",
+      "EN-DC operation is active.",
+      "Candidate gNB-DU is unavailable or rejects UE CONTEXT SETUP REQUEST."
+    ],
+    "steps": [
+      "UE sends ULInformationTransferMRDC containing NR RRC MeasurementReport to source gNB-DU.",
+      "Source gNB-DU forwards RRC TRANSFER message to gNB-CU.",
+      "gNB-CU sends UE CONTEXT MODIFICATION REQUEST to source gNB-DU.",
+      "Source gNB-DU responds with UE CONTEXT MODIFICATION RESPONSE.",
+      "gNB-CU sends UE CONTEXT SETUP REQUEST to candidate gNB-DU.",
+      "Candidate gNB-DU rejects UE CONTEXT SETUP REQUEST or does not respond.",
+      "gNB-CU handles UE CONTEXT SETUP failure accordingly."
+    ],
+    "expected_results": [
+      "Candidate gNB-DU rejects or does not respond to UE CONTEXT SETUP REQUEST.",
+      "gNB-CU detects failure and does not proceed with conditional PSCell change.",
+      "Source gNB-DU continues serving UE without interruption.",
+      "No RRC Reconfiguration or Random Access procedure is initiated at candidate gNB-DU.",
+      "System logs appropriate error or failure indication for troubleshooting."
+    ],
+    "category": "Negative",
+    "id": "TC-5G-054"
+  },
+  {
+    "title": "Inter-gNB-DU Conditional PSCell Change using MCG SRB without MN negotiation - Random Access Failure at Candidate gNB-DU",
+    "objective": "Verify system behavior when Random Access procedure fails at candidate gNB-DU during inter-gNB-DU conditional PSCell change.",
+    "preconditions": [
+      "UE context is successfully setup at candidate gNB-DU.",
+      "MeNB and UE have completed RRC Connection Reconfiguration/Complete procedure.",
+      "Execution condition for conditional PSCell change is fulfilled.",
+      "Random Access procedure at candidate gNB-DU fails."
+    ],
+    "steps": [
+      "UE performs Random Access procedure at candidate gNB-DU.",
+      "Random Access procedure fails (e.g., no response or contention failure).",
+      "Candidate gNB-DU does not send ACCESS SUCCESS message to gNB-CU.",
+      "gNB-CU handles Random Access failure accordingly."
+    ],
+    "expected_results": [
+      "Random Access procedure at candidate gNB-DU fails.",
+      "Candidate gNB-DU does not send ACCESS SUCCESS message to gNB-CU.",
+      "gNB-CU does not initiate UE CONTEXT MODIFICATION REQUEST to source gNB-DU to stop data transmission.",
+      "Source gNB-DU continues data transmission to UE.",
+      "UE remains connected to source gNB-DU without interruption.",
+      "System logs Random Access failure for analysis."
+    ],
+    "category": "Negative",
+    "id": "TC-5G-055"
+  },
+  {
+    "title": "Inter-gNB-DU Conditional PSCell Change using MCG SRB without MN negotiation - UE Context Release Cancellation",
+    "objective": "Verify that gNB-CU can cancel conditional PSCell change by initiating UE Context Release towards other candidate gNB-DUs.",
+    "preconditions": [
+      "Multiple candidate gNB-DUs are available.",
+      "UE context setup has been initiated for multiple candidate gNB-DUs.",
+      "Conditional PSCell change procedure is in progress."
+    ],
+    "steps": [
+      "gNB-CU sends UE CONTEXT SETUP REQUEST to multiple candidate gNB-DUs.",
+      "One candidate gNB-DU successfully completes UE CONTEXT SETUP RESPONSE and Random Access procedure.",
+      "gNB-CU initiates UE CONTEXT RELEASE procedure towards other candidate gNB-DUs to cancel conditional PSCell change.",
+      "Candidate gNB-DUs receive UE CONTEXT RELEASE COMMAND and respond with UE CONTEXT RELEASE COMPLETE."
+    ],
+    "expected_results": [
+      "gNB-CU successfully cancels conditional PSCell change for non-selected candidate gNB-DUs.",
+      "Candidate gNB-DUs release UE contexts upon receiving UE CONTEXT RELEASE COMMAND.",
+      "No data transmission or signaling conflicts occur due to cancellation.",
+      "System maintains consistent UE context state across all nodes."
+    ],
+    "category": "Functional",
+    "id": "TC-5G-056"
+  },
+  {
+    "title": "Inter-gNB-DU Mobility Procedure Using MCG SRB in EN-DC",
+    "objective": "Verify the correct execution of inter-gNB-DU mobility procedure when UE moves from source gNB-DU to target gNB-DU within the same gNB-CU using MCG SRB during EN-DC operation.",
+    "preconditions": [
+      "UE is connected to source gNB-DU under the same gNB-CU in EN-DC mode.",
+      "Only MCG SRB is available for signaling.",
+      "UE is in connected state with active data bearers.",
+      "gNB-CU, source gNB-DU, target gNB-DU, and MeNB are operational and reachable."
+    ],
+    "steps": [
+      "UE sends ULInformationTransferMRDC message containing NR RRC MeasurementReport to MeNB.",
+      "MeNB forwards RRC TRANSFER message to gNB-CU.",
+      "gNB-CU sends UE CONTEXT MODIFICATION REQUEST to source gNB-DU to query latest SCG configuration.",
+      "Source gNB-DU responds with UE CONTEXT MODIFICATION RESPONSE including full configuration information.",
+      "gNB-CU sends UE CONTEXT SETUP REQUEST to target gNB-DU including CG ConfigInfo to create UE context and setup data bearers.",
+      "Target gNB-DU responds with UE CONTEXT SETUP RESPONSE to gNB-CU.",
+      "gNB-CU sends UE CONTEXT MODIFICATION REQUEST to source gNB-DU to stop data transmission to UE and source gNB-DU sends Downlink Data Delivery Status frame to gNB-CU.",
+      "Source gNB-DU responds with UE CONTEXT MODIFICATION RESPONSE to gNB-CU.",
+      "gNB-CU sends SGNB MODIFICATION REQUIRED message to MeNB.",
+      "MeNB initiates SGNB MODIFICATION REQUEST procedure and exchanges SGNB MODIFICATION REQUEST and ACKNOWLEDGE messages with gNB-CU as needed.",
+      "MeNB and UE perform RRC Connection Reconfiguration procedure.",
+      "MeNB sends SGNB MODIFICATION CONFIRM message to gNB-CU.",
+      "Random Access procedure is performed at target gNB-DU.",
+      "Target gNB-DU sends Downlink Data Delivery Status frame to gNB-CU.",
+      "gNB-CU forwards downlink packets including any PDCP PDUs not successfully transmitted from source gNB-DU to target gNB-DU.",
+      "Target gNB-DU sends downlink packets to UE; UE sends uplink packets forwarded to gNB-CU via target gNB-DU.",
+      "gNB-CU sends UE CONTEXT RELEASE COMMAND to source gNB-DU.",
+      "Source gNB-DU releases UE context and responds with UE CONTEXT RELEASE COMPLETE to gNB-CU."
+    ],
+    "expected_results": [
+      "ULInformationTransferMRDC message is successfully received by MeNB.",
+      "RRC TRANSFER message is correctly forwarded to gNB-CU.",
+      "Source gNB-DU responds with accurate and complete UE CONTEXT MODIFICATION RESPONSE.",
+      "Target gNB-DU successfully creates UE context and data bearers upon UE CONTEXT SETUP REQUEST and responds with UE CONTEXT SETUP RESPONSE.",
+      "Source gNB-DU stops data transmission and sends Downlink Data Delivery Status frame to gNB-CU.",
+      "SGNB MODIFICATION REQUIRED and subsequent modification procedures are correctly executed between gNB-CU and MeNB.",
+      "RRC Connection Reconfiguration between MeNB and UE completes successfully.",
+      "Random Access procedure at target gNB-DU completes successfully.",
+      "Downlink and uplink data flows are correctly switched to target gNB-DU without data loss.",
+      "Source gNB-DU releases UE context upon receiving UE CONTEXT RELEASE COMMAND and confirms with UE CONTEXT RELEASE COMPLETE.",
+      "No signaling or data transmission errors occur during the entire mobility procedure."
+    ],
+    "category": "Mobility - Inter-gNB-DU",
+    "id": "TC-5G-057"
+  },
+  {
+    "title": "Verify UE Context Setup Request and Response during Inter-gNB-DU Mobility",
+    "objective": "Validate that the UE CONTEXT SETUP REQUEST and UE CONTEXT SETUP RESPONSE messages are correctly exchanged between gNB-CU and target gNB-DU with proper CG ConfigInfo during inter-gNB-DU mobility.",
+    "preconditions": [
+      "gNB-CU has received full UE context information from source gNB-DU.",
+      "Target gNB-DU is reachable and ready to setup UE context."
+    ],
+    "steps": [
+      "gNB-CU sends UE CONTEXT SETUP REQUEST message to target gNB-DU including CG ConfigInfo.",
+      "Target gNB-DU processes the request and creates UE context and data bearers accordingly.",
+      "Target gNB-DU sends UE CONTEXT SETUP RESPONSE message back to gNB-CU."
+    ],
+    "expected_results": [
+      "UE CONTEXT SETUP REQUEST contains valid CG ConfigInfo and all necessary parameters.",
+      "Target gNB-DU successfully creates UE context and data bearers as per the request.",
+      "UE CONTEXT SETUP RESPONSE is sent without errors and confirms successful setup."
+    ],
+    "category": "Signaling - UE Context Setup",
+    "id": "TC-5G-058"
+  },
+  {
+    "title": "Verify UE Context Release Procedure at Source gNB-DU after Mobility",
+    "objective": "Ensure that the source gNB-DU correctly releases the UE context after mobility and confirms release to gNB-CU.",
+    "preconditions": [
+      "UE context has been successfully setup at target gNB-DU.",
+      "Data transmission has been switched to target gNB-DU."
+    ],
+    "steps": [
+      "gNB-CU sends UE CONTEXT RELEASE COMMAND message to source gNB-DU.",
+      "Source gNB-DU releases the UE context associated with the UE.",
+      "Source gNB-DU sends UE CONTEXT RELEASE COMPLETE message to gNB-CU."
+    ],
+    "expected_results": [
+      "UE CONTEXT RELEASE COMMAND is received and processed by source gNB-DU.",
+      "Source gNB-DU releases all UE related resources and contexts.",
+      "UE CONTEXT RELEASE COMPLETE message is sent to gNB-CU confirming release."
+    ],
+    "category": "Signaling - UE Context Release",
+    "id": "TC-5G-059"
+  },
+  {
+    "title": "Validate Downlink Data Delivery Status Handling during Inter-gNB-DU Mobility",
+    "objective": "Verify that Downlink Data Delivery Status frames are correctly exchanged between source gNB-DU, target gNB-DU, and gNB-CU to handle unsuccessfully transmitted downlink data during mobility.",
+    "preconditions": [
+      "UE is undergoing inter-gNB-DU mobility within the same gNB-CU.",
+      "Downlink data transmission is active."
+    ],
+    "steps": [
+      "Source gNB-DU sends Downlink Data Delivery Status frame to gNB-CU indicating unsuccessfully transmitted downlink data.",
+      "Target gNB-DU sends Downlink Data Delivery Status frame to gNB-CU after Random Access procedure.",
+      "gNB-CU forwards downlink packets including any lost PDCP PDUs to target gNB-DU."
+    ],
+    "expected_results": [
+      "Downlink Data Delivery Status frames are correctly received and processed by gNB-CU.",
+      "gNB-CU successfully forwards lost downlink data to target gNB-DU.",
+      "Target gNB-DU delivers downlink data to UE without loss.",
+      "No data loss or duplication occurs during the data forwarding process."
+    ],
+    "category": "Data Handling - Downlink Data Delivery",
+    "id": "TC-5G-060"
+  },
+  {
+    "title": "Verify RRC Connection Reconfiguration between MeNB and UE during Inter-gNB-DU Mobility",
+    "objective": "Ensure that the RRC Connection Reconfiguration procedure between MeNB and UE is correctly performed as part of the inter-gNB-DU mobility process.",
+    "preconditions": [
+      "SGNB MODIFICATION REQUIRED message has been sent from gNB-CU to MeNB.",
+      "MeNB and UE are connected and capable of RRC signaling."
+    ],
+    "steps": [
+      "MeNB initiates RRC Connection Reconfiguration procedure with UE.",
+      "UE processes and applies the RRC Reconfiguration.",
+      "MeNB sends SGNB MODIFICATION CONFIRM message to gNB-CU upon successful reconfiguration."
+    ],
+    "expected_results": [
+      "RRC Connection Reconfiguration messages are correctly exchanged between MeNB and UE.",
+      "UE successfully applies the new configuration.",
+      "SGNB MODIFICATION CONFIRM is sent to gNB-CU confirming successful reconfiguration."
+    ],
+    "category": "Signaling - RRC Reconfiguration",
+    "id": "TC-5G-061"
+  },
+  {
+    "title": "MN Initiated Conditional PSCell Addition - Successful Procedure",
+    "objective": "Verify the successful execution of MN initiated Conditional PSCell Addition procedure including SN Addition Request, RRC reconfiguration, Random Access, and Bearer Context Setup.",
+    "preconditions": [
+      "UE is connected to MN (Master Node)",
+      "MN and SN (Secondary Node) are configured and reachable",
+      "F1AP interface between SN-CU and SN-DU is established",
+      "AMF and UPF are operational and reachable"
+    ],
+    "steps": [
+      "MN sends SN Addition Request to SN-CU-CP",
+      "SN-CU-CP acknowledges SN Addition Request",
+      "MN sends RRC Reconfiguration message to UE containing MN RRC Reconfiguration and SN RRC Reconfiguration",
+      "UE processes RRC Reconfiguration and sends RRC Reconfiguration Complete message",
+      "SN sends SN Reconfiguration Complete to MN",
+      "MN initiates Random Access procedure at target SN gNB-DU",
+      "Target SN gNB-DU performs Path Update procedure",
+      "SN-CU-UP initiates Bearer Context Setup Request to SN-DU",
+      "SN-DU responds with Bearer Context Setup Response",
+      "SN-CU-UP sends Bearer Context Modification Request and receives Bearer Context Modification Response",
+      "Target SN gNB-DU sends ACCESS SUCCESS message to SN-CU-CP indicating successful UE access",
+      "Target SN gNB-DU sends Downlink Data Delivery Status to SN-CU-UP",
+      "MN sends PDU Session Modification Indication and receives PDU Session Modification Confirmation",
+      "MN sends SN Status Transfer and Data Forwarding messages as applicable",
+      "MN sends End Marker Packet to complete the procedure"
+    ],
+    "expected_results": [
+      "SN Addition Request is acknowledged by SN-CU-CP",
+      "UE successfully applies RRC Reconfiguration and responds with RRC Reconfiguration Complete",
+      "Random Access procedure at SN gNB-DU completes successfully",
+      "Bearer Context Setup and Modification procedures complete successfully with proper responses",
+      "ACCESS SUCCESS message is received by SN-CU-CP indicating UE access to SN cell",
+      "Downlink Data Delivery Status is received by SN-CU-UP",
+      "PDU Session Modification Indication and Confirmation are exchanged successfully",
+      "SN Status Transfer and Data Forwarding are performed correctly",
+      "End Marker Packet is sent to finalize the procedure"
+    ],
+    "category": "F1AP UE CONTEXT SETUP",
+    "id": "TC-5G-062"
+  },
+  {
+    "title": "MN Initiated Conditional PSCell Addition - RRC Reconfiguration Failure",
+    "objective": "Verify system behavior when UE fails to complete RRC Reconfiguration during MN initiated Conditional PSCell Addition.",
+    "preconditions": [
+      "UE is connected to MN",
+      "MN and SN are configured and reachable",
+      "F1AP interface between SN-CU and SN-DU is established"
+    ],
+    "steps": [
+      "MN sends SN Addition Request to SN-CU-CP",
+      "SN-CU-CP acknowledges SN Addition Request",
+      "MN sends RRC Reconfiguration message to UE containing MN and SN RRC Reconfiguration",
+      "UE fails to apply RRC Reconfiguration and does not send RRC Reconfiguration Complete",
+      "MN waits for RRC Reconfiguration Complete timeout",
+      "MN initiates error handling or aborts Conditional PSCell Addition procedure"
+    ],
+    "expected_results": [
+      "SN Addition Request is acknowledged by SN-CU-CP",
+      "UE does not send RRC Reconfiguration Complete within expected time",
+      "MN detects timeout and triggers error handling or aborts procedure",
+      "No Bearer Context Setup or Random Access procedure is initiated at SN",
+      "System logs appropriate error for RRC Reconfiguration failure"
+    ],
+    "category": "F1AP UE CONTEXT SETUP",
+    "id": "TC-5G-063"
+  },
+  {
+    "title": "MN Initiated Conditional PSCell Addition - Random Access Failure at SN gNB-DU",
+    "objective": "Verify system behavior when Random Access procedure fails at target SN gNB-DU during MN initiated Conditional PSCell Addition.",
+    "preconditions": [
+      "UE is connected to MN",
+      "MN and SN are configured and reachable",
+      "RRC Reconfiguration Complete message is successfully received from UE"
+    ],
+    "steps": [
+      "MN sends SN Addition Request and receives acknowledgement",
+      "MN sends RRC Reconfiguration message and receives RRC Reconfiguration Complete from UE",
+      "MN initiates Random Access procedure at target SN gNB-DU",
+      "Random Access procedure fails or times out at SN gNB-DU",
+      "MN detects Random Access failure",
+      "MN initiates error handling or aborts Conditional PSCell Addition procedure"
+    ],
+    "expected_results": [
+      "SN Addition Request and RRC Reconfiguration steps complete successfully",
+      "Random Access procedure failure is detected by MN",
+      "No Bearer Context Setup or further SN procedures are performed",
+      "System logs Random Access failure event",
+      "MN aborts Conditional PSCell Addition procedure or triggers recovery"
+    ],
+    "category": "F1AP UE CONTEXT SETUP",
+    "id": "TC-5G-064"
+  },
+  {
+    "title": "MN Initiated Conditional PSCell Addition - Bearer Context Setup Failure",
+    "objective": "Verify system behavior when Bearer Context Setup fails during MN initiated Conditional PSCell Addition.",
+    "preconditions": [
+      "UE is connected to MN",
+      "Random Access procedure at SN gNB-DU completed successfully",
+      "SN-CU-UP and SN-DU F1 interface is established"
+    ],
+    "steps": [
+      "MN sends SN Addition Request and receives acknowledgement",
+      "MN sends RRC Reconfiguration and receives RRC Reconfiguration Complete",
+      "Random Access procedure at SN gNB-DU completes successfully",
+      "SN-CU-UP sends Bearer Context Setup Request to SN-DU",
+      "SN-DU fails to respond or sends Bearer Context Setup Failure",
+      "MN detects Bearer Context Setup failure",
+      "MN initiates error handling or aborts Conditional PSCell Addition procedure"
+    ],
+    "expected_results": [
+      "Bearer Context Setup Request is sent by SN-CU-UP",
+      "Bearer Context Setup Response is not received or indicates failure",
+      "MN detects Bearer Context Setup failure",
+      "MN aborts Conditional PSCell Addition or triggers recovery procedures",
+      "System logs Bearer Context Setup failure"
+    ],
+    "category": "F1AP UE CONTEXT SETUP",
+    "id": "TC-5G-065"
+  },
+  {
+    "title": "MN Initiated Conditional PSCell Addition - Verification of Downlink Data Delivery Status and ACCESS SUCCESS",
+    "objective": "Verify that after successful Random Access and Bearer Context Setup, the target SN gNB-DU sends Downlink Data Delivery Status and ACCESS SUCCESS messages correctly.",
+    "preconditions": [
+      "UE is connected to MN",
+      "Random Access procedure at SN gNB-DU completed successfully",
+      "Bearer Context Setup and Modification procedures completed successfully"
+    ],
+    "steps": [
+      "MN sends SN Addition Request and receives acknowledgement",
+      "MN sends RRC Reconfiguration and receives RRC Reconfiguration Complete",
+      "Random Access procedure at SN gNB-DU completes successfully",
+      "SN-CU-UP and SN-DU complete Bearer Context Setup and Modification",
+      "Target SN gNB-DU sends Downlink Data Delivery Status to SN-CU-UP",
+      "Target SN gNB-DU sends ACCESS SUCCESS message to SN-CU-CP indicating UE access"
+    ],
+    "expected_results": [
+      "Downlink Data Delivery Status message is received by SN-CU-UP",
+      "ACCESS SUCCESS message is received by SN-CU-CP with correct cell information",
+      "Messages are timely and correctly formatted as per TS 37.340 and clause 8.9.2",
+      "MN proceeds with PDU Session Modification and subsequent steps"
+    ],
+    "category": "F1AP UE CONTEXT SETUP",
+    "id": "TC-5G-066"
+  },
+  {
+    "title": "Verify gNB-DU ID Configuration Uniqueness within gNB-CU",
+    "objective": "Ensure that the gNB-DU ID is uniquely configured at the gNB-DU and is unique within the associated gNB-CU",
+    "preconditions": [
+      "gNB-CU and multiple gNB-DUs are deployed and operational",
+      "Access to configuration interfaces of gNB-CU and gNB-DUs"
+    ],
+    "steps": [
+      "Configure gNB-DU ID on the first gNB-DU",
+      "Configure gNB-DU ID on the second gNB-DU with the same ID as the first gNB-DU",
+      "Attempt to register both gNB-DUs with the gNB-CU",
+      "Observe the gNB-CU behavior regarding duplicate gNB-DU IDs"
+    ],
+    "expected_results": [
+      "gNB-CU accepts the first gNB-DU with the configured ID",
+      "gNB-CU rejects or flags an error for the second gNB-DU due to duplicate gNB-DU ID",
+      "Logs or alarms indicate the duplicate gNB-DU ID conflict"
+    ],
+    "category": "Configuration Validation",
+    "id": "TC-5G-067"
+  },
+  {
+    "title": "Validate gNB-DU ID Usage in F1AP UE Context Setup",
+    "objective": "Verify that the gNB-DU ID is correctly used to identify the gNB-DU during the F1AP UE CONTEXT SETUP procedure",
+    "preconditions": [
+      "gNB-CU and gNB-DU are configured and connected",
+      "UE is registered and ready for context setup"
+    ],
+    "steps": [
+      "Initiate F1AP UE CONTEXT SETUP request from gNB-CU to gNB-DU",
+      "Verify that the gNB-DU ID is included and correctly referenced in the F1AP messages",
+      "Complete the UE context setup procedure"
+    ],
+    "expected_results": [
+      "F1AP UE CONTEXT SETUP messages contain the correct gNB-DU ID",
+      "gNB-DU successfully identifies itself using the configured gNB-DU ID",
+      "UE context setup completes successfully without ID related errors"
+    ],
+    "category": "Protocol Conformance",
+    "id": "TC-5G-068"
+  },
+  {
+    "title": "Centralized Retransmission on Radio Link Outage in Intra gNB-CU Scenario",
+    "objective": "Verify that gNB-CU correctly switches data traffic and retransmission from an affected gNB-DU to another available gNB-DU upon radio link outage notification.",
+    "preconditions": [
+      "UE is connected to gNB-CU at RRC and PDCP levels.",
+      "UE has active DRBs configured on at least two gNB-DUs (gNB-DU1 and gNB-DU2).",
+      "Normal data transmission is ongoing via gNB-DU1 and gNB-DU2."
+    ],
+    "steps": [
+      "Simulate radio link outage on gNB-DU1 towards the UE (e.g., blocking fast fading).",
+      "gNB-DU1 detects the radio link outage and sends a 'Radio Link Outage' notification message as part of the DDDS PDU over the F1-U interface to gNB-CU, including PDCP sequence number information.",
+      "Verify that gNB-CU processes the outage notification and decides to switch data traffic and retransmission from gNB-DU1 to gNB-DU2.",
+      "Verify that gNB-CU stops sending downlink traffic to gNB-DU1 but does not remove gNB-DU1's DRBs.",
+      "Verify that gNB-CU starts sending new and retransmitted PDCP PDUs to gNB-DU2."
+    ],
+    "expected_results": [
+      "gNB-CU receives and correctly interprets the 'Radio Link Outage' notification from gNB-DU1.",
+      "gNB-CU switches data traffic transmission and retransmission of undelivered PDCP PDUs from gNB-DU1 to gNB-DU2.",
+      "Downlink traffic to gNB-DU1 is stopped but DRBs on gNB-DU1 remain configured.",
+      "gNB-DU2 receives new and retransmitted PDCP PDUs and forwards them to the UE.",
+      "UE continues to receive data without interruption via gNB-DU2."
+    ],
+    "category": "Intra gNB-CU Retransmission",
+    "id": "TC-5G-069"
+  },
+  {
+    "title": "Centralized Retransmission on Radio Link Resume in Intra gNB-CU Scenario",
+    "objective": "Verify that gNB-CU resumes data traffic transmission via the previously affected gNB-DU when the radio link is restored.",
+    "preconditions": [
+      "Centralized retransmission mechanism is active with data traffic currently switched to gNB-DU2 due to gNB-DU1 radio link outage.",
+      "gNB-DU1 DRBs remain configured but no downlink traffic is sent to gNB-DU1."
+    ],
+    "steps": [
+      "Simulate restoration of the radio link on gNB-DU1 towards the UE.",
+      "gNB-DU1 sends a 'Radio Link Resume' notification message as part of the DDDS PDU over the F1-U interface to gNB-CU.",
+      "Verify that gNB-CU processes the resume notification and resumes sending new and retransmitted PDCP PDUs via gNB-DU1.",
+      "Verify that data traffic transmission via gNB-DU2 continues or is adjusted as per gNB-CU decision."
+    ],
+    "expected_results": [
+      "gNB-CU receives and correctly interprets the 'Radio Link Resume' notification from gNB-DU1.",
+      "gNB-CU resumes data traffic transmission and retransmission of PDCP PDUs via gNB-DU1.",
+      "UE receives data via gNB-DU1 again without data loss or duplication.",
+      "Data transmission via gNB-DU2 is maintained or adjusted according to gNB-CU's traffic management."
+    ],
+    "category": "Intra gNB-CU Retransmission",
+    "id": "TC-5G-070"
+  },
+  {
+    "title": "Handling Lost F1-U Sequence Numbers in Centralized Retransmission",
+    "objective": "Verify that gNB-CU correctly handles lost F1-U sequence numbers reported by gNB-DU during radio link outage and performs appropriate retransmissions.",
+    "preconditions": [
+      "UE connected with active DRBs on multiple gNB-DUs.",
+      "gNB-DU1 experiences radio link outage and detects lost F1-U sequence numbers.",
+      "gNB-DU1 sends 'Radio Link Outage' notification including lost F1-U sequence numbers to gNB-CU."
+    ],
+    "steps": [
+      "Trigger radio link outage on gNB-DU1 and simulate lost F1-U sequence numbers.",
+      "gNB-DU1 sends DDDS PDU with 'Radio Link Outage' notification including highest transmitted, highest delivered, and lost NR PDCP sequence numbers to gNB-CU.",
+      "Verify that gNB-CU identifies lost PDCP PDUs based on sequence numbers and schedules retransmission via gNB-DU2.",
+      "Verify that gNB-CU switches data traffic to gNB-DU2 and retransmits undelivered PDCP PDUs."
+    ],
+    "expected_results": [
+      "gNB-CU correctly interprets lost F1-U sequence numbers from gNB-DU1's notification.",
+      "gNB-CU retransmits all undelivered PDCP PDUs via gNB-DU2 without data loss.",
+      "UE receives retransmitted PDCP PDUs correctly via gNB-DU2.",
+      "Data traffic is switched seamlessly from gNB-DU1 to gNB-DU2."
+    ],
+    "category": "Intra gNB-CU Retransmission",
+    "id": "TC-5G-071"
+  },
+  {
+    "title": "Verify UE CONTEXT SETUP REQUEST message sent from gNB-CU to gNB-DU during SgNB Addition",
+    "objective": "Ensure that after receiving SGNB ADDITION REQUEST from MeNB, gNB-CU sends UE CONTEXT SETUP REQUEST to gNB-DU with correct parameters including optional source cell group configuration.",
+    "preconditions": [
+      "EN-DC setup initiated with MeNB and SgNB configured",
+      "SGNB ADDITION REQUEST message received by gNB-CU from MeNB"
+    ],
+    "steps": [
+      "Trigger SGNB ADDITION REQUEST message from MeNB to gNB-CU carrying CG-ConfigInfo",
+      "Observe gNB-CU behavior upon receiving SGNB ADDITION REQUEST",
+      "Check if gNB-CU sends UE CONTEXT SETUP REQUEST message to gNB-DU",
+      "Verify UE CONTEXT SETUP REQUEST message content for presence of source cell group configuration when applicable"
+    ],
+    "expected_results": [
+      "gNB-CU sends UE CONTEXT SETUP REQUEST message to gNB-DU promptly after SGNB ADDITION REQUEST",
+      "UE CONTEXT SETUP REQUEST message includes source cell group configuration if provided by MeNB",
+      "Message format and parameters comply with TS 37.340 specifications"
+    ],
+    "category": "F1AP Setup",
+    "id": "TC-5G-072"
+  },
+  {
+    "title": "Verify UE CONTEXT SETUP RESPONSE message from gNB-DU to gNB-CU and configuration type indication",
+    "objective": "Validate that gNB-DU responds to UE CONTEXT SETUP REQUEST with UE CONTEXT SETUP RESPONSE and correctly indicates whether full or delta configuration was applied.",
+    "preconditions": [
+      "UE CONTEXT SETUP REQUEST message received by gNB-DU from gNB-CU",
+      "Source cell group configuration may or may not be present in the request"
+    ],
+    "steps": [
+      "Send UE CONTEXT SETUP REQUEST message from gNB-CU to gNB-DU with and without source cell group configuration",
+      "Observe gNB-DU processing of the request",
+      "Check UE CONTEXT SETUP RESPONSE message sent by gNB-DU to gNB-CU",
+      "Verify indication of full configuration if source cell group configuration is absent or gNB-DU decides full configuration",
+      "Verify indication of delta configuration if source cell group configuration is present and partial update is applied"
+    ],
+    "expected_results": [
+      "gNB-DU sends UE CONTEXT SETUP RESPONSE message to gNB-CU in response to every UE CONTEXT SETUP REQUEST",
+      "UE CONTEXT SETUP RESPONSE message correctly indicates full configuration when source cell group configuration is absent or full config is applied",
+      "UE CONTEXT SETUP RESPONSE message indicates delta configuration when partial update is applied",
+      "Message contents conform to TS 37.340 specifications"
+    ],
+    "category": "F1AP Setup",
+    "id": "TC-5G-073"
+  },
+  {
+    "title": "Verify handling of UE CONTEXT SETUP during Secondary Node Change with full and delta configuration",
+    "objective": "Ensure that during Secondary Node Change, UE CONTEXT SETUP REQUEST and RESPONSE messages handle source cell group configuration correctly to perform delta or full configuration as per TS 37.340.",
+    "preconditions": [
+      "Secondary Node Change procedure initiated",
+      "gNB-CU sends UE CONTEXT SETUP REQUEST to gNB-DU"
+    ],
+    "steps": [
+      "Initiate Secondary Node Change triggering UE CONTEXT SETUP REQUEST from gNB-CU to gNB-DU",
+      "Include source cell group configuration in the request to test delta configuration",
+      "Exclude source cell group configuration in another test to trigger full configuration",
+      "Observe gNB-DU response in UE CONTEXT SETUP RESPONSE message",
+      "Verify that gNB-DU indicates full configuration if source cell group configuration is missing or full config is applied",
+      "Verify that gNB-DU indicates delta configuration if partial update is applied"
+    ],
+    "expected_results": [
+      "UE CONTEXT SETUP REQUEST message correctly includes or excludes source cell group configuration based on test scenario",
+      "gNB-DU performs full or delta configuration accordingly",
+      "UE CONTEXT SETUP RESPONSE message accurately reflects the configuration type applied",
+      "Procedure complies with TS 37.340 requirements for Secondary Node Change"
+    ],
+    "category": "F1AP Setup",
+    "id": "TC-5G-074"
+  },
+  {
+    "title": "MN Initiated SgNB Release Procedure in EN-DC",
+    "objective": "Verify the correct execution of the MN initiated SgNB release procedure including message exchanges and UE context release between MeNB, gNB-CU, gNB-DU, and UE.",
+    "preconditions": [
+      "EN-DC is active with UE connected to MeNB and SgNB (gNB-CU and gNB-DU).",
+      "UE is in connected state with established RRC connection.",
+      "Data transmission is ongoing between UE and gNB-DU."
+    ],
+    "steps": [
+      "MeNB sends SGNB RELEASE REQUEST to gNB-CU.",
+      "gNB-CU sends UE CONTEXT MODIFICATION REQUEST to gNB-DU to stop UE data transmission scheduling.",
+      "gNB-DU responds with UE CONTEXT MODIFICATION RESPONSE to gNB-CU.",
+      "gNB-CU sends SGNB RELEASE REQUEST ACKNOWLEDGE to MeNB (timing may vary).",
+      "MeNB sends RRCConnectionReconfiguration message to UE.",
+      "UE responds with RRCConnectionReconfigurationComplete message to MeNB.",
+      "MeNB sends SN STATUS TRANSFER message to gNB-CU.",
+      "Data forwarding occurs from gNB-DU to MeNB as needed.",
+      "Path update procedure is performed.",
+      "MeNB sends UE CONTEXT RELEASE message to gNB-CU.",
+      "gNB-CU sends UE CONTEXT RELEASE COMMAND to gNB-DU.",
+      "gNB-DU responds with UE CONTEXT RELEASE COMPLETE to gNB-CU.",
+      "gNB-CU sends UE CONTEXT RELEASE COMPLETE to MeNB."
+    ],
+    "expected_results": [
+      "gNB-DU stops UE data transmission scheduling upon receiving UE CONTEXT MODIFICATION REQUEST.",
+      "All messages are exchanged in correct order without errors.",
+      "UE successfully reconfigures RRC connection as per RRCConnectionReconfiguration.",
+      "UE context is released properly at gNB-DU and gNB-CU.",
+      "Data forwarding and path update procedures complete successfully.",
+      "No residual data or context remains at SgNB after release."
+    ],
+    "category": "F1AP UE CONTEXT SETUP - Release",
+    "id": "TC-5G-075"
+  },
+  {
+    "title": "SN Initiated SgNB Release Procedure in EN-DC",
+    "objective": "Validate the SN initiated SgNB release procedure including message flow and UE context release coordination between MeNB, gNB-CU, gNB-DU, and UE.",
+    "preconditions": [
+      "EN-DC is active with UE connected to MeNB and SgNB (gNB-CU and gNB-DU).",
+      "UE is in connected state with established RRC connection.",
+      "Data transmission is ongoing between UE and gNB-DU."
+    ],
+    "steps": [
+      "Optionally, gNB-CU sends UE CONTEXT MODIFICATION REQUEST to gNB-DU to stop UE data transmission scheduling before SGNB RELEASE REQUIRED.",
+      "gNB-DU responds with UE CONTEXT MODIFICATION RESPONSE to gNB-CU.",
+      "gNB-CU sends SGNB RELEASE REQUIRED message to MeNB.",
+      "MeNB responds with SGNB RELEASE CONFIRM message to gNB-CU.",
+      "MeNB sends RRCConnectionReconfiguration message to UE.",
+      "UE responds with RRCConnectionReconfigurationComplete message to MeNB.",
+      "MeNB sends SN STATUS TRANSFER message to gNB-CU.",
+      "Data forwarding occurs from gNB-DU to MeNB as needed.",
+      "Path update procedure is performed.",
+      "MeNB sends UE CONTEXT RELEASE message to gNB-CU.",
+      "gNB-CU sends UE CONTEXT RELEASE COMMAND to gNB-DU.",
+      "gNB-DU responds with UE CONTEXT RELEASE COMPLETE to gNB-CU.",
+      "gNB-CU sends UE CONTEXT RELEASE COMPLETE to MeNB."
+    ],
+    "expected_results": [
+      "gNB-DU stops UE data transmission scheduling upon receiving UE CONTEXT MODIFICATION REQUEST.",
+      "All messages are exchanged in correct order without errors.",
+      "UE successfully reconfigures RRC connection as per RRCConnectionReconfiguration.",
+      "UE context is released properly at gNB-DU and gNB-CU.",
+      "Data forwarding and path update procedures complete successfully.",
+      "No residual data or context remains at SgNB after release."
+    ],
+    "category": "F1AP UE CONTEXT SETUP - Release",
+    "id": "TC-5G-076"
+  },
+  {
+    "title": "Verify DL LBT Failure Reporting Triggered by UE CONTEXT SETUP REQUEST",
+    "objective": "Ensure that gNB-CU can request gNB-DU to collect and report DL LBT failure information via UE CONTEXT SETUP REQUEST message.",
+    "preconditions": [
+      "gNB-CU and gNB-DU are connected and operational.",
+      "A UE is in the process of context setup between gNB-CU and gNB-DU."
+    ],
+    "steps": [
+      "gNB-CU sends UE CONTEXT SETUP REQUEST message to gNB-DU with request to collect DL LBT failure information.",
+      "gNB-DU collects DL LBT failure information related to the UE.",
+      "gNB-DU sends DU-CU ACCESS AND MOBILITY INDICATION message to gNB-CU containing the DL LBT failure information."
+    ],
+    "expected_results": [
+      "gNB-DU successfully collects DL LBT failure information upon request.",
+      "DU-CU ACCESS AND MOBILITY INDICATION message is received by gNB-CU with accurate DL LBT failure data.",
+      "No errors or protocol violations occur during message exchanges."
+    ],
+    "category": "setup",
+    "id": "TC-5G-077"
+  },
+  {
+    "title": "Verify DL LBT Failure Reporting Triggered by UE CONTEXT MODIFICATION REQUEST",
+    "objective": "Validate that gNB-CU can request DL LBT failure information reporting from gNB-DU via UE CONTEXT MODIFICATION REQUEST message.",
+    "preconditions": [
+      "gNB-CU and gNB-DU are connected and operational.",
+      "A UE context exists and is modifiable between gNB-CU and gNB-DU."
+    ],
+    "steps": [
+      "gNB-CU sends UE CONTEXT MODIFICATION REQUEST message to gNB-DU requesting DL LBT failure information collection.",
+      "gNB-DU collects the requested DL LBT failure information related to the UE.",
+      "gNB-DU sends DU-CU ACCESS AND MOBILITY INDICATION message to gNB-CU with the collected DL LBT failure data."
+    ],
+    "expected_results": [
+      "gNB-DU collects and reports DL LBT failure information as requested.",
+      "DU-CU ACCESS AND MOBILITY INDICATION message contains correct DL LBT failure information.",
+      "Message exchange complies with F1AP protocol without errors."
+    ],
+    "category": "setup",
+    "id": "TC-5G-078"
+  },
+  {
+    "title": "Verify DL LBT Failure Reporting Triggered by UE CONTEXT RELEASE COMMAND",
+    "objective": "Confirm that gNB-CU can trigger DL LBT failure information reporting from gNB-DU via UE CONTEXT RELEASE COMMAND message.",
+    "preconditions": [
+      "gNB-CU and gNB-DU are connected and operational.",
+      "A UE context exists and is eligible for release."
+    ],
+    "steps": [
+      "gNB-CU sends UE CONTEXT RELEASE COMMAND message to gNB-DU requesting DL LBT failure information reporting.",
+      "gNB-DU collects DL LBT failure information related to the UE mobility failures.",
+      "gNB-DU sends DU-CU ACCESS AND MOBILITY INDICATION message to gNB-CU with the DL LBT failure information."
+    ],
+    "expected_results": [
+      "gNB-DU successfully collects and reports DL LBT failure information upon release command.",
+      "DU-CU ACCESS AND MOBILITY INDICATION message is received by gNB-CU with accurate DL LBT failure data.",
+      "No protocol errors occur during the release and reporting process."
+    ],
+    "category": "release",
+    "id": "TC-5G-079"
+  },
+  {
+    "title": "Verify RAN UE ID allocation by gNB-DU during UE Initial Access",
+    "objective": "Ensure that the gNB-DU correctly allocates a unique RAN UE ID to the UE during the UE Initial Access procedure",
+    "preconditions": [
+      "gNB-DU and UE are powered on and connected",
+      "UE is attempting initial access to the network"
+    ],
+    "steps": [
+      "Initiate UE Initial Access procedure from UE to gNB-DU",
+      "Observe the allocation of RAN UE ID by gNB-DU",
+      "Capture the RAN UE ID assigned to the UE"
+    ],
+    "expected_results": [
+      "gNB-DU allocates a unique RAN UE ID to the UE",
+      "RAN UE ID is unique within the gNB-DU context",
+      "RAN UE ID is communicated to the UE and relevant network nodes as per protocol"
+    ],
+    "category": "RAN UE ID Allocation",
+    "id": "TC-5G-080"
+  },
+  {
+    "title": "Verify RAN UE ID allocation by gNB-CU during UE Context Setup",
+    "objective": "Ensure that the gNB-CU correctly allocates a unique RAN UE ID to the UE during the UE Context Setup procedure",
+    "preconditions": [
+      "gNB-CU and gNB-DU are connected via F1 interface",
+      "UE has completed Initial Access and is proceeding to Context Setup"
+    ],
+    "steps": [
+      "Trigger UE Context Setup procedure from gNB-CU to gNB-DU",
+      "Observe the allocation of RAN UE ID by gNB-CU",
+      "Capture the RAN UE ID assigned to the UE during Context Setup"
+    ],
+    "expected_results": [
+      "gNB-CU allocates a unique RAN UE ID to the UE",
+      "RAN UE ID is unique within the gNB context",
+      "RAN UE ID is transferred over E1 and F1 interfaces correctly for correlation"
+    ],
+    "category": "RAN UE ID Allocation",
+    "id": "TC-5G-081"
+  },
+  {
+    "title": "Verify uniqueness of RAN UE ID within a gNB",
+    "objective": "Ensure that the RAN UE ID assigned to each UE is unique within the gNB to avoid conflicts",
+    "preconditions": [
+      "Multiple UEs are connected or attempting connection to the same gNB",
+      "gNB-CU and gNB-DU are operational"
+    ],
+    "steps": [
+      "Perform UE Initial Access or UE Context Setup for multiple UEs",
+      "Capture the RAN UE IDs assigned to each UE",
+      "Compare all assigned RAN UE IDs for uniqueness"
+    ],
+    "expected_results": [
+      "Each UE is assigned a unique RAN UE ID within the gNB",
+      "No duplicate RAN UE IDs are observed across UEs"
+    ],
+    "category": "RAN UE ID Uniqueness",
+    "id": "TC-5G-082"
+  },
+  {
+    "title": "Verify transfer of RAN UE ID over E1 and F1 interfaces",
+    "objective": "Ensure that the RAN UE ID is correctly transferred over E1 and F1 interfaces between gNB-CU and gNB-DU",
+    "preconditions": [
+      "gNB-CU and gNB-DU are connected via E1 and F1 interfaces",
+      "UE Context Setup procedure is initiated"
+    ],
+    "steps": [
+      "Initiate UE Context Setup from gNB-CU to gNB-DU",
+      "Monitor E1 and F1 interface messages for presence of RAN UE ID",
+      "Verify the correctness and consistency of RAN UE ID in messages"
+    ],
+    "expected_results": [
+      "RAN UE ID is present in all relevant E1 and F1 interface messages",
+      "RAN UE ID values are consistent and match between gNB-CU and gNB-DU",
+      "No loss or corruption of RAN UE ID during transfer"
+    ],
+    "category": "RAN UE ID Transfer",
+    "id": "TC-5G-083"
+  },
+  {
+    "title": "Verify U2N Remote UE switch from direct to indirect path with gNB-DU change",
+    "objective": "Ensure the correct signaling and context setup/release procedures occur when switching U2N Remote UE from direct to indirect path involving gNB-DU change.",
+    "preconditions": [
+      "U2N Remote UE is in RRC_CONNECTED state with source gNB-DU and gNB-CU.",
+      "U2N Remote UE has established direct path with source gNB-DU.",
+      "Measurement configuration and reporting between U2N Remote UE and gNB-CU is functional.",
+      "Target gNB-DU and target U2N Relay UE are available."
+    ],
+    "steps": [
+      "Perform Uu measurement configuration and reporting from U2N Remote UE to gNB-CU.",
+      "gNB-CU decides to switch U2N Remote UE to target U2N Relay UE under target gNB-DU.",
+      "If target U2N Relay UE is in RRC_CONNECTED, gNB-CU sends RRCReconfiguration to target U2N Relay UE; else skip this step.",
+      "gNB-CU sends UE CONTEXT SETUP REQUEST to target gNB-DU with path switch configuration.",
+      "Target gNB-DU responds with UE CONTEXT SETUP RESPONSE to gNB-CU.",
+      "gNB-CU sends UE CONTEXT MODIFICATION REQUEST including RRCReconfiguration message to source gNB-DU.",
+      "Source gNB-DU sends RRCReconfiguration message to U2N Remote UE.",
+      "U2N Remote UE stops UP and CP transmission over Uu upon receiving RRCReconfiguration.",
+      "Source gNB-DU sends UE CONTEXT MODIFICATION RESPONSE to gNB-CU.",
+      "U2N Remote UE establishes PC5 connection with target U2N Relay UE.",
+      "U2N Remote UE sends RRCReconfigurationComplete message to target gNB-DU via target U2N Relay UE.",
+      "Target gNB-DU sends UL RRC MESSAGE TRANSFER including RRCReconfigurationComplete to gNB-CU.",
+      "gNB-CU sends UE CONTEXT RELEASE COMMAND to source gNB-DU.",
+      "Source gNB-DU releases UE context and sends UE CONTEXT RELEASE COMPLETE to gNB-CU."
+    ],
+    "expected_results": [
+      "Measurement configuration and reporting is successfully completed.",
+      "gNB-CU correctly decides and initiates switch to target U2N Relay UE under target gNB-DU.",
+      "RRCReconfiguration message is sent to target U2N Relay UE if in RRC_CONNECTED state.",
+      "UE CONTEXT SETUP REQUEST and RESPONSE messages are exchanged successfully between gNB-CU and target gNB-DU.",
+      "UE CONTEXT MODIFICATION REQUEST and RESPONSE messages are exchanged successfully between gNB-CU and source gNB-DU.",
+      "U2N Remote UE receives RRCReconfiguration and stops UP and CP transmission over Uu.",
+      "PC5 connection between U2N Remote UE and target U2N Relay UE is established.",
+      "RRCReconfigurationComplete message is sent by U2N Remote UE and received by target gNB-DU and forwarded to gNB-CU.",
+      "UE CONTEXT RELEASE COMMAND and COMPLETE messages are exchanged successfully between gNB-CU and source gNB-DU.",
+      "Source gNB-DU releases UE context successfully."
+    ],
+    "category": "F1AP UE CONTEXT SETUP - Path Switch",
+    "id": "TC-5G-084"
+  },
+  {
+    "title": "Verify behavior when target U2N Relay UE is in RRC_IDLE/INACTIVE state during direct to indirect path switch",
+    "objective": "Validate that the procedure correctly handles the case when target U2N Relay UE is in RRC_IDLE/INACTIVE state during the path switch.",
+    "preconditions": [
+      "U2N Remote UE is in RRC_CONNECTED state with source gNB-DU and gNB-CU.",
+      "Target U2N Relay UE is in RRC_IDLE or RRC_INACTIVE state.",
+      "Measurement configuration and reporting between U2N Remote UE and gNB-CU is functional."
+    ],
+    "steps": [
+      "Perform Uu measurement configuration and reporting from U2N Remote UE to gNB-CU.",
+      "gNB-CU decides to switch U2N Remote UE to target U2N Relay UE under target gNB-DU.",
+      "Skip sending RRCReconfiguration to target U2N Relay UE as it is in RRC_IDLE/INACTIVE state.",
+      "gNB-CU sends UE CONTEXT SETUP REQUEST to target gNB-DU with path switch configuration.",
+      "Target gNB-DU responds with UE CONTEXT SETUP RESPONSE to gNB-CU.",
+      "gNB-CU sends UE CONTEXT MODIFICATION REQUEST including RRCReconfiguration message to source gNB-DU.",
+      "Source gNB-DU sends RRCReconfiguration message to U2N Remote UE.",
+      "U2N Remote UE stops UP and CP transmission over Uu upon receiving RRCReconfiguration.",
+      "Source gNB-DU sends UE CONTEXT MODIFICATION RESPONSE to gNB-CU.",
+      "U2N Remote UE establishes PC5 connection with target U2N Relay UE.",
+      "U2N Remote UE sends RRCReconfigurationComplete message to target gNB-DU via target U2N Relay UE.",
+      "Reception of RRCReconfigurationComplete triggers RRC setup/resume procedure for target U2N Relay UE to enter RRC_CONNECTED state.",
+      "Target gNB-DU sends UL RRC MESSAGE TRANSFER including RRCReconfigurationComplete to gNB-CU.",
+      "gNB-CU sends UE CONTEXT RELEASE COMMAND to source gNB-DU.",
+      "Source gNB-DU releases UE context and sends UE CONTEXT RELEASE COMPLETE to gNB-CU."
+    ],
+    "expected_results": [
+      "Measurement configuration and reporting is successfully completed.",
+      "gNB-CU correctly decides and initiates switch to target U2N Relay UE under target gNB-DU.",
+      "No RRCReconfiguration message is sent to target U2N Relay UE before path switch completion.",
+      "UE CONTEXT SETUP REQUEST and RESPONSE messages are exchanged successfully between gNB-CU and target gNB-DU.",
+      "UE CONTEXT MODIFICATION REQUEST and RESPONSE messages are exchanged successfully between gNB-CU and source gNB-DU.",
+      "U2N Remote UE receives RRCReconfiguration and stops UP and CP transmission over Uu.",
+      "PC5 connection between U2N Remote UE and target U2N Relay UE is established.",
+      "RRCReconfigurationComplete message triggers RRC setup/resume procedure for target U2N Relay UE to enter RRC_CONNECTED state.",
+      "RRCReconfigurationComplete message is forwarded by target gNB-DU to gNB-CU.",
+      "UE CONTEXT RELEASE COMMAND and COMPLETE messages are exchanged successfully between gNB-CU and source gNB-DU.",
+      "Source gNB-DU releases UE context successfully."
+    ],
+    "category": "F1AP UE CONTEXT SETUP - Path Switch",
+    "id": "TC-5G-085"
+  },
+  {
+    "title": "Verify MRO Procedure Initiation via F1AP UE CONTEXT SETUP",
+    "objective": "To ensure that the MRO procedure involving F1 interface is correctly initiated with UE CONTEXT SETUP message.",
+    "preconditions": [
+      "5G gNB and CU-DU are connected over F1 interface",
+      "UE is registered and connected to the network",
+      "F1AP protocol stack is operational"
+    ],
+    "steps": [
+      "Trigger a mobility event that requires MRO (Mobility Robustness Optimization)",
+      "Send F1AP UE CONTEXT SETUP request from CU to DU with appropriate parameters",
+      "Observe the response from DU"
+    ],
+    "expected_results": [
+      "F1AP UE CONTEXT SETUP request is correctly formatted and sent over F1 interface",
+      "DU acknowledges the UE CONTEXT SETUP request with a successful response",
+      "MRO procedure proceeds without errors"
+    ],
+    "category": "MRO Procedures",
+    "id": "TC-5G-086"
+  },
+  {
+    "title": "Validate Handling of UE CONTEXT SETUP during MRO",
+    "objective": "To validate that the UE CONTEXT SETUP procedure during MRO is handled correctly by the DU and CU.",
+    "preconditions": [
+      "F1 interface between CU and DU is established",
+      "UE is in connected state",
+      "MRO event is triggered"
+    ],
+    "steps": [
+      "CU sends UE CONTEXT SETUP request to DU as part of MRO procedure",
+      "DU processes the UE CONTEXT SETUP request",
+      "DU sends UE CONTEXT SETUP response back to CU"
+    ],
+    "expected_results": [
+      "DU correctly processes the UE CONTEXT SETUP request",
+      "Response contains all necessary information confirming setup",
+      "No protocol errors or message rejections occur"
+    ],
+    "category": "MRO Procedures",
+    "id": "TC-5G-087"
+  },
+  {
+    "title": "Verify RACH Report signalling from UE to gNB2 via RRC UE Information Request/Response",
+    "objective": "Ensure that a UE connected to gNB2 can successfully send a RACH Report concerning cells of gNB1 using RRC UE Information Request/Response procedures.",
+    "preconditions": [
+      "UE is connected to a cell in gNB2",
+      "UE has a valid RACH Report concerning cells of gNB1"
+    ],
+    "steps": [
+      "Trigger UE to send RACH Report to gNB2 using RRC UE Information Request/Response procedures"
+    ],
+    "expected_results": [
+      "gNB2 successfully receives the RACH Report from the UE",
+      "RRC UE Information Request/Response procedures complete without error"
+    ],
+    "category": "RRC Signalling",
+    "id": "TC-5G-088"
+  },
+  {
+    "title": "Verify Xn: Access and Mobility Indication message from gNB2 to gNB1-CU carrying RACH Report",
+    "objective": "Validate that gNB2 sends the Xn: Access and Mobility Indication message including the RACH Report to gNB1-CU where the UE was previously connected.",
+    "preconditions": [
+      "gNB2 has received RACH Report from UE",
+      "gNB1-CU is reachable via Xn interface"
+    ],
+    "steps": [
+      "gNB2 sends Xn: Access and Mobility Indication message to gNB1-CU including the RACH Report"
+    ],
+    "expected_results": [
+      "gNB1-CU receives the Xn: Access and Mobility Indication message with the RACH Report",
+      "Message contents are verified to include correct RACH Report data"
+    ],
+    "category": "Xn Interface Signalling",
+    "id": "TC-5G-089"
+  },
+  {
+    "title": "Verify F1: Access and Mobility Indication message from gNB1-CU to gNB1-DU including RACH Report",
+    "objective": "Ensure that gNB1-CU forwards the RACH Report to gNB1-DU using the F1: Access and Mobility Indication message.",
+    "preconditions": [
+      "gNB1-CU has received Xn: Access and Mobility Indication message with RACH Report",
+      "gNB1-DU is reachable via F1 interface"
+    ],
+    "steps": [
+      "gNB1-CU sends F1: Access and Mobility Indication message to gNB1-DU including the RACH Report"
+    ],
+    "expected_results": [
+      "gNB1-DU receives the F1: Access and Mobility Indication message with the RACH Report",
+      "Message contents are verified to include correct RACH Report data"
+    ],
+    "category": "F1 Interface Signalling",
+    "id": "TC-5G-090"
+  },
+  {
+    "title": "Verify direct signalling of RACH Report from gNB-CU to gNB-DU via F1: Access and Mobility Indication",
+    "objective": "Validate that gNB-CU can directly signal the RACH Report received from UE to gNB-DU using the F1: Access and Mobility Indication procedure without intermediate Xn message.",
+    "preconditions": [
+      "gNB-CU has received RACH Report from UE",
+      "gNB-DU is reachable via F1 interface"
+    ],
+    "steps": [
+      "gNB-CU sends F1: Access and Mobility Indication message directly to gNB-DU including the RACH Report"
+    ],
+    "expected_results": [
+      "gNB-DU receives the F1: Access and Mobility Indication message with the RACH Report",
+      "Message contents are verified to include correct RACH Report data"
+    ],
+    "category": "F1 Interface Signalling",
+    "id": "TC-5G-091"
+  }
+]

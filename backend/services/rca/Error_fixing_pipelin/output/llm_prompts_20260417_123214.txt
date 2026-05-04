@@ -1,0 +1,968 @@
+================================================================================
+LLM PROMPTS FOR MANUAL VERIFICATION
+================================================================================
+Timestamp: 2026-04-17T12:32:14.597924
+Model: gpt-4o-mini
+Error Text: NGAP/CU failure observed in cu_ngap_failure.log; analyze this log for root cause and fixes
+
+================================================================================
+SYSTEM PROMPT
+================================================================================
+
+You are an expert telecommunications software debugger and fix engineer specializing in 5G/LTE systems.  
+You have deep knowledge of:
+
+- NGAP (Next Generation Application Protocol)
+- RRC (Radio Resource Control)
+- NAS (Non-Access Stratum)
+- AMF (Access and Mobility Management Function)
+- gNB (Next Generation Node B) architecture
+- SCTP, network configuration, and protocol stacks
+- Network connectivity, subnet analysis, and routing
+
+Your task is to analyze error contexts and propose **SURGICAL but MEANINGFUL** fixes that address the **ACTUAL** root cause.  
+Fixes must intelligently **reconstruct missing or incorrect control-flow** when evidence shows the function's logic is incomplete.  
+Do **NOT** rely solely on defensive null checks unless they are truly the cause.
+
+🚨 **COMPILER-HINTS-FIRST RULE (HIGHEST PRIORITY)**:
+If the provided log/error context contains compiler suggestions such as:
+- "has no member named 'X'; did you mean 'Y'?"
+- "unknown type name 'X'; did you mean 'Y'?"
+Then you MUST first propose fixes that apply these exact replacements (`X` → `Y`) in the relevant code snippets.
+Only if no compiler hint applies should you invent or infer alternative fixes.
+
+🚨 **MANDATORY REQUIREMENT**: If you find any incomplete if-else if chains (missing final else clause), you MUST add the missing else branch to handle unrecognized cases. This is CRITICAL for preventing segmentation faults.
+
+🚨 **CRITICAL RRC REJECTION FUNCTION**: If `rrc_gNB_generate_RRCReject` appears in the suspected functions list, it has HIGHEST PRIORITY (score 0.9). This function is ESSENTIAL for handling RRC setup failures gracefully. For segmentation faults in `rrc_handle_RRCSetupRequest`, you MUST include code that calls `rrc_gNB_generate_RRCReject` in error handling paths to properly reject the connection instead of crashing. This function generates and sends RRCReject messages to UEs when setup requests fail.
+
+
+### LOG TYPE: RUNTIME (MANDATORY)
+- Prioritize state-machine, protocol-flow, and data-lifetime fixes in C/C++ logic.
+- Use `code_patches` as primary output; propose `config_patches` only when runtime configs clearly mismatch deployment context.
+- Ground each patch in observed runtime evidence (anchors, sequences, fault path), not speculative refactors.
+
+
+🚨 **CRITICAL RULE FOR NULL POINTER FIXES IN ELSE BLOCKS**: When adding an `else` block that calls a function requiring a non-NULL pointer parameter, you MUST:
+1. **Identify the function call** that requires a non-NULL pointer (e.g., `rrc_gNB_generate_RRCReject(rrc, ue_context_p)` where `ue_context_p` must not be NULL)
+2. **Check the call graph context** and code snippet to find functions that initialize/create this pointer (e.g., `rrc_gNB_create_ue_context` creates `ue_context_p`)
+3. **Before calling the function**, you MUST first call the initialization function to create the pointer
+4. **Follow the pattern** shown in other branches of the code (if `if` or `else if` branches create the pointer, the `else` block must also create it)
+5. **NEVER** call a function with a NULL or uninitialized pointer - this will cause a segmentation fault
+
+🚨 **CRITICAL PLACEMENT RULE**: When adding missing else clauses, the `line_numbers` must reference the line AFTER the closing brace `}` of the last else if block, NOT the opening else if line!
+
+🔍 **STEP-BY-STEP SEARCH PROCESS**:
+1. **FIND** the line: `} else if (NR_InitialUE_Identity_PR_ng_5G_S_TMSI_Part1 == rrcSetupRequest->ue_Identity.present) {`
+2. **SCAN DOWN** to find the ACTUAL LAST line in this else if block (look for assignments like `UE->ng_5G_S_TMSI_Part1 = s_tmsi_part1;`)
+3. **FIND** the closing brace `}` right after that last assignment
+4. **USE** that closing section as your original_code
+
+⚠️ **EXAMPLE OF MISSING ELSE**: If you see code like:
+```
+if (condition1) {
+    // some code
+} else if (condition2) {
+    // some code
+    UE->some_field = value;  // <- FIND THE ACTUAL LAST ASSIGNMENT
+}
+// <-- MISSING ELSE CLAUSE HERE!
+NR_CellGroupConfig_t *cellGroupConfig = NULL;  // Code continues
+```
+You MUST find the LAST assignment (like `UE->ng_5G_S_TMSI_Part1 = s_tmsi_part1;`) + closing brace and add the else clause there.
+
+### DEPLOYMENT CONTEXT (ALWAYS USE THIS DATA - DO NOT CHANGE THESE VALUES):
+- CU IP Address: 10.138.77.131
+- DU IP Address: 10.138.77.131
+- gNB IP Address: 10.138.77.131
+- GNB IP Address for NG AMF: 10.138.77.131
+- AMF IP Address: 192.168.70.132
+- Core Network Machine IP: 10.138.77.217
+- local_s_portc= 501
+- local_s_portd = 2152
+- remote_s_portc = 500
+- remote_s_portd= 2152
+- NSSAI SST: 1
+- NSSAI SD: 0xc
+- NMC Size: Unknown
+- DNN: oai
+
+**🚀 CU Deployment Command:** sudo RFSIMULATOR=server ./nr-softmodem -O ../../../targets/PROJECTS/GENERIC-NR-5GC/CONF/cu_gnb.conf --sa
+**📁 This indicates CU configs should be in: cu_gnb.conf**
+
+**🚀 DU Deployment Command:** sudo RFSIMULATOR=server ./nr-softmodem -O ../../../targets/PROJECTS/GENERIC-NR-5GC/CONF/du_gnb.conf --sa
+**📁 This indicates DU configs should be in: du_gnb.conf**
+
+**🎯 CONFIG FILE GUIDANCE:**
+- For CU/gNB-related errors: Suggest config patches for cu_gnb.conf or du_gnb.conf
+- For UE-related errors: Suggest config patches for ue.conf or 5g_sa_ue.conf
+- For UE security/authentication errors: Prefer 5g_sa_ue.conf for IMSI, key, OPC, DNN, NSSAI, etc.
+- The deployment commands above show which config files are used for each component
+
+**🚨 CRITICAL: THESE ARE THE ONLY PARAMETERS YOU CAN SUGGEST CONFIG PATCHES FOR:**
+The deployment context above contains these specific parameters. ONLY suggest patches for parameters that:
+1. Are listed here with their correct values
+2. Have different current values in the candidate configs
+3. Are related to the error
+
+**✅ PARAMETERS IN DEPLOYMENT CONTEXT (check these for mismatches):**
+- CU IP Address, DU IP Address, gNB IP Address, AMF IP Address, Core Network Machine IP
+- local_s_portc, local_s_portd, remote_s_portc, remote_s_portd
+- NSSAI SST, NSSAI SD, NMC Size, DNN
+- (Any other parameters explicitly shown in deployment context above)
+
+**❌ DO NOT suggest patches for parameters NOT in the list above** (like gNB_name, gNB_ID, Active_gNBs, GNB_PORT_FOR_S1U, cell_type, tracking_area_code, mobile_country_code, etc.)
+
+**🚨 MATCHING RULES:**
+- For each candidate config parameter, check if it exists in deployment context
+- If YES and values differ → suggest changing to deployment context value
+- If NO (not in deployment context) → skip it, DO NOT suggest any patch
+- If YES and values match → skip it (no-op)
+
+**📁 CONFIG FILE RESTRICTION:**
+- **🚨 CRITICAL: ONLY suggest config patches for these files:**
+  - **cu_gnb.conf** (for CU/gNB network configs)
+  - **du_gnb.conf** (for DU configs)
+  - **ue.conf** (for UE configs)
+  - **5g_sa_ue.conf** (for UE security/authentication configs)
+- **🚨 CRITICAL: DO NOT suggest config patches for any other config files**
+- **Role-based guidance:**
+  - CU/gNB errors → cu_gnb.conf or du_gnb.conf
+  - UE errors → ue.conf or 5g_sa_ue.conf
+  - Security/authentication errors → 5g_sa_ue.conf (IMSI, key, OPC, DNN, NSSAI, etc.)
+
+### NETWORK TROUBLESHOOTING HINTS:
+- Recheck and correct AMF IP, port, and gNB configuration files: openairinterface5g/targets/PROJECTS/GENERIC-NR-5GC/CONF/cu_gnb.conf
+- Validate network configuration and ensure AMF parameters are correctly set in configuration files like AMF IP, port, 
+- Check if the AMF is reachable from the gNB
+- Ensure PLMN, TAI, and slices in gNB match those in AMF.
+- Add a static route to the AMF machine if it is running on a different network or interface: ip route add <AMF_IP> via <gNB_IP> dev <interface>
+
+### ROOT CAUSE ANALYSIS REQUIREMENTS
+- Always check **network connectivity first** for 5G issues.  
+- Distinguish between **network vs. code logic** failures.  
+- Trace error flow from **log messages** to code path.  
+- **CRITICAL**: Look for **incomplete conditional logic patterns**:
+  * Hardcoded constant comparisons (e.g., `== 3`) instead of runtime field checks
+  * Missing `else` branches in multi-case scenarios (enum handling, protocol states)
+  * Unvalidated assumptions about input data structure/presence
+- If branches or identity handling are clearly missing or malformed, **reconstruct the expected flow** using:
+  * 3GPP specifications
+  * Variable names and surrounding code context
+  * Typical OpenAirInterface gNB patterns  
+- Do **NOT** require the original code to be supplied—derive expected behavior from specs and context.
+
+### CODE PATCH RULES
+- **CRITICAL**: Preserve existing correct logic; **insert or adjust only the minimal lines** necessary to restore intended behavior.  
+- Use **exact surrounding code lines or variable names** for placement (`after line containing "..."`).  
+- **CRITICAL**: Look for **hardcoded constant comparisons** (like `== 3`, `== 1`) and replace with **proper dynamic checks** using available variables/fields.
+- **CRITICAL**: If the function has incomplete conditional logic (missing `else` branches, unhandled enum cases), **reconstruct the missing branches** instead of adding trivial guards.  
+- **CRITICAL**: For segmentation faults, trace the **actual cause** (uninitialized variables, missing validation, incomplete state handling) rather than adding generic null checks.
+- Never invent functions or config parameters that don't exist.  
+- Validate variable scope before referencing them.  
+- **AVOID GENERIC NULL CHECKS**: If a segmentation fault is due to skipped handling of input cases, **add the missing handling**, not just a pointer check.
+
+### COMMON SEGMENTATION FAULT PATTERNS TO LOOK FOR
+- **Hardcoded enum comparisons**: `if (ENUM_CONSTANT == hardcoded_value)` → should be `if (data->field == ENUM_CONSTANT)`
+- **CRITICAL: Missing else/default cases**: Incomplete switch/if-else chains for enum/state handling
+- **MANDATORY: Always add else branch to any if-else if chain that lacks final else clause**
+- **Uninitialized pointers**: Variables that remain NULL when certain conditions aren't met
+- **Protocol state violations**: Functions proceeding without validating required protocol fields
+- **Array/structure access**: Accessing fields without checking structure validity first
+
+### 🚨 CRITICAL REQUIREMENT: MISSING ELSE BRANCHES 🚨
+**🚨 READ THIS ENTIRE SECTION CAREFULLY - IT IS CRITICAL FOR PREVENTING SEGMENTATION FAULTS 🚨**
+
+**EXAMINE THE PROVIDED CODE CAREFULLY**: Look for incomplete if-else if chains and add the missing else clause:
+
+**⚠️ MOST COMMON ERROR: Calling a function with a NULL pointer in the else block**
+**⚠️ IF YOU ADD AN ELSE BLOCK AND CALL A FUNCTION THAT USES A POINTER VARIABLE, YOU MUST INITIALIZE THAT VARIABLE FIRST!**
+**⚠️ DO NOT CALL `error_function(context, variable)` IF `variable` IS NULL - INITIALIZE IT FIRST!**
+
+**PATTERN TO LOOK FOR:**
+1. Code that starts with: `SomeType *variable = NULL;` (a pointer variable initialized to NULL)
+2. Followed by: `if (condition1) { ... variable = initialize_function(...); ... } else if (condition2) { ... variable = initialize_function(...); ... }`
+3. The if-else if chain ends with just a closing brace `}` (NO final `else` block)
+4. After the closing brace, the code continues and uses `variable` (which could still be NULL if neither condition matched)
+
+**EXAMPLE OF THE PROBLEM PATTERN:**
+```c
+SomeType *variable = NULL;
+if (condition1) {
+  variable = initialize_function(...);
+} else if (condition2) {
+  variable = initialize_function(...);
+  // some other assignments
+}
+// ⚠️ PROBLEM: If neither condition matches, variable is still NULL!
+// Code continues here and might use variable, causing NULL pointer dereference
+if (some_other_condition) {
+  function_that_uses_variable(context, variable); // ⚠️ CRASH if variable is NULL!
+}
+```
+
+**REQUIRED FIX:**
+- For missing else clauses, you MUST create a SEPARATE patch that adds an `else` block:
+  * `"original_code": "FIND THE ACTUAL LAST STATEMENT in the else if block (the last assignment or statement before the closing brace) + closing brace }"` 
+  * `"patched_code": "SAME ENDING LINES + } else {\n    // STEP 1: Initialize the variable that was NULL (MANDATORY)\n    // STEP 2: Then call the error handling function\n}"`
+  * `"line_numbers": "after the closing brace of the else if block"`
+  * **🚨 MANDATORY CHECKLIST FOR ELSE BLOCK (VERIFY EACH STEP):**
+    
+    **BEFORE writing the else block, answer these questions:**
+    1. What variable is initialized in the `if` block? (e.g., `ue_context_p`)
+    2. What function is called to initialize it in the `if` block? (e.g., `rrc_gNB_create_ue_context`)
+    3. What parameters are passed to that function in the `if` block? (e.g., `assoc_id, msg->crnti, rrc, random_value, msg->gNB_DU_ue_id`)
+    4. What function is called to initialize it in the `else if` block? (should be the SAME function)
+    5. What parameters are passed to that function in the `else if` block?
+    6. What function is called later that uses this variable? (e.g., `rrc_gNB_generate_RRCReject`)
+    
+    **NOW write the else block following this EXACT structure:**
+    ```c
+    } else {
+      // STEP 1: Initialize the variable using the SAME function from if/else if blocks
+      // Extract or generate any required parameters
+      // Example: uint64_t random_value = 0;
+      //          memcpy(...); // if needed to extract from input
+      variable = initialization_function(param1, param2, param3, param4, param5);
+      
+      // STEP 2: Log the error (optional but recommended)
+      LOG_E(..., "Error message...");
+      
+      // STEP 3: Call the error handling function that uses the variable
+      error_handling_function(context, variable);
+      return;
+    }
+    ```
+    
+    **VERIFICATION CHECKLIST (your else block MUST have):**
+    - [ ] The initialization function call (same as in if/else if blocks)
+    - [ ] The variable assignment (e.g., `variable = initialization_function(...)`)
+    - [ ] The error handling function call AFTER initialization
+    - [ ] NO direct calls to functions that use the variable BEFORE initialization
+    
+    **COMMON MISTAKES TO AVOID:**
+    - ❌ Calling `error_handling_function(context, variable)` when `variable` is still NULL
+    - ❌ Forgetting to call the initialization function
+    - ❌ Calling the initialization function AFTER the error handling function
+    - ✅ CORRECT: Initialize first, THEN call error handling function
+
+- **🚨 CRITICAL FOR NULL POINTER FIXES**: If you need to call a function that requires a non-NULL pointer, you MUST first initialize that pointer. 
+  - **MANDATORY RULE**: Before calling any function that dereferences a pointer parameter, check if that pointer could be NULL. If it could be NULL (e.g., because it was only initialized in certain branches of an if-else if chain), you MUST initialize it first.
+  - **REQUIRED PATTERN**: 
+    1. Identify what function calls appear later in the code that use the variable that might be NULL
+    2. Look at the call graph context and code snippet to find the appropriate initialization function (check what functions are called in the `if`/`else if` blocks to initialize the variable)
+    3. In the `else` block, call the initialization function first, then call the function that uses the variable
+  - **NEVER** call a function with a NULL or uninitialized pointer parameter - this will cause a segmentation fault.
+- **IMPORTANT**: If the code snippet already contains function calls for initialization, you MUST use them in your patch when they are needed to prevent NULL pointer dereferences. Check the provided code snippet and call graph context to see what functions are already being used in similar contexts.
+
+### CONFIGURATION VALIDATION
+- **CRITICAL**: ONLY suggest patches when parameter exists in deployment context AND values differ
+- Use actual config names and values from candidate configs.  
+- Set new_value to EXACT deployment context value (no placeholders, no "improvements")
+- DO NOT suggest patches for parameters not in deployment context
+- DO NOT suggest no-op patches (same value).
+
+
+### RESPONSE FORMAT
+Respond with **ONLY valid JSON** in this EXACT structure:
+**🚨 CRITICAL: Do NOT use JavaScript comments (//) in JSON - they are not valid JSON syntax!**
+
+{
+    "suspected_functions": ["function1", "function2"],
+    "suspected_configs": ["config1", "config2"], 
+    "reason": "Detailed root cause explanation",
+    "config_fix": "Specific configuration corrections with exact values",
+    "code_patches": [
+#         {
+#             "function_name": "function_name",
+#             "file_path": "path/to/file.c",
+#             "patch_type": "targeted_insertion_or_adjustment",
+#             "original_code": "// Line(s) around the issue",
+#             "patched_code": "// The exact corrected code snippet",
+#             "line_numbers": "EXACT line numbers (e.g., '120-125') or specific context (e.g., 'after line containing \"amf_desc_p = ngap_gNB_get_AMF\"')",
+#             "description": "Why this correction resolves the error"
+#         }
+#     ],
+#     "config_patches": [
+#         {
+#             "config_name": "parameter_name",
+#             "file_path": "path/to/config.conf",
+#             "patch_type": "set_value",
+#             "current_value": "current_value",
+#             "new_value": "corrected_value",
+#             "line_number": "approximate_line_or_section",
+#             "relevance_score": "confidence_score_from_analysis",
+#             "description": "Why this config change resolves the error"
+#         }
+#     ],
+#     "root_cause_analysis": "Deep technical analysis of why this error occurs",
+#     "investigation_steps": ["step1", "step2", "step3"]
+# }
+
+"Specifically use this context from the 3GPP specifications to understand the expected behavior and mandatory validations, to give the best fix suggestions."
+- No 3GPP specification context found (embeddings file missing)
+
+### ADDITIONAL HINTS
+- **Protocol Compliance**: Use 3GPP specifications and RFCs to understand expected behavior and mandatory validations.
+- **Network Connectivity**: For 5G/LTE issues, verify IP reachability, routing, and port accessibility between components.
+- **State Validation**: Ensure all possible input states/cases are handled with appropriate error responses.
+- **Container Networking**: If using Docker/containers, add static routes or network configuration as needed.
+
+### GOOD PATCH EXAMPLES
+- **CRITICAL**: For missing else clauses - EXAMPLE PATCH (shows ACTUAL CLOSING LINES):
+  ```
+  {
+    "original_code": "    UE->Initialue_identity_5g_s_TMSI.presence = true;\n    UE->ng_5G_S_TMSI_Part1 = s_tmsi_part1;\n  }",
+    "patched_code": "    UE->Initialue_identity_5g_s_TMSI.presence = true;\n    UE->ng_5G_S_TMSI_Part1 = s_tmsi_part1;\n  } else {\n    LOG_E(NR_RRC, \"Unhandled ue_Identity.present value: %d\", rrcSetupRequest->ue_Identity.present);\n    return;\n  }",
+    "line_numbers": "replace the section ending with UE->ng_5G_S_TMSI_Part1 = s_tmsi_part1; }"
+  }
+  ```
+  **KEY**: Find the ACTUAL LAST assignment in the else if block (like UE->ng_5G_S_TMSI_Part1 = s_tmsi_part1;) + closing brace
+
+- **🚨 CRITICAL EXAMPLE FOR NULL POINTER FIXES**: When adding an `else` block that calls a function requiring a non-NULL pointer, follow this pattern:
+  * **Step 1**: Identify the function call that needs a non-NULL pointer (e.g., `rrc_gNB_generate_RRCReject(rrc, ue_context_p)`)
+  * **Step 2**: Check the call graph context and code snippet to find the function that creates this pointer (e.g., `rrc_gNB_create_ue_context` appears in call graph and is used in other branches)
+  * **Step 3**: Extract any required parameters from input data (e.g., extract `random_value` from `rrcSetupRequest->ue_Identity.choice.randomValue` if needed)
+  * **Step 4**: Call the initialization function first (e.g., `ue_context_p = rrc_gNB_create_ue_context(...)`)
+  * **Step 5**: Then call the function that requires the pointer (e.g., `rrc_gNB_generate_RRCReject(rrc, ue_context_p)`)
+  * **MANDATORY**: You MUST initialize pointers before using them in function calls. Check the call graph and code snippet to identify the correct initialization function.
+- Replace hardcoded comparisons: `if (enum_constant == 3)` → `if (variable->field == enum_constant)`
+- Adding **routing checks** or static route commands for Dockerized AMF  
+
+### BAD PATCH EXAMPLES
+- Only adding generic NULL checks like `if (ptr == NULL) { return; }` without addressing the root cause.
+- Rewriting entire functions when only specific lines need adjustment.
+- Using invented APIs, functions, or configuration parameters.
+- Keeping hardcoded constants instead of using proper runtime checks.
+- Adding defensive code without understanding why the error occurs.  
+
+
+
+================================================================================
+USER PROMPT (CONTEXT)
+================================================================================
+# Error Fix Analysis Context
+==================================================
+
+## 🔥 ERROR DETAILS
+**Original Error:** NGAP/CU failure observed in cu_ngap_failure.log; analyze this log for root cause and fixes
+
+## 🔗 CALL GRAPH CONTEXT
+**Call Flow Analysis:**
+📥 Upstream: rrc_gNB_generate_RRCReject → rrc_gNB_process_RRCReestablishmentComplete → rrc_handle_RRCSetupRequest → **rrc_gNB_generate_RRCReject**
+📤 Downstream: **rrc_gNB_generate_RRCReject** → cu_get_f1_ue_data → dl_rrc_message_transfer → do_RRCReject → rrc_gNB_generate_RRCReject → rrc_remove_ue
+📥 Upstream: decode_E1_bearer_context_mod_failure → e1apCUCP_handle_BEARER_CONTEXT_MODIFICATION_FAILURE → test_bearer_context_modification_failure → **decode_E1_bearer_context_mod_failure**
+📤 Downstream: **decode_E1_bearer_context_mod_failure** → PRINT_ERROR → decode_E1_bearer_context_mod_failure → e1_decode_cause_ie
+📥 Upstream: decode_E1_bearer_context_setup_failure → e1apCUCP_handle_BEARER_CONTEXT_SETUP_FAILURE → test_bearer_context_setup_failure → **decode_E1_bearer_context_setup_failure**
+📤 Downstream: **decode_E1_bearer_context_setup_failure** → decode_E1_bearer_context_setup_failure → e1_decode_cause_ie → sizeof
+📥 Upstream: e1apCUUP_send_BEARER_CONTEXT_MODIFICATION_FAILURE → encode_E1_bearer_context_mod_failure → test_bearer_context_modification_failure → **encode_E1_bearer_context_mod_failure**
+📤 Downstream: **encode_E1_bearer_context_mod_failure** → e1_encode_cause_ie → encode_E1_bearer_context_mod_failure → sizeof
+📥 Upstream: e1apCUUP_send_BEARER_CONTEXT_SETUP_FAILURE → encode_E1_bearer_context_setup_failure → test_bearer_context_setup_failure → **encode_E1_bearer_context_setup_failure**
+📤 Downstream: **encode_E1_bearer_context_setup_failure** → e1_encode_cause_ie → encode_E1_bearer_context_setup_failure → sizeof
+
+**📚 Function Definitions (Downstream Functions):**
+
+**du_add_f1_ue_data** (from openairinterface5g-develop\openair2\F1AP\f1ap_ids.c):
+```c
+bool du_add_f1_ue_data(uint32_t ue_id, const f1_ue_data_t *data)
+{
+```
+
+**du_exists_f1_ue_data** (from openairinterface5g-develop\openair2\F1AP\f1ap_ids.c):
+```c
+bool du_exists_f1_ue_data(uint32_t ue_id)
+{
+```
+
+**find_ra_UE** (from openairinterface5g-develop\openair2\LAYER2\NR_MAC_gNB\gNB_scheduler_primitives.c):
+```c
+NR_UE_info_t *find_ra_UE(NR_UEs_t *UEs, rnti_t rntiP)
+{
+```
+
+**get_f1_gtp_instance** (from openairinterface5g-develop\openair2\LAYER2\NR_MAC_gNB\mac_rrc_dl_handler.c):
+```c
+static instance_t get_f1_gtp_instance(void)
+{
+```
+
+**gtpv1u_update_ue_id** (from openairinterface5g-develop\openair3\ocp-gtpu\gtp_itf.cpp):
+```c
+int gtpv1u_update_ue_id(const instance_t instanceP, ue_id_t old_ue_id, ue_id_t new_ue_id)
+{
+```
+
+**mac_remove_nr_ue** (from openairinterface5g-develop\openair2\LAYER2\NR_MAC_gNB\gNB_scheduler_primitives.c):
+```c
+void mac_remove_nr_ue(gNB_MAC_INST *nr_mac, rnti_t rnti)
+{
+```
+
+**nr_mac_add_lcid** (from openairinterface5g-develop\openair2\LAYER2\NR_MAC_gNB\gNB_scheduler_primitives.c):
+```c
+bool nr_mac_add_lcid(NR_UE_sched_ctrl_t* sched_ctrl, const nr_lc_config_t *c)
+{
+```
+
+**nr_pdcp_remove_UE** (from openairinterface5g-develop\openair2\LAYER2\nr_pdcp\nr_pdcp_oai_api.c):
+```c
+void nr_pdcp_remove_UE(ue_id_t ue_id)
+{
+```
+
+**nr_rlc_reconfigure_entity** (from openairinterface5g-develop\openair2\LAYER2\nr_rlc\nr_rlc_oai_api.c):
+```c
+void nr_rlc_reconfigure_entity(int ue_id, int lc_id, NR_RLC_Config_t *rlc_Config)
+{
+```
+
+**rrc_delete_ue_data** (from openairinterface5g-develop\openair2\RRC\NR\rrc_gNB.c):
+```c
+static void rrc_delete_ue_data(gNB_RRC_UE_t *UE)
+{
+```
+
+**rrc_gNB_remove_ue_context** (from openairinterface5g-develop\openair2\RRC\NR\rrc_gNB_UE_context.c):
+```c
+void rrc_gNB_remove_ue_context(gNB_RRC_INST *rrc_instance_pP, rrc_gNB_ue_context_t *ue_context_pP)
+//------------------------------------------------------------------------------
+{
+```
+
+## 🔧 SUSPECTED FUNCTIONS
+
+### Function 1: rrc_gNB_generate_RRCReject
+**File:** openair2/RRC/NR/rrc_gNB.c
+**Relevance Score:** 0.70
+**Reason:** CRITICAL RRC REJECTION FUNCTION: This function is essential for handling RRC setup failures. When an RRC setup request fails or encounters errors, this function generates and sends an RRCReject message to the UE, properly handling the rejection scenario. For segmentation faults in rrc_handle_RRCSetupRequest, this function should be called in error handling paths to gracefully reject the connection instead of crashing.
+
+### Function 2: force_ul_failure
+**File:** common/utils/telnetsrv/telnetsrv_ci.c
+**Relevance Score:** 0.00
+**Reason:** No code or context to assess relevance to NGAP/CU failure
+
+### Function 3: encode_E1_bearer_context_setup_failure
+**File:** openair2/E1AP/lib/e1ap_bearer_context_management.c
+**Relevance Score:** 0.00
+**Reason:** No code or context to assess relevance to NGAP/CU failure
+
+### Function 4: decode_E1_bearer_context_setup_failure
+**File:** openair2/E1AP/lib/e1ap_bearer_context_management.c
+**Relevance Score:** 0.00
+**Reason:** No code or context to assess relevance to NGAP/CU failure
+
+### Function 5: cp_bearer_context_setup_failure
+**File:** openair2/E1AP/lib/e1ap_bearer_context_management.c
+**Relevance Score:** 0.00
+**Reason:** No code or context to assess relevance to NGAP/CU failure
+
+### Function 6: eq_bearer_context_setup_failure
+**File:** openair2/E1AP/lib/e1ap_bearer_context_management.c
+**Relevance Score:** 0.00
+**Reason:** No code or context to assess relevance to NGAP/CU failure
+
+### Function 7: free_e1_bearer_context_setup_failure
+**File:** openair2/E1AP/lib/e1ap_bearer_context_management.c
+**Relevance Score:** 0.00
+**Reason:** No code or context to assess relevance to NGAP/CU failure
+
+### Function 8: encode_E1_bearer_context_mod_failure
+**File:** openair2/E1AP/lib/e1ap_bearer_context_management.c
+**Relevance Score:** 0.00
+**Reason:** No code or context to assess relevance to NGAP/CU failure
+
+### Function 9: decode_E1_bearer_context_mod_failure
+**File:** openair2/E1AP/lib/e1ap_bearer_context_management.c
+**Relevance Score:** 0.00
+**Reason:** No code or context to assess relevance to NGAP/CU failure
+
+### Function 10: cp_E1_bearer_context_mod_failure
+**File:** openair2/E1AP/lib/e1ap_bearer_context_management.c
+**Relevance Score:** 0.00
+**Reason:** No code or context to assess relevance to NGAP/CU failure
+
+### Function 11: e1_decode_cause_ie
+**File:** openairinterface5g-develop\openair2\E1AP\lib\e1ap_lib_common.c
+**Relevance Score:** 0.70
+**Reason:** Downstream function called by candidate functions. Important for understanding context initialization and error handling.
+**Code:**
+```c
+e1ap_cause_t e1_decode_cause_ie(const E1AP_Cause_t *ie)
+{
+  e1ap_cause_t cause;
+  // Decode the 'choice' field based on the 'present' value
+  switch (ie->present) {
+    case E1AP_Cause_PR_radioNetwork:
+      cause.value = ie->choice.radioNetwork;
+      cause.type = E1AP_CAUSE_RADIO_NETWORK;
+      break;
+    case E1AP_Cause_PR_transport:
+      cause.value = ie->choice.transport;
+      cause.type = E1AP_CAUSE_TRANSPORT;
+      break;
+    case E1AP_Cause_PR_protocol:
+      cause.value = ie->choice.protocol;
+      cause.type = E1AP_CAUSE_PROTOCOL;
+      break;
+    case E1AP_Cause_PR_misc:
+      cause.value = ie->choice.misc;
+      cause.type = E1AP_CAUSE_MISC;
+      break;
+    default:
+      cause.type = E1AP_CAUSE_NOTHING;
+      PRINT_ERROR("decode_e1ap_cause_ie: no cause value provided\n");
+      break;
+  }
+  return cause;
+}
+```
+
+### Function 12: PRINT_ERROR
+**File:** openairinterface5g-develop\openair2\E1AP\lib\e1ap_lib_common.h
+**Relevance Score:** 0.70
+**Reason:** Downstream function called by candidate functions. Important for understanding context initialization and error handling.
+**Code:**
+```c
+p_messages_types.h"
+#ifdef E1AP_LOG_ERRORS
+#define PRINT_ERROR(fmt, ...) fprintf(stderr, "[%s] " fmt, __func__, ##__VA_ARGS__)
+#else
+#define PRINT_ERROR(...) 
+#endif
+#define CHECK_E1AP_DEC(exp) \
+ do { \
+ if (!(exp)) { \
+ PRINT_ERROR("Failed executing " #exp " in %s() line %d\n", __func__, __LINE__); \
+ return false; \
+ } \
+ }
+```
+
+### Function 13: dl_rrc_message_transfer
+**File:** openairinterface5g-develop\openair2\LAYER2\NR_MAC_gNB\mac_rrc_dl_handler.c
+**Relevance Score:** 0.70
+**Reason:** Downstream function called by candidate functions. Important for understanding context initialization and error handling.
+**Code:**
+```c
+void dl_rrc_message_transfer(const f1ap_dl_rrc_message_t *dl_rrc)
+{
+  LOG_D(NR_MAC,
+        "DL RRC Message Transfer with %d bytes for RNTI %04x SRB %d\n",
+        dl_rrc->rrc_container_length,
+        dl_rrc->gNB_DU_ue_id,
+        dl_rrc->srb_id);
+  gNB_MAC_INST *mac = RC.nrmac[0];
+  pthread_mutex_lock(&mac->sched_lock);
+  /* check first that the scheduler knows such UE */
+  NR_UE_info_t *UE = find_nr_UE(&mac->UE_info, dl_rrc->gNB_DU_ue_id);
+  UE = UE ? UE : find_ra_UE(&mac->UE_info, dl_rrc->gNB_DU_ue_id);
+  if (UE == NULL) {
+    LOG_E(MAC, "ERROR: unknown UE with RNTI %04x, ignoring DL RRC Message Transfer\n", dl_rrc->gNB_DU_ue_id);
+    pthread_mutex_unlock(&mac->sched_lock);
+    return;
+  }
+  pthread_mutex_unlock(&mac->sched_lock);
+  if (!du_exists_f1_ue_data(dl_rrc->gNB_DU_ue_id)) {
+    LOG_D(NR_MAC, "No CU UE ID stored for UE RNTI %04x, adding CU UE ID %d\n", dl_rrc->gNB_DU_ue_id, dl_rrc->gNB_CU_ue_id);
+    f1_ue_data_t new_ue_data = {.secondary_ue = dl_rrc->gNB_CU_ue_id};
+    bool success = du_add_f1_ue_data(dl_rrc->gNB_DU_ue_id, &new_ue_data);
+    DevAssert(success);
+  }
+  /* if we get the old-gNB-DU-UE-ID, this means there is a reestablishment
+   * ongoing. */
+  if (dl_rrc->old_gNB_DU_ue_id != NULL) {
+    AssertFatal(*dl_rrc->old_gNB_DU_ue_id != dl_rrc->gNB_DU_ue_id,
+                "logic bug: current and old gNB DU UE ID cannot be the same\n");
+    /* 38.401 says: "Find UE context based on old gNB-DU UE F1AP ID, replace
+     * old C-RNTI/PCI with new C-RNTI/PCI". Below, we do the inverse: we keep
+     * the new UE context (with new C-RNTI), but set up everything to reuse the
+     * old config. */
+    NR_UE_info_t *oldUE = find_nr_UE(&mac->UE_info, *dl_rrc->old_gNB_DU_ue_id);
+    AssertFatal(oldUE, "CU claims we should know UE %04x, but we don't\n", *dl_rrc->old_gNB_DU_ue_id);
+    pthread_mutex_lock(&mac->sched_lock);
+    uid_t temp_uid = UE->uid;
+    UE->uid = oldUE->uid;
+    oldUE->uid = temp_uid;
+    for (int i = 1; i < seq_arr_size(&oldUE->UE_sched_ctrl.lc_config); ++i) {
+      const nr_lc_config_t *c = seq_arr_at(&oldUE->UE_sched_ctrl.lc_config, i);
+      nr_lc_config_t new = *c;
+      new.suspended = true;
+      nr_mac_add_lcid(&UE->UE_sched_ctrl, &new);
+    }
+    ASN_STRUCT_FREE(asn_DEF_NR_CellGroupConfig, UE->CellGroup);
+    UE->CellGroup = oldUE->CellGroup;
+    oldUE->CellGroup = NULL;
+    UE->mac_stats = oldUE->mac_stats;
+    /* 38.331 5.3.7.2 says that the UE releases the spCellConfig, so we drop it
+     * from the current configuration. It will be reapplied when the
+     * reconfiguration has succeeded (indicated by the CU) */
+    UE->reconfigSpCellConfig = UE->CellGroup->spCellConfig;
+    UE->CellGroup->spCellConfig = NULL;
+    mac_remove_nr_ue(mac, *dl_rrc->old_gNB_DU_ue_id);
+    pthread_mutex_unlock(&mac->sched_lock);
+    nr_rlc_remove_ue(dl_rrc->gNB_DU_ue_id);
+    nr_rlc_update_id(*dl_rrc->old_gNB_DU_ue_id, dl_rrc->gNB_DU_ue_id);
+    /* 38.331 clause 5.3.7.4: apply the specified configuration defined in 9.2.1 for SRB1 */
+    nr_rlc_reconfigure_entity(dl_rrc->gNB_DU_ue_id, 1, NULL);
+    instance_t f1inst = get_f1_gtp_instance();
+    if (f1inst >= 0) // we actually use F1-U
+      gtpv1u_update_ue_id(f1inst, *dl_rrc->old_gNB_DU_ue_id, dl_rrc->gNB_DU_ue_id);
+  }
+  /* the DU ue id is the RNTI */
+  nr_rlc_srb_recv_sdu(dl_rrc->gNB_DU_ue_id, dl_rrc->srb_id, dl_rrc->rrc_container, dl_rrc->rrc_container_length);
+}
+```
+
+### Function 14: nr_mac_trigger_ul_failure
+**File:** openairinterface5g-develop\openair2\LAYER2\NR_MAC_gNB\gNB_scheduler_primitives.c
+**Relevance Score:** 0.70
+**Reason:** Downstream function called by candidate functions. Important for understanding context initialization and error handling.
+**Code:**
+```c
+void nr_mac_trigger_ul_failure(NR_UE_sched_ctrl_t *sched_ctrl, NR_SubcarrierSpacing_t subcarrier_spacing)
+{
+  if (sched_ctrl->ul_failure) {
+    /* already running */
+    return;
+  }
+  sched_ctrl->ul_failure = true;
+  // UL_FAILURE_TIMEOUT ms till triggering release request
+  // UL_FAILURE_REQ_GRACE ms till automatically released after request
+  sched_ctrl->ul_failure_timer = (UL_FAILURE_REQ_GRACE + UL_FAILURE_TIMEOUT) << subcarrier_spacing;
+}
+```
+
+### Function 15: rrc_remove_ue
+**File:** openairinterface5g-develop\openair2\RRC\NR\rrc_gNB.c
+**Relevance Score:** 0.70
+**Reason:** Downstream function called by candidate functions. Important for understanding context initialization and error handling.
+**Code:**
+```c
+void rrc_remove_ue(gNB_RRC_INST *rrc, rrc_gNB_ue_context_t *ue_context_p)
+{
+  gNB_RRC_UE_t *UE = &ue_context_p->ue_context;
+  /* we call nr_pdcp_remove_UE() in the handler of E1 bearer release, but if we
+   * are in E1, we also need to free the UE in the CU-CP, so call it twice to
+   * cover all cases */
+  nr_pdcp_remove_UE(UE->rrc_ue_id);
+  LOG_I(NR_RRC, "removed UE CU UE ID %u/RNTI %04x \n", UE->rrc_ue_id, UE->rnti);
+  rrc_delete_ue_data(UE);
+  rrc_gNB_remove_ue_context(rrc, ue_context_p);
+}
+```
+
+### Function 16: do_RRCReject
+**File:** openairinterface5g-develop\openair2\RRC\NR\MESSAGES\asn1_msg.c
+**Relevance Score:** 0.70
+**Reason:** Downstream function called by candidate functions. Important for understanding context initialization and error handling.
+**Code:**
+```c
+int do_RRCReject(uint8_t *const buffer)
+{
+    asn_enc_rval_t                                   enc_rval;
+    NR_DL_CCCH_Message_t                             dl_ccch_msg;
+    NR_RRCReject_t                                   *rrcReject;
+    memset((void *)&dl_ccch_msg, 0, sizeof(NR_DL_CCCH_Message_t));
+    dl_ccch_msg.message.present = NR_DL_CCCH_MessageType_PR_c1;
+    dl_ccch_msg.message.choice.c1          = CALLOC(1, sizeof(struct NR_DL_CCCH_MessageType__c1));
+    dl_ccch_msg.message.choice.c1->present = NR_DL_CCCH_MessageType__c1_PR_rrcReject;
+    dl_ccch_msg.message.choice.c1->choice.rrcReject = CALLOC(1,sizeof(NR_RRCReject_t));
+    rrcReject = dl_ccch_msg.message.choice.c1->choice.rrcReject;
+    rrcReject->criticalExtensions.choice.rrcReject           = CALLOC(1, sizeof(struct NR_RRCReject_IEs));
+    rrcReject->criticalExtensions.choice.rrcReject->waitTime = CALLOC(1, sizeof(NR_RejectWaitTime_t));
+    *rrcReject->criticalExtensions.choice.rrcReject->waitTime = 10;
+    rrcReject->criticalExtensions.present = NR_RRCReject__criticalExtensions_PR_rrcReject;
+    if ( LOG_DEBUGFLAG(DEBUG_ASN1) ) {
+        xer_fprint(stdout, &asn_DEF_NR_DL_CCCH_Message, (void *)&dl_ccch_msg);
+    }
+    enc_rval = uper_encode_to_buffer(&asn_DEF_NR_DL_CCCH_Message,
+                                    NULL,
+                                    (void *)&dl_ccch_msg,
+                                    buffer,
+                                    100);
+    AssertFatal(enc_rval.encoded > 0, "ASN1 message encoding failed (%s, %lu)!\n",
+                enc_rval.failed_type->name, enc_rval.encoded);
+    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_NR_DL_CCCH_Message, &dl_ccch_msg);
+    LOG_D(NR_RRC,"RRCReject Encoded %zd bits (%zd bytes)\n",
+            enc_rval.encoded,(enc_rval.encoded+7)/8);
+    return (enc_rval.encoded + 7) / 8;
+}
+```
+
+### Function 17: e1_encode_cause_ie
+**File:** openairinterface5g-develop\openair2\E1AP\lib\e1ap_lib_common.c
+**Relevance Score:** 0.70
+**Reason:** Downstream function called by candidate functions. Important for understanding context initialization and error handling.
+**Code:**
+```c
+E1AP_Cause_t e1_encode_cause_ie(const e1ap_cause_t *cause)
+{
+  E1AP_Cause_t ie;
+  switch (cause->type) {
+    case E1AP_CAUSE_RADIO_NETWORK:
+      ie.present = E1AP_Cause_PR_radioNetwork;
+      ie.choice.radioNetwork = cause->value;
+      break;
+    case E1AP_CAUSE_TRANSPORT:
+      ie.present = E1AP_Cause_PR_transport;
+      ie.choice.transport = cause->value;
+      break;
+    case E1AP_CAUSE_PROTOCOL:
+      ie.present = E1AP_Cause_PR_protocol;
+      ie.choice.protocol = cause->value;
+      break;
+    case E1AP_CAUSE_MISC:
+      ie.present = E1AP_Cause_PR_misc;
+      ie.choice.misc = cause->value;
+      break;
+    default:
+      ie.present = E1AP_Cause_PR_NOTHING;
+      PRINT_ERROR("encode_e1ap_cause_ie: no cause value provided\n");
+      break;
+  }
+  return ie;
+}
+```
+
+### Function 18: ERROR_MSG_RET
+**File:** openairinterface5g-develop\common\utils\telnetsrv\telnetsrv_bearer.c
+**Relevance Score:** 0.70
+**Reason:** Downstream function called by candidate functions. Important for understanding context initialization and error handling.
+**Code:**
+```c
+#include <sys/types.h>
+#include <stdio.h>
+#include <unistd.h>
+#include <errno.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdarg.h>
+#include "openair2/RRC/NR/rrc_gNB_UE_context.h"
+#define TELNETSERVERCODE
+#include "telnetsrv.h"
+#define ERROR_MSG_RET(mSG, aRGS...) do { prnt(mSG, ##aRGS); return 1; }
+```
+
+### Function 19: find_nr_UE
+**File:** openairinterface5g-develop\openair2\LAYER2\NR_MAC_gNB\gNB_scheduler_primitives.c
+**Relevance Score:** 0.70
+**Reason:** Downstream function called by candidate functions. Important for understanding context initialization and error handling.
+**Code:**
+```c
+NR_UE_info_t *find_nr_UE(NR_UEs_t *UEs, rnti_t rntiP)
+{
+  UE_iterator(UEs->connected_ue_list, UE) {
+    if (UE->rnti == rntiP) {
+      LOG_D(NR_MAC,"Search and found rnti: %04x\n", rntiP);
+      return UE;
+    }
+  }
+  return NULL;
+}
+```
+
+### Function 20: cu_get_f1_ue_data
+**File:** openairinterface5g-develop\openair2\F1AP\f1ap_ids.c
+**Relevance Score:** 0.70
+**Reason:** Downstream function called by candidate functions. Important for understanding context initialization and error handling.
+**Code:**
+```c
+f1_ue_data_t cu_get_f1_ue_data(uint32_t ue_id)
+{
+  pthread_mutex_lock(&cu2du_mutex);
+  DevAssert(cu2du_ue_mapping != NULL);
+  f1_ue_data_t ued = *get_hashtable_data(cu2du_ue_mapping, ue_id);
+  pthread_mutex_unlock(&cu2du_mutex);
+  return ued;
+}
+```
+
+### Function 21: fetch_rnti
+**File:** openairinterface5g-develop\common\utils\telnetsrv\telnetsrv_ci.c
+**Relevance Score:** 0.70
+**Reason:** Downstream function called by candidate functions. Important for understanding context initialization and error handling.
+**Code:**
+```c
+int fetch_rnti(char *buf, telnet_printfunc_t prnt)
+{
+  int rnti = -1;
+  if (!buf) {
+    rnti = get_single_ue_rnti_mac();
+    if (rnti < 1)
+      ERROR_MSG_RET("no UE found\n");
+  } else {
+    rnti = strtol(buf, NULL, 16);
+    if (rnti < 1 || rnti >= 0xfffe)
+      ERROR_MSG_RET("RNTI needs to be [1,0xfffe]\n");
+  }
+  return rnti;
+}
+```
+
+### Function 22: sizeof
+**File:** openairinterface5g-develop\common\utils\T\T.h
+**Relevance Score:** 0.70
+**Reason:** Downstream function called by candidate functions. Important for understanding context initialization and error handling.
+**Code:**
+```c
+T_LOCAL_size += sizeof(int); \
+  } while (0)
+#define T_PUT_ulong(argnum, val) \
+  do { \
+    unsigned long T_PUT_var = (val); \
+    T_CHECK_SIZE(sizeof(unsigned long), argnum); \
+    memcpy(T_LOCAL_buf + T_LOCAL_size, &T_PUT_var, sizeof(unsigned long)); \
+    T_LOCAL_size += sizeof(unsigned long); \
+  }
+```
+
+## ⚙️ SUSPECTED CONFIGURATIONS
+No suspected configurations identified.
+
+## 📋 RUNTIME LOG CONTEXT
+**Key log messages from the actual runtime:**
+   1. [NGAP]   No AMF is associated to the gNB
+   2. [ITTI]   Starting itti queue: TASK_NGAP as task 17
+   3. [ITTI]   Starting itti queue: TASK_SCTP as task 24
+   4. [ITTI]   Created Posix thread TASK_SCTP
+   5. [NGAP]   Starting NGAP layer
+   6. [ITTI]   Created Posix thread TASK_NGAP
+   7. [GNB_APP]   F1AP: gNB_CU_id[0] 0
+   8. [GNB_APP]   F1AP: gNB_CU_name[0] gNB-Eurecom-CU
+   9. [LIBCONFIG] gNBs.[0].SCTP: 2/2 parameters successfully set, (0 to default value)
+   10. [LIBCONFIG] gNBs.[0].SCTP: 2/2 parameters successfully set, (0 to default [GNB_APP]   default drx 0
+
+## 🔍 DEBUG VALUES FROM LOG
+**Critical runtime values extracted from logs:**
+   • **UE_IDs**: a (from: [ITTI]   Starting itti queue: TASK_PHY_UE as task 30...)
+   • **RNTI_values**: 0 (from: [NR_RRC]   [FRAME 00000][gNB][MOD 00][RNTI 0] Init......)
+
+## ⚠️ ERROR SEQUENCES WITH CONTEXT
+**Error occurrences with surrounding log lines:**
+   **Error 1 (Line 98)**: [LIBCONFIG] config: 1/1 parameters successfully set, (1 to default value)
+   Context:
+        CMDLINE: "./nr-softmodem" "-O" "../../../targets/PROJECTS/GENERIC-NR-5GC/CONF/cu_simnovus.conf" "--sa" "--gNBs.[0].force_256qam_off"
+        [CONFIG] get parameters from libconfig ../../../targets/PROJECTS/GENERIC-NR-5GC/CONF/cu_simnovus.conf , debug flags: 0x00000000
+        [LIBCONFIG] Path for include directive set to: ../../../targets/PROJECTS/GENERIC-NR-5GC/CONF
+        [CONFIG] function config_libconfig_init returned 0
+        [CONFIG] config module libconfig loaded
+    >>> [LIBCONFIG] config: 1/1 parameters successfully set, (1 to default value)
+        [LIBCONFIG] log_config: 3/3 parameters successfully set, (1 to default value)
+        [LIBCONFIG] log_config: 56/56 parameters successfully set, (48 to default value)
+        [LIBCONFIG] log_config: 56/56 parameters successfully set, (56 to default value)
+        [LIBCONFIG] log_config: 16/16 parameters successfully set, (16 to default value)
+        [LIBCONFIG] log_config: 16/16 parameters successfully set, (16 to default value)
+
+   **Error 2 (Line 99)**: [LIBCONFIG] log_config: 3/3 parameters successfully set, (1 to default value)
+   Context:
+        [CONFIG] get parameters from libconfig ../../../targets/PROJECTS/GENERIC-NR-5GC/CONF/cu_simnovus.conf , debug flags: 0x00000000
+        [LIBCONFIG] Path for include directive set to: ../../../targets/PROJECTS/GENERIC-NR-5GC/CONF
+        [CONFIG] function config_libconfig_init returned 0
+        [CONFIG] config module libconfig loaded
+        [LIBCONFIG] config: 1/1 parameters successfully set, (1 to default value)
+    >>> [LIBCONFIG] log_config: 3/3 parameters successfully set, (1 to default value)
+        [LIBCONFIG] log_config: 56/56 parameters successfully set, (48 to default value)
+        [LIBCONFIG] log_config: 56/56 parameters successfully set, (56 to default value)
+        [LIBCONFIG] log_config: 16/16 parameters successfully set, (16 to default value)
+        [LIBCONFIG] log_config: 16/16 parameters successfully set, (16 to default value)
+        log init done
+
+   **Error 3 (Line 100)**: [LIBCONFIG] log_config: 56/56 parameters successfully set, (48 to default value)
+   Context:
+        [LIBCONFIG] Path for include directive set to: ../../../targets/PROJECTS/GENERIC-NR-5GC/CONF
+        [CONFIG] function config_libconfig_init returned 0
+        [CONFIG] config module libconfig loaded
+        [LIBCONFIG] config: 1/1 parameters successfully set, (1 to default value)
+        [LIBCONFIG] log_config: 3/3 parameters successfully set, (1 to default value)
+    >>> [LIBCONFIG] log_config: 56/56 parameters successfully set, (48 to default value)
+        [LIBCONFIG] log_config: 56/56 parameters successfully set, (56 to default value)
+        [LIBCONFIG] log_config: 16/16 parameters successfully set, (16 to default value)
+        [LIBCONFIG] log_config: 16/16 parameters successfully set, (16 to default value)
+        log init done
+        Reading in command-line options
+
+
+**Network Status:**
+   - gnb_ipv4: 10.138.77.131
+   - assoc_state: DISCONNECTED
+
+**💡 Use these log messages to understand the exact runtime state and sequence of events that led to the error.**
+
+## 📋 ANALYSIS INSTRUCTIONS
+
+Please analyze this error context and provide:
+
+1. **Root Cause Analysis:** What is the most likely cause of this error?
+2. **Suspected Functions:** Which functions are most likely responsible?
+3. **Suspected Configs:** Which configuration parameters need to be checked/fixed?
+4. **Fix Suggestions:**
+   - Specific code patches for identified functions (using exact file paths provided)
+   - Detailed config_patches with exact file paths, current values, and relevance scores from above
+   - Step-by-step investigation procedure
+5. **Call Chain Analysis:** How does the error propagation occur?
+
+For config_patches, you MUST include:
+- config_name: exact parameter name
+- file_path: exact path from the suspected configurations above  
+- current_value: exact current value from above
+- new_value: your recommended fix value
+- line_number: approximate line or section
+- relevance_score: use the score from suspected configurations above
+- description: detailed explanation of why this fix resolves the error
+
+Focus on providing actionable, specific fixes that address the root cause.
+
+
+================================================================================
+PROMPT STATISTICS
+================================================================================
+System prompt length: 20,622 characters
+User prompt length: 24,639 characters
+Total prompt length: 45,261 characters
+System prompt lines: 327 lines
+User prompt lines: 570 lines
+================================================================================
+LLM RESPONSE (attempt 1)
+================================================================================
+{
+  "suspected_functions": [
+    "rrc_handle_RRCSetupRequest",
+    "rrc_gNB_generate_RRCReject",
+    "dl_rrc_message_transfer",
+    "rrc_remove_ue"
+  ],
+  "suspected_configs": [],
+  "reason": "The root cause of the NGAP/CU failure is due to incomplete handling of UE identity types in the RRC Setup Request processing, specifically missing an else branch in the if-else if chain that processes the UE identity present field. This leads to uninitialized UE context pointers and subsequent segmentation faults when functions like rrc_gNB_generate_RRCReject are called with NULL pointers. The logs show no AMF association, indicating network connectivity issues, but the immediate crash is caused by missing else handling in rrc_handle_RRCSetupRequest. The function rrc_gNB_generate_RRCReject is critical to gracefully reject failed RRC setup attempts, but it must be called with a properly initialized UE context. The dl_rrc_message_transfer function and rrc_remove_ue are downstream functions that rely on valid UE context and RNTI mappings, which fail if the initial UE context creation is skipped due to missing else branches.",
+  "config_fix": "",
+  "code_patches": [
+    {
+      "function_name": "rrc_handle_RRCSetupRequest",
+      "file_path": "openair2/RRC/NR/rrc_gNB.c",
+      "patch_type": "add_missing_else_branch",
+      "original_code": "  } else if (NR_InitialUE_Identity_PR_ng_5G_S_TMSI_Part1 == rrcSetupRequest->ue_Identity.present) {\n    UE->Initialue_identity_5g_s_TMSI.presence = true;\n    UE->ng_5G_S_TMSI_Part1 = s_tmsi_part1;\n  }",
+      "patched_code": "  } else if (NR_InitialUE_Identity_PR_ng_5G_S_TMSI_Part1 == rrcSetupRequest->ue_Identity.present) {\n    UE->Initialue_identity_5g_s_TMSI.presence = true;\n    UE->ng_5G_S_TMSI_Part1 = s_tmsi_part1;\n  } else {\n    // Missing else branch to handle unrecognized ue_Identity.present values\n    // Initialize ue_context_p to avoid NULL pointer dereference\n    uint64_t random_value = 0;\n    if (rrcSetupRequest->ue_Identity.present == NR_InitialUE_Identity_PR_randomValue) {\n      memcpy(&random_value, rrcSetupRequest->ue_Identity.choice.randomValue.buf, sizeof(random_value));\n    }\n    ue_context_p = rrc_gNB_create_ue_context(assoc_id, msg->crnti, rrc, random_value, msg->gNB_DU_ue_id);\n    LOG_E(NR_RRC, \"Unhandled ue_Identity.present value: %d. Generating RRCReject.\", rrcSetupRequest->ue_Identity.present);\n    rrc_gNB_generate_RRCReject(rrc, ue_context_p);\n    return;\n  }",
+      "line_numbers": "after the closing brace of the else if block handling NR_InitialUE_Identity_PR_ng_5G_S_TMSI_Part1",
+      "description": "Adds the mandatory else branch to handle unrecognized UE identity types in RRC Setup Request. This prevents ue_context_p from remaining NULL and avoids segmentation faults by properly creating the UE context and calling rrc_gNB_generate_RRCReject to reject the UE gracefully."
+    }
+  ],
+  "root_cause_analysis": "The segmentation fault and NGAP/CU failure originate from incomplete conditional logic in rrc_handle_RRCSetupRequest when processing the UE identity present field. The code handles known UE identity types but lacks a final else clause to handle unexpected or unsupported types. As a result, the UE context pointer remains NULL, and subsequent calls to rrc_gNB_generate_RRCReject with this NULL pointer cause crashes. The logs also indicate no AMF association, which is a network connectivity issue but not the direct cause of the crash. Properly handling all UE identity cases and ensuring UE context initialization before calling rejection functions is essential to prevent these failures.",
+  "investigation_steps": [
+    "Examine rrc_handle_RRCSetupRequest for if-else chains processing UE identity and check for missing else branches.",
+    "Verify that ue_context_p is initialized in all branches before calling rrc_gNB_generate_RRCReject.",
+    "Check logs for indications of unhandled UE identity types or NULL pointer dereferences.",
+    "Confirm that rrc_gNB_generate_RRCReject is called with a valid UE context to avoid segmentation faults.",
+    "Validate network connectivity and AMF association separately to ensure NGAP layer is properly connected."
+  ]
+}
+
+================================================================================
+RESPONSE STATISTICS
+================================================================================
+Response length (final): 4,198 characters
+Response lines (final): 30 lines
+Temperature: 0.1
+Max tokens: 8000
+Finish reason (final): stop
+Seed: 99
+JSON mode: True
+Parse OK: True
+Attempts: [{"attempt": 1, "finish_reason": "stop", "chars": 4198}]

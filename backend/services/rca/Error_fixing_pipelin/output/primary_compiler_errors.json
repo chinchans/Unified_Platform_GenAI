@@ -1,0 +1,131 @@
+[
+  {
+    "file_path": "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c",
+    "line_number": 61,
+    "column_number": 6,
+    "function_name": "encode_cu_to_du_rrc_info",
+    "error_text": "unknown type name ‘F1AP_ProtocolExtensionContainer_10696P60_t’; did you mean ‘F1AP_ProtocolExtensionContainer_19016P60_t’?",
+    "error_code_category": "unknown_type_name",
+    "symbol_candidates": [
+      "F1AP_ProtocolExtensionContainer_10696P60_t",
+      "F1AP_ProtocolExtensionContainer_19016P60_t"
+    ],
+    "confidence": 1.0,
+    "priority_score": 1.0,
+    "source": "compiler_ground_truth"
+  },
+  {
+    "file_path": "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c",
+    "line_number": 92,
+    "column_number": 12,
+    "function_name": "decode_cu_to_du_rrc_info",
+    "error_text": "unknown type name ‘F1AP_ProtocolExtensionContainer_10696P60_t’",
+    "error_code_category": "unknown_type_name",
+    "symbol_candidates": [
+      "F1AP_ProtocolExtensionContainer_10696P60_t"
+    ],
+    "confidence": 1.0,
+    "priority_score": 1.0,
+    "source": "compiler_ground_truth"
+  },
+  {
+    "file_path": "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c",
+    "line_number": 92,
+    "column_number": 69,
+    "function_name": "decode_cu_to_du_rrc_info",
+    "error_text": "unknown type name ‘F1AP_ProtocolExtensionContainer_10696P60_t’",
+    "error_code_category": "unknown_type_name",
+    "symbol_candidates": [
+      "F1AP_ProtocolExtensionContainer_10696P60_t"
+    ],
+    "confidence": 1.0,
+    "priority_score": 1.0,
+    "source": "compiler_ground_truth"
+  },
+  {
+    "file_path": "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c",
+    "line_number": 669,
+    "column_number": 6,
+    "function_name": "encode_drbs_to_setup",
+    "error_text": "unknown type name ‘F1AP_ProtocolExtensionContainer_10696P82_t’; did you mean ‘F1AP_ProtocolExtensionContainer_19016P82_t’?",
+    "error_code_category": "unknown_type_name",
+    "symbol_candidates": [
+      "F1AP_ProtocolExtensionContainer_10696P82_t",
+      "F1AP_ProtocolExtensionContainer_19016P82_t"
+    ],
+    "confidence": 1.0,
+    "priority_score": 1.0,
+    "source": "compiler_ground_truth"
+  },
+  {
+    "file_path": "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c",
+    "line_number": 784,
+    "column_number": 12,
+    "function_name": "decode_drbs_to_setup",
+    "error_text": "unknown type name ‘F1AP_ProtocolExtensionContainer_10696P82_t’",
+    "error_code_category": "unknown_type_name",
+    "symbol_candidates": [
+      "F1AP_ProtocolExtensionContainer_10696P82_t"
+    ],
+    "confidence": 1.0,
+    "priority_score": 1.0,
+    "source": "compiler_ground_truth"
+  },
+  {
+    "file_path": "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c",
+    "line_number": 784,
+    "column_number": 69,
+    "function_name": "decode_drbs_to_setup",
+    "error_text": "unknown type name ‘F1AP_ProtocolExtensionContainer_10696P82_t’",
+    "error_code_category": "unknown_type_name",
+    "symbol_candidates": [
+      "F1AP_ProtocolExtensionContainer_10696P82_t"
+    ],
+    "confidence": 1.0,
+    "priority_score": 1.0,
+    "source": "compiler_ground_truth"
+  },
+  {
+    "file_path": "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c",
+    "line_number": 726,
+    "column_number": 6,
+    "function_name": "encode_drbs_to_setupmod",
+    "error_text": "unknown type name ‘F1AP_ProtocolExtensionContainer_10696P83_t’; did you mean ‘F1AP_ProtocolExtensionContainer_19016P83_t’?",
+    "error_code_category": "unknown_type_name",
+    "symbol_candidates": [
+      "F1AP_ProtocolExtensionContainer_10696P83_t",
+      "F1AP_ProtocolExtensionContainer_19016P83_t"
+    ],
+    "confidence": 1.0,
+    "priority_score": 1.0,
+    "source": "compiler_ground_truth"
+  },
+  {
+    "file_path": "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c",
+    "line_number": 850,
+    "column_number": 12,
+    "function_name": "decode_drbs_to_setupmod",
+    "error_text": "unknown type name ‘F1AP_ProtocolExtensionContainer_10696P83_t’",
+    "error_code_category": "unknown_type_name",
+    "symbol_candidates": [
+      "F1AP_ProtocolExtensionContainer_10696P83_t"
+    ],
+    "confidence": 1.0,
+    "priority_score": 1.0,
+    "source": "compiler_ground_truth"
+  },
+  {
+    "file_path": "/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c",
+    "line_number": 850,
+    "column_number": 69,
+    "function_name": "decode_drbs_to_setupmod",
+    "error_text": "unknown type name ‘F1AP_ProtocolExtensionContainer_10696P83_t’",
+    "error_code_category": "unknown_type_name",
+    "symbol_candidates": [
+      "F1AP_ProtocolExtensionContainer_10696P83_t"
+    ],
+    "confidence": 1.0,
+    "priority_score": 1.0,
+    "source": "compiler_ground_truth"
+  }
+]

@@ -1,0 +1,190 @@
+{
+  "timestamp": "2025-12-08T12:20:33.139844",
+  "phase": "crash_phase2_retrieval",
+  "crash_info_summary": {
+    "faulting_function": "rrc_gNB_send_NGAP_NAS_FIRST_REQ",
+    "fault_location": "/home/tcs/jayasvi/cu/openairinterface5g/openair2/RRC/NR/rrc_gNB_NGAP.c:173",
+    "backtrace_frames": 5
+  },
+  "prioritized_functions": [
+    {
+      "function_name": "rrc_gNB_send_NGAP_NAS_FIRST_REQ",
+      "file_path": "openair2/RRC/NR/rrc_gNB_NGAP.c",
+      "line_number": "173",
+      "frame_number": 0,
+      "priority_score": 1.0,
+      "source": "backtrace",
+      "role": "CRASH_POINT"
+    },
+    {
+      "function_name": "rrc_gNB_decode_dcch",
+      "file_path": "openair2/RRC/NR/rrc_gNB.c",
+      "line_number": "1711",
+      "frame_number": 1,
+      "priority_score": 0.95,
+      "source": "backtrace",
+      "role": "IMMEDIATE_CALLER"
+    },
+    {
+      "function_name": "rrc_gnb_task",
+      "file_path": "openair2/RRC/NR/rrc_gNB.c",
+      "line_number": "2526",
+      "frame_number": 2,
+      "priority_score": 0.9,
+      "source": "backtrace",
+      "role": "UPSTREAM_CALLER"
+    },
+    {
+      "function_name": "start_thread",
+      "file_path": "./nptl/pthread_create.c",
+      "line_number": "442",
+      "frame_number": 3,
+      "priority_score": 0.85,
+      "source": "backtrace",
+      "role": "CALL_CHAIN"
+    },
+    {
+      "function_name": "clone3",
+      "file_path": "../sysdeps/unix/sysv/linux/x86_64/clone3.S",
+      "line_number": "81",
+      "frame_number": 4,
+      "priority_score": 0.85,
+      "source": "backtrace",
+      "role": "CALL_CHAIN"
+    }
+  ],
+  "call_chain_expansion": [
+    {
+      "function_name": "BIT_STRING_to_uint32",
+      "file_path": "common/utils/oai_asn1.h",
+      "priority_score": 0.85,
+      "source": "crash_downstream",
+      "reason": "Called by crash function rrc_gNB_send_NGAP_NAS_FIRST_REQ - potential null/invalid call"
+    },
+    {
+      "function_name": "create_byte_array",
+      "file_path": "common/utils/ds/byte_array.c",
+      "priority_score": 0.85,
+      "source": "crash_downstream",
+      "reason": "Called by crash function rrc_gNB_send_NGAP_NAS_FIRST_REQ - potential null/invalid call"
+    },
+    {
+      "function_name": "get_guami",
+      "file_path": "openair2/RRC/NR/rrc_gNB_NGAP.c",
+      "priority_score": 0.85,
+      "source": "crash_downstream",
+      "reason": "Called by crash function rrc_gNB_send_NGAP_NAS_FIRST_REQ - potential null/invalid call"
+    },
+    {
+      "function_name": "itti_alloc_new_message",
+      "file_path": "common/utils/ocp_itti/intertask_interface.cpp",
+      "priority_score": 0.85,
+      "source": "crash_downstream",
+      "reason": "Called by crash function rrc_gNB_send_NGAP_NAS_FIRST_REQ - potential null/invalid call"
+    },
+    {
+      "function_name": "itti_send_msg_to_task",
+      "file_path": "common/utils/ocp_itti/intertask_interface.cpp",
+      "priority_score": 0.85,
+      "source": "crash_downstream",
+      "reason": "Called by crash function rrc_gNB_send_NGAP_NAS_FIRST_REQ - potential null/invalid call"
+    },
+    {
+      "function_name": "rrc_gNB_send_NGAP_NAS_FIRST_REQ",
+      "file_path": "openair2/RRC/NR/rrc_gNB_NGAP.c",
+      "priority_score": 0.85,
+      "source": "crash_downstream",
+      "reason": "Called by crash function rrc_gNB_send_NGAP_NAS_FIRST_REQ - potential null/invalid call"
+    },
+    {
+      "function_name": "sizeof",
+      "file_path": "common/utils/T/T.h",
+      "priority_score": 0.85,
+      "source": "crash_downstream",
+      "reason": "Called by crash function rrc_gNB_send_NGAP_NAS_FIRST_REQ - potential null/invalid call"
+    },
+    {
+      "function_name": "rrc_gNB_process_RRCSetupComplete",
+      "file_path": "openair2/RRC/NR/rrc_gNB.c",
+      "priority_score": 0.8,
+      "source": "crash_upstream",
+      "reason": "Calls crash function rrc_gNB_send_NGAP_NAS_FIRST_REQ - check parameter passing"
+    }
+  ],
+  "validation_patterns": [],
+  "similar_crash_fixes": [
+    {
+      "commit_hash": "a06457bab6",
+      "subject": "Fix direct leak in rrc_gNB_send_NGAP_NAS_FIRST_REQ",
+      "author": "Guido Casati",
+      "date": "2025-06-05T11:25:38+02:00",
+      "relevance_score": 0.7,
+      "is_rca": false,
+      "files_changed": []
+    },
+    {
+      "commit_hash": "693dfb9374",
+      "subject": "bugfix: avoid segmentation fault when Redcap tries to connect to gNB as NR_ServingCellConfig_t scd is NULL when Redcap does RA",
+      "author": "Marius Tillner",
+      "date": "2025-07-22T15:51:01+02:00",
+      "relevance_score": 0.6,
+      "is_rca": false,
+      "files_changed": []
+    },
+    {
+      "commit_hash": "40b5e99197",
+      "subject": "Fix segmentation fault when calling get_transformPrecoding function for BWP_id > 0 and rach_ConfigCommon = NULL",
+      "author": "luis_pereira87",
+      "date": "2023-03-18T15:28:52+00:00",
+      "relevance_score": 0.6,
+      "is_rca": false,
+      "files_changed": []
+    },
+    {
+      "commit_hash": "dffd63d35a",
+      "subject": "fix a segfault when uci_01->harq is null",
+      "author": "Mario Joa-Ng",
+      "date": "2021-09-28T18:28:12-04:00",
+      "relevance_score": 0.6,
+      "is_rca": false,
+      "files_changed": []
+    },
+    {
+      "commit_hash": "9ef95055a1",
+      "subject": "fix a crash (at this point \"ue_context_p\" is NULL,",
+      "author": "Cedric Roux",
+      "date": "2015-05-07T08:12:37+00:00",
+      "relevance_score": 0.6,
+      "is_rca": false,
+      "files_changed": []
+    }
+  ],
+  "source_code_enrichment": {
+    "rrc_gNB_send_NGAP_NAS_FIRST_REQ": {
+      "file_path": "openair2/RRC/NR/rrc_gNB_NGAP.c",
+      "has_source": false,
+      "error": "Source code not found or not readable"
+    },
+    "rrc_gNB_decode_dcch": {
+      "file_path": "openair2/RRC/NR/rrc_gNB.c",
+      "has_source": false,
+      "error": "Source code not found or not readable"
+    },
+    "rrc_gnb_task": {
+      "file_path": "openair2/RRC/NR/rrc_gNB.c",
+      "has_source": false,
+      "error": "Source code not found or not readable"
+    },
+    "start_thread": {
+      "file_path": "./nptl/pthread_create.c",
+      "has_source": false,
+      "error": "Source code not found or not readable"
+    },
+    "clone3": {
+      "file_path": "../sysdeps/unix/sysv/linux/x86_64/clone3.S",
+      "has_source": false,
+      "error": "Source code not found or not readable"
+    }
+  },
+  "minimal_configs": []
+}

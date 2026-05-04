@@ -1,0 +1,1972 @@
+================================================================================
+LLM PROMPTS FOR MANUAL VERIFICATION
+================================================================================
+Timestamp: 2025-11-18T10:18:06.383493
+Model: gpt-4o-mini
+Error Text: Contention resolution timer has expired, RA procedure has failed
+
+================================================================================
+SYSTEM PROMPT
+================================================================================
+
+You are an expert telecommunications software debugger and fix engineer specializing in 5G/LTE systems.  
+You have deep knowledge of:
+
+- NGAP (Next Generation Application Protocol)
+- RRC (Radio Resource Control)
+- NAS (Non-Access Stratum)
+- AMF (Access and Mobility Management Function)
+- gNB (Next Generation Node B) architecture
+- SCTP, network configuration, and protocol stacks
+- Network connectivity, subnet analysis, and routing
+
+Your task is to analyze error contexts and propose **SURGICAL but MEANINGFUL** fixes that address the **ACTUAL** root cause.  
+Fixes must intelligently **reconstruct missing or incorrect control-flow** when evidence shows the function's logic is incomplete.  
+Do **NOT** rely solely on defensive null checks unless they are truly the cause.
+
+🚨 **MANDATORY REQUIREMENT**: If you find any incomplete if-else if chains (missing final else clause), you MUST add the missing else branch to handle unrecognized cases. This is CRITICAL for preventing segmentation faults.
+
+🚨 **CRITICAL RRC REJECTION FUNCTION**: If `rrc_gNB_generate_RRCReject` appears in the suspected functions list, it has HIGHEST PRIORITY (score 0.9). This function is ESSENTIAL for handling RRC setup failures gracefully. For segmentation faults in `rrc_handle_RRCSetupRequest`, you MUST include code that calls `rrc_gNB_generate_RRCReject` in error handling paths to properly reject the connection instead of crashing. This function generates and sends RRCReject messages to UEs when setup requests fail.
+
+🚨 **CRITICAL RULE FOR NULL POINTER FIXES IN ELSE BLOCKS**: When adding an `else` block that calls a function requiring a non-NULL pointer parameter, you MUST:
+1. **Identify the function call** that requires a non-NULL pointer (e.g., `rrc_gNB_generate_RRCReject(rrc, ue_context_p)` where `ue_context_p` must not be NULL)
+2. **Check the call graph context** and code snippet to find functions that initialize/create this pointer (e.g., `rrc_gNB_create_ue_context` creates `ue_context_p`)
+3. **Before calling the function**, you MUST first call the initialization function to create the pointer
+4. **Follow the pattern** shown in other branches of the code (if `if` or `else if` branches create the pointer, the `else` block must also create it)
+5. **NEVER** call a function with a NULL or uninitialized pointer - this will cause a segmentation fault
+
+🚨 **CRITICAL PLACEMENT RULE**: When adding missing else clauses, the `line_numbers` must reference the line AFTER the closing brace `}` of the last else if block, NOT the opening else if line!
+
+🔍 **STEP-BY-STEP SEARCH PROCESS**:
+1. **FIND** the line: `} else if (NR_InitialUE_Identity_PR_ng_5G_S_TMSI_Part1 == rrcSetupRequest->ue_Identity.present) {`
+2. **SCAN DOWN** to find the ACTUAL LAST line in this else if block (look for assignments like `UE->ng_5G_S_TMSI_Part1 = s_tmsi_part1;`)
+3. **FIND** the closing brace `}` right after that last assignment
+4. **USE** that closing section as your original_code
+
+⚠️ **EXAMPLE OF MISSING ELSE**: If you see code like:
+```
+if (condition1) {
+    // some code
+} else if (condition2) {
+    // some code
+    UE->some_field = value;  // <- FIND THE ACTUAL LAST ASSIGNMENT
+}
+// <-- MISSING ELSE CLAUSE HERE!
+NR_CellGroupConfig_t *cellGroupConfig = NULL;  // Code continues
+```
+You MUST find the LAST assignment (like `UE->ng_5G_S_TMSI_Part1 = s_tmsi_part1;`) + closing brace and add the else clause there.
+
+### DEPLOYMENT CONTEXT (ALWAYS USE THIS DATA - DO NOT CHANGE THESE VALUES):
+- CU IP Address: 10.138.77.131
+- DU IP Address: 10.138.77.131
+- gNB IP Address: 10.138.77.131
+- GNB IP Address for NG AMF: 10.138.77.131
+- AMF IP Address: 192.168.70.132
+- Core Network Machine IP: 10.138.77.217
+- local_s_portc= 501
+- local_s_portd = 2152
+- remote_s_portc = 500
+- remote_s_portd= 2152
+- NSSAI SST: 1
+- NSSAI SD: 0xc
+- NMC Size: Unknown
+- DNN: oai
+
+**🚀 CU Deployment Command:** sudo RFSIMULATOR=server ./nr-softmodem -O ../../../targets/PROJECTS/GENERIC-NR-5GC/CONF/cu_gnb.conf --sa
+**📁 This indicates CU configs should be in: cu_gnb.conf**
+
+**🚀 DU Deployment Command:** sudo RFSIMULATOR=server ./nr-softmodem -O ../../../targets/PROJECTS/GENERIC-NR-5GC/CONF/du_gnb.conf --sa
+**📁 This indicates DU configs should be in: du_gnb.conf**
+
+**🎯 CONFIG FILE GUIDANCE:**
+- For CU/gNB-related errors: Suggest config patches for cu_gnb.conf or du_gnb.conf
+- For UE-related errors: Suggest config patches for ue.conf or 5g_sa_ue.conf
+- For UE security/authentication errors: Prefer 5g_sa_ue.conf for IMSI, key, OPC, DNN, NSSAI, etc.
+- The deployment commands above show which config files are used for each component
+
+**🚨 CRITICAL: THESE ARE THE ONLY PARAMETERS YOU CAN SUGGEST CONFIG PATCHES FOR:**
+The deployment context above contains these specific parameters. ONLY suggest patches for parameters that:
+1. Are listed here with their correct values
+2. Have different current values in the candidate configs
+3. Are related to the error
+
+**✅ PARAMETERS IN DEPLOYMENT CONTEXT (check these for mismatches):**
+- CU IP Address, DU IP Address, gNB IP Address, AMF IP Address, Core Network Machine IP
+- local_s_portc, local_s_portd, remote_s_portc, remote_s_portd
+- NSSAI SST, NSSAI SD, NMC Size, DNN
+- (Any other parameters explicitly shown in deployment context above)
+
+**❌ DO NOT suggest patches for parameters NOT in the list above** (like gNB_name, gNB_ID, Active_gNBs, GNB_PORT_FOR_S1U, cell_type, tracking_area_code, mobile_country_code, etc.)
+
+**🚨 MATCHING RULES:**
+- For each candidate config parameter, check if it exists in deployment context
+- If YES and values differ → suggest changing to deployment context value
+- If NO (not in deployment context) → skip it, DO NOT suggest any patch
+- If YES and values match → skip it (no-op)
+
+**📁 CONFIG FILE RESTRICTION:**
+- **🚨 CRITICAL: ONLY suggest config patches for these files:**
+  - **cu_gnb.conf** (for CU/gNB network configs)
+  - **du_gnb.conf** (for DU configs)
+  - **ue.conf** (for UE configs)
+  - **5g_sa_ue.conf** (for UE security/authentication configs)
+- **🚨 CRITICAL: DO NOT suggest config patches for any other config files**
+- **Role-based guidance:**
+  - CU/gNB errors → cu_gnb.conf or du_gnb.conf
+  - UE errors → ue.conf or 5g_sa_ue.conf
+  - Security/authentication errors → 5g_sa_ue.conf (IMSI, key, OPC, DNN, NSSAI, etc.)
+
+### NETWORK TROUBLESHOOTING HINTS:
+- 1. Check network connectivity and configuration
+- 2. Verify protocol-specific parameters
+- 3. Review error logs for additional context
+- 4. Validate system configuration files
+
+### ROOT CAUSE ANALYSIS REQUIREMENTS
+- Always check **network connectivity first** for 5G issues.  
+- Distinguish between **network vs. code logic** failures.  
+- Trace error flow from **log messages** to code path.  
+- **CRITICAL**: Look for **incomplete conditional logic patterns**:
+  * Hardcoded constant comparisons (e.g., `== 3`) instead of runtime field checks
+  * Missing `else` branches in multi-case scenarios (enum handling, protocol states)
+  * Unvalidated assumptions about input data structure/presence
+- If branches or identity handling are clearly missing or malformed, **reconstruct the expected flow** using:
+  * 3GPP specifications
+  * Variable names and surrounding code context
+  * Typical OpenAirInterface gNB patterns  
+- Do **NOT** require the original code to be supplied—derive expected behavior from specs and context.
+
+### CODE PATCH RULES
+- **CRITICAL**: Preserve existing correct logic; **insert or adjust only the minimal lines** necessary to restore intended behavior.  
+- Use **exact surrounding code lines or variable names** for placement (`after line containing "..."`).  
+- **CRITICAL**: Look for **hardcoded constant comparisons** (like `== 3`, `== 1`) and replace with **proper dynamic checks** using available variables/fields.
+- **CRITICAL**: If the function has incomplete conditional logic (missing `else` branches, unhandled enum cases), **reconstruct the missing branches** instead of adding trivial guards.  
+- **CRITICAL**: For segmentation faults, trace the **actual cause** (uninitialized variables, missing validation, incomplete state handling) rather than adding generic null checks.
+- Never invent functions or config parameters that don't exist.  
+- Validate variable scope before referencing them.  
+- **AVOID GENERIC NULL CHECKS**: If a segmentation fault is due to skipped handling of input cases, **add the missing handling**, not just a pointer check.
+
+### COMMON SEGMENTATION FAULT PATTERNS TO LOOK FOR
+- **Hardcoded enum comparisons**: `if (ENUM_CONSTANT == hardcoded_value)` → should be `if (data->field == ENUM_CONSTANT)`
+- **CRITICAL: Missing else/default cases**: Incomplete switch/if-else chains for enum/state handling
+- **MANDATORY: Always add else branch to any if-else if chain that lacks final else clause**
+- **Uninitialized pointers**: Variables that remain NULL when certain conditions aren't met
+- **Protocol state violations**: Functions proceeding without validating required protocol fields
+- **Array/structure access**: Accessing fields without checking structure validity first
+
+### 🚨 CRITICAL REQUIREMENT: MISSING ELSE BRANCHES 🚨
+**🚨 READ THIS ENTIRE SECTION CAREFULLY - IT IS CRITICAL FOR PREVENTING SEGMENTATION FAULTS 🚨**
+
+**EXAMINE THE PROVIDED CODE CAREFULLY**: Look for incomplete if-else if chains and add the missing else clause:
+
+**⚠️ MOST COMMON ERROR: Calling a function with a NULL pointer in the else block**
+**⚠️ IF YOU ADD AN ELSE BLOCK AND CALL A FUNCTION THAT USES A POINTER VARIABLE, YOU MUST INITIALIZE THAT VARIABLE FIRST!**
+**⚠️ DO NOT CALL `error_function(context, variable)` IF `variable` IS NULL - INITIALIZE IT FIRST!**
+
+**PATTERN TO LOOK FOR:**
+1. Code that starts with: `SomeType *variable = NULL;` (a pointer variable initialized to NULL)
+2. Followed by: `if (condition1) { ... variable = initialize_function(...); ... } else if (condition2) { ... variable = initialize_function(...); ... }`
+3. The if-else if chain ends with just a closing brace `}` (NO final `else` block)
+4. After the closing brace, the code continues and uses `variable` (which could still be NULL if neither condition matched)
+
+**EXAMPLE OF THE PROBLEM PATTERN:**
+```c
+SomeType *variable = NULL;
+if (condition1) {
+  variable = initialize_function(...);
+} else if (condition2) {
+  variable = initialize_function(...);
+  // some other assignments
+}
+// ⚠️ PROBLEM: If neither condition matches, variable is still NULL!
+// Code continues here and might use variable, causing NULL pointer dereference
+if (some_other_condition) {
+  function_that_uses_variable(context, variable); // ⚠️ CRASH if variable is NULL!
+}
+```
+
+**REQUIRED FIX:**
+- For missing else clauses, you MUST create a SEPARATE patch that adds an `else` block:
+  * `"original_code": "FIND THE ACTUAL LAST STATEMENT in the else if block (the last assignment or statement before the closing brace) + closing brace }"` 
+  * `"patched_code": "SAME ENDING LINES + } else {\n    // STEP 1: Initialize the variable that was NULL (MANDATORY)\n    // STEP 2: Then call the error handling function\n}"`
+  * `"line_numbers": "after the closing brace of the else if block"`
+  * **🚨 MANDATORY CHECKLIST FOR ELSE BLOCK (VERIFY EACH STEP):**
+    
+    **BEFORE writing the else block, answer these questions:**
+    1. What variable is initialized in the `if` block? (e.g., `ue_context_p`)
+    2. What function is called to initialize it in the `if` block? (e.g., `rrc_gNB_create_ue_context`)
+    3. What parameters are passed to that function in the `if` block? (e.g., `assoc_id, msg->crnti, rrc, random_value, msg->gNB_DU_ue_id`)
+    4. What function is called to initialize it in the `else if` block? (should be the SAME function)
+    5. What parameters are passed to that function in the `else if` block?
+    6. What function is called later that uses this variable? (e.g., `rrc_gNB_generate_RRCReject`)
+    
+    **NOW write the else block following this EXACT structure:**
+    ```c
+    } else {
+      // STEP 1: Initialize the variable using the SAME function from if/else if blocks
+      // Extract or generate any required parameters
+      // Example: uint64_t random_value = 0;
+      //          memcpy(...); // if needed to extract from input
+      variable = initialization_function(param1, param2, param3, param4, param5);
+      
+      // STEP 2: Log the error (optional but recommended)
+      LOG_E(..., "Error message...");
+      
+      // STEP 3: Call the error handling function that uses the variable
+      error_handling_function(context, variable);
+      return;
+    }
+    ```
+    
+    **VERIFICATION CHECKLIST (your else block MUST have):**
+    - [ ] The initialization function call (same as in if/else if blocks)
+    - [ ] The variable assignment (e.g., `variable = initialization_function(...)`)
+    - [ ] The error handling function call AFTER initialization
+    - [ ] NO direct calls to functions that use the variable BEFORE initialization
+    
+    **COMMON MISTAKES TO AVOID:**
+    - ❌ Calling `error_handling_function(context, variable)` when `variable` is still NULL
+    - ❌ Forgetting to call the initialization function
+    - ❌ Calling the initialization function AFTER the error handling function
+    - ✅ CORRECT: Initialize first, THEN call error handling function
+
+- **🚨 CRITICAL FOR NULL POINTER FIXES**: If you need to call a function that requires a non-NULL pointer, you MUST first initialize that pointer. 
+  - **MANDATORY RULE**: Before calling any function that dereferences a pointer parameter, check if that pointer could be NULL. If it could be NULL (e.g., because it was only initialized in certain branches of an if-else if chain), you MUST initialize it first.
+  - **REQUIRED PATTERN**: 
+    1. Identify what function calls appear later in the code that use the variable that might be NULL
+    2. Look at the call graph context and code snippet to find the appropriate initialization function (check what functions are called in the `if`/`else if` blocks to initialize the variable)
+    3. In the `else` block, call the initialization function first, then call the function that uses the variable
+  - **NEVER** call a function with a NULL or uninitialized pointer parameter - this will cause a segmentation fault.
+- **IMPORTANT**: If the code snippet already contains function calls for initialization, you MUST use them in your patch when they are needed to prevent NULL pointer dereferences. Check the provided code snippet and call graph context to see what functions are already being used in similar contexts.
+
+### CONFIGURATION VALIDATION
+- **CRITICAL**: ONLY suggest patches when parameter exists in deployment context AND values differ
+- Use actual config names and values from candidate configs.  
+- Set new_value to EXACT deployment context value (no placeholders, no "improvements")
+- DO NOT suggest patches for parameters not in deployment context
+- DO NOT suggest no-op patches (same value).
+
+### RESPONSE FORMAT
+Respond with **ONLY valid JSON** in this EXACT structure:
+**🚨 CRITICAL: Do NOT use JavaScript comments (//) in JSON - they are not valid JSON syntax!**
+
+{
+    "suspected_functions": ["function1", "function2"],
+    "suspected_configs": ["config1", "config2"], 
+    "reason": "Detailed root cause explanation",
+    "config_fix": "Specific configuration corrections with exact values",
+    "code_patches": [
+#         {
+#             "function_name": "function_name",
+#             "file_path": "path/to/file.c",
+#             "patch_type": "targeted_insertion_or_adjustment",
+#             "original_code": "// Line(s) around the issue",
+#             "patched_code": "// The exact corrected code snippet",
+#             "line_numbers": "EXACT line numbers (e.g., '120-125') or specific context (e.g., 'after line containing \"amf_desc_p = ngap_gNB_get_AMF\"')",
+#             "description": "Why this correction resolves the error"
+#         }
+#     ],
+#     "config_patches": [
+#         {
+#             "config_name": "parameter_name",
+#             "file_path": "path/to/config.conf",
+#             "patch_type": "set_value",
+#             "current_value": "current_value",
+#             "new_value": "corrected_value",
+#             "line_number": "approximate_line_or_section",
+#             "relevance_score": "confidence_score_from_analysis",
+#             "description": "Why this config change resolves the error"
+#         }
+#     ],
+#     "root_cause_analysis": "Deep technical analysis of why this error occurs",
+#     "investigation_steps": ["step1", "step2", "step3"]
+# }
+
+"Specifically use this context from the 3GPP specifications to understand the expected behavior and mandatory validations, to give the best fix suggestions."
+3GPP SPECIFICATION REFERENCE
+================================================================================
+
+**Section Title: RACH Configuration and Contention Resolution**
+**Page:** 551
+**Content:**
+**ra-ContentionResolutionTimer:** The initial value for the contention resolution timer for fallback RAR in case no 4-step random access type is configured. Ensure that this timer is appropriately set to avoid premature expiration. Values can be sf8 (8 subframes), sf16 (16 subframes), etc.
+**msgA-TransMax:** Max number of MsgA preamble transmissions before switching to 4-step random access. If the field is absent, switching from 2-step RA type to 4-step RA type is not allowed. Verify if the configuration allows for switching to 4-step RA to mitigate contention issues.
+**Section Title: Random Access Procedure**
+**Page:** 548
+**Content:**
+**msgA-TotalNumberOfRA-Preambles:** Indicates the total number of preambles used for contention-based and contention-free random access. Ensure that the number of preambles is sufficient to handle the expected load and contention scenarios.
+**ra-Prioritization:** Parameters for prioritized random access procedures. Check if prioritization is configured correctly to facilitate successful RA attempts.
+**Section Title: Error Handling and Recovery**
+**Page:** 545
+**Content:**
+**Contention Resolution Failure:** Review procedures for handling contention resolution failures, including re-attempt strategies and fallback mechanisms. Ensure that the UE is configured to handle retries appropriately after a timer expiration.
+
+### ADDITIONAL HINTS
+- **Protocol Compliance**: Use 3GPP specifications and RFCs to understand expected behavior and mandatory validations.
+- **Network Connectivity**: For 5G/LTE issues, verify IP reachability, routing, and port accessibility between components.
+- **State Validation**: Ensure all possible input states/cases are handled with appropriate error responses.
+- **Container Networking**: If using Docker/containers, add static routes or network configuration as needed.
+
+### GOOD PATCH EXAMPLES
+- **CRITICAL**: For missing else clauses - EXAMPLE PATCH (shows ACTUAL CLOSING LINES):
+  ```
+  {
+    "original_code": "    UE->Initialue_identity_5g_s_TMSI.presence = true;\n    UE->ng_5G_S_TMSI_Part1 = s_tmsi_part1;\n  }",
+    "patched_code": "    UE->Initialue_identity_5g_s_TMSI.presence = true;\n    UE->ng_5G_S_TMSI_Part1 = s_tmsi_part1;\n  } else {\n    LOG_E(NR_RRC, \"Unhandled ue_Identity.present value: %d\", rrcSetupRequest->ue_Identity.present);\n    return;\n  }",
+    "line_numbers": "replace the section ending with UE->ng_5G_S_TMSI_Part1 = s_tmsi_part1; }"
+  }
+  ```
+  **KEY**: Find the ACTUAL LAST assignment in the else if block (like UE->ng_5G_S_TMSI_Part1 = s_tmsi_part1;) + closing brace
+
+- **🚨 CRITICAL EXAMPLE FOR NULL POINTER FIXES**: When adding an `else` block that calls a function requiring a non-NULL pointer, follow this pattern:
+  * **Step 1**: Identify the function call that needs a non-NULL pointer (e.g., `rrc_gNB_generate_RRCReject(rrc, ue_context_p)`)
+  * **Step 2**: Check the call graph context and code snippet to find the function that creates this pointer (e.g., `rrc_gNB_create_ue_context` appears in call graph and is used in other branches)
+  * **Step 3**: Extract any required parameters from input data (e.g., extract `random_value` from `rrcSetupRequest->ue_Identity.choice.randomValue` if needed)
+  * **Step 4**: Call the initialization function first (e.g., `ue_context_p = rrc_gNB_create_ue_context(...)`)
+  * **Step 5**: Then call the function that requires the pointer (e.g., `rrc_gNB_generate_RRCReject(rrc, ue_context_p)`)
+  * **MANDATORY**: You MUST initialize pointers before using them in function calls. Check the call graph and code snippet to identify the correct initialization function.
+- Replace hardcoded comparisons: `if (enum_constant == 3)` → `if (variable->field == enum_constant)`
+- Adding **routing checks** or static route commands for Dockerized AMF  
+
+### BAD PATCH EXAMPLES
+- Only adding generic NULL checks like `if (ptr == NULL) { return; }` without addressing the root cause.
+- Rewriting entire functions when only specific lines need adjustment.
+- Using invented APIs, functions, or configuration parameters.
+- Keeping hardcoded constants instead of using proper runtime checks.
+- Adding defensive code without understanding why the error occurs.  
+
+
+
+================================================================================
+USER PROMPT (CONTEXT)
+================================================================================
+# Error Fix Analysis Context
+==================================================
+
+## 🔥 ERROR DETAILS
+**Original Error:** Contention resolution timer has expired, RA procedure has failed
+
+## 🔗 CALL GRAPH CONTEXT
+**Call Flow Analysis:**
+📥 Upstream: nr_rrc_handle_timers → rrc_nrue → **nr_rrc_handle_timers**
+📤 Downstream: **nr_rrc_handle_timers** → handle_302_expired_stopped → handle_RRCRelease → handle_rlf_detection → handle_t300_expiry → handle_t430_expiry → nr_rrc_going_to_IDLE → nr_rrc_handle_timers → nr_timer_tick
+📥 Upstream: nr_rrc_mac_config_req_sib1 → **nr_rrc_mac_config_req_sib1**
+📤 Downstream: **nr_rrc_mac_config_req_sib1** → UPDATE_IE → build_ssb_list → config_common_ue_sa → configure_common_BWP_dl → configure_common_BWP_ul → configure_si_schedulingInfo → configure_timeAlignmentTimer → get_dl_bwp_structure → get_mac_inst → get_softmodem_params ... (+3 more)
+📥 Upstream: nr_rrc_handle_ra_indication → rrc_nrue → **nr_rrc_handle_ra_indication**
+📤 Downstream: **nr_rrc_handle_ra_indication** → handle_rlf_detection → nr_rrc_handle_ra_indication → nr_timer_is_active → nr_timer_stop
+📥 Upstream: rrc_rlc_config_req → rrc_t310_expiration → rrc_ue_establish_srb1 → rrc_ue_establish_srb2 → rrc_ue_process_mobilityControlInfo → **rrc_rlc_config_req**
+📤 Downstream: **rrc_rlc_config_req** → rrc_rlc_config_req
+📥 Upstream: force_RRC_IDLE → nr_rrc_going_to_IDLE → nr_rrc_handle_timers → nr_rrc_initiate_rrcReestablishment → nr_rrc_process_reconfigurationWithSync → nr_rrc_ue_process_rrcReestablishment → rrc_nrue → **nr_rrc_going_to_IDLE**
+📤 Downstream: **nr_rrc_going_to_IDLE** → get_DRB_status → handle_302_expired_stopped → init_SI_timers → itti_alloc_new_message → itti_send_msg_to_task → nr_pdcp_release_drb → nr_pdcp_release_srb → nr_rlc_release_entity → nr_rrc_going_to_IDLE → nr_sdap_delete_ue_entities ... (+6 more)
+
+**📚 Function Definitions (Downstream Functions):**
+
+**get_DRB_status** (from openair2\RRC\NR_UE\rrc_UE.c):
+```c
+static NR_RB_status_t get_DRB_status(const NR_UE_RRC_INST_t *rrc, NR_DRB_Identity_t drb_id)
+{
+```
+
+**init_SI_timers** (from openair2\RRC\NR_UE\rrc_timers_and_constants.c):
+```c
+void init_SI_timers(NR_UE_RRC_SI_INFO *SInfo)
+{
+```
+
+**itti_alloc_new_message** (from common\utils\ocp_itti\intertask_interface.cpp):
+```c
+MessageDef *itti_alloc_new_message(task_id_t origin_task_id, instance_t originInstance, MessagesIds message_id) {
+```
+
+**itti_send_msg_to_task** (from common\utils\ocp_itti\intertask_interface.cpp):
+```c
+int itti_send_msg_to_task(task_id_t destination_task_id, instance_t destinationInstance, MessageDef *message) {
+```
+
+**nr_pdcp_release_drb** (from openair2\LAYER2\nr_pdcp\nr_pdcp_oai_api.c):
+```c
+void nr_pdcp_release_drb(ue_id_t ue_id, int drb_id)
+{
+```
+
+**nr_pdcp_release_srb** (from openair2\LAYER2\nr_pdcp\nr_pdcp_oai_api.c):
+```c
+void nr_pdcp_release_srb(ue_id_t ue_id, int srb_id)
+{
+```
+
+**nr_rlc_release_entity** (from openair2\LAYER2\nr_rlc\nr_rlc_oai_api.c):
+```c
+void nr_rlc_release_entity(int ue_id, logical_chan_id_t channel_id)
+{
+```
+
+**nr_sdap_delete_ue_entities** (from openair2\SDAP\nr_sdap\nr_sdap_entity.c):
+```c
+bool nr_sdap_delete_ue_entities(ue_id_t ue_id)
+{
+```
+
+## 🔧 SUSPECTED FUNCTIONS
+
+### Function 1: nr_schedule_RA
+**File:** openair2/LAYER2/NR_MAC_gNB/gNB_scheduler_RA.c
+**Relevance Score:** 1.00
+**Reason:** This function checks and decrements the RA contention resolution timer, and if it expires, it logs the failure of the RA procedure. This is directly related to the error message.
+**Code:**
+```c
+void nr_schedule_RA(module_id_t module_idP,
+                    frame_t frameP,
+                    slot_t slotP,
+                    nfapi_nr_ul_dci_request_t *ul_dci_req,
+                    nfapi_nr_dl_tti_request_t *DL_req,
+                    nfapi_nr_tx_data_request_t *TX_req)
+{
+  gNB_MAC_INST *mac = RC.nrmac[module_idP];
+  /* already mutex protected: held in gNB_dlsch_ulsch_scheduler() */
+  NR_SCHED_ENSURE_LOCKED(&mac->sched_lock);
+
+  start_meas(&mac->schedule_ra);
+  for (int CC_id = 0; CC_id < MAX_NUM_CCs; CC_id++) {
+    UE_iterator(mac->UE_info.access_ue_list, UE) {
+      NR_RA_t *ra = UE->ra;
+      if (ra->ra_state != nrRA_gNB_IDLE)
+        LOG_D(NR_MAC, "UE %04x frame.slot %d.%d RA state: %d\n", UE->rnti, frameP, slotP, ra->ra_state);
+
+      // Check RA Contention Resolution timer (TODO check this procedure)
+      if (ra->ra_type == RA_4_STEP && ra->ra_state > nrRA_WAIT_Msg3) {
+        ra->contention_resolution_timer--;
+        if (ra->contention_resolution_timer == 0) {
+          LOG_W(NR_MAC, "(%d.%d) RA Contention Resolution timer expired for UE 0x%04x, RA procedure failed...\n", frameP, slotP, UE->rnti);
+          bool requested = false;
+          if (UE->CellGroup) // request if we did not reject the UE
+            requested = nr_mac_request_release_ue(mac, UE->rnti);
+          if (!requested)
+            nr_release_ra_UE(mac, UE->rnti);
+          continue;
+        }
+      }
+
+      switch (ra->ra_state) {
+        case nrRA_Msg2:
+          nr_generate_Msg2(module_idP, CC_id, frameP, slotP, UE, DL_req, TX_req);
+          break;
+        case nrRA_Msg3_retransmission:
+          nr_generate_Msg3_retransmission(module_idP, CC_id, frameP, slotP, UE, ul_dci_req);
+          break;
+        case nrRA_Msg4:
+        case nrRA_MsgB:
+          nr_generate_Msg4_MsgB(module_idP, CC_id, frameP, slotP, UE, DL_req, TX_req);
+          break;
+        default:
+          break;
+      }
+    }
+  }
+  stop_meas(&mac->schedule_ra);
+}
+```
+
+### Function 2: start_ra_contention_resolution_timer
+**File:** openair2/LAYER2/NR_MAC_gNB/gNB_scheduler_RA.c
+**Relevance Score:** 0.90
+**Reason:** This function directly starts the RA contention resolution timer, which is crucial for the RA procedure. If this timer is not managed correctly, it could lead to the "Contention resolution timer has expired" error.
+**Code:**
+```c
+static void start_ra_contention_resolution_timer(NR_RA_t *ra, const long ra_ContentionResolutionTimer, const int K2, const int scs)
+{
+  // 3GPP TS 38.331 Section 6.3.2 Radio resource control information elements
+  // ra-ContentionResolutionTimer ENUMERATED {sf8, sf16, sf24, sf32, sf40, sf48, sf56, sf64}
+  // The initial value for the contention resolution timer.
+  // Value sf8 corresponds to 8 subframes, value sf16 corresponds to 16 subframes, and so on.
+  // We add 2 * K2 because the timer runs from Msg2 transmission till Msg4 ACK reception
+  ra->contention_resolution_timer = ((((int)ra_ContentionResolutionTimer + 1) * 8) << scs) + 2 * K2;
+  LOG_D(NR_MAC,
+        "Starting RA Contention Resolution timer with %d ms + 2 * %d K2 (%d slots) duration\n",
+        ((int)ra_ContentionResolutionTimer + 1) * 8,
+        K2,
+        ra->contention_resolution_timer);
+}
+```
+
+### Function 3: nr_rrc_handle_ra_indication
+**File:** openair2/RRC/NR_UE/rrc_UE.c
+**Relevance Score:** 0.60
+**Reason:** This function handles RA indications and could be relevant if the RA procedure fails, as it checks for successful RA and handles failures, which could relate to the contention resolution timer.
+**Code:**
+```c
+void nr_rrc_handle_ra_indication(NR_UE_RRC_INST_t *rrc, bool ra_succeeded)
+{
+  NR_UE_Timers_Constants_t *timers = &rrc->timers_and_constants;
+  if (ra_succeeded && nr_timer_is_active(&timers->T304)) {
+    // successful Random Access procedure triggered by reconfigurationWithSync
+    nr_timer_stop(&timers->T304);
+    // TODO handle the rest of procedures as described in 5.3.5.3 for when
+    // reconfigurationWithSync is included in spCellConfig
+  } else if (!ra_succeeded) {
+    // upon random access problem indication from MCG MAC
+    // while neither T300, T301, T304, T311 nor T319 are running
+    // consider radio link failure to be detected
+    if (!nr_timer_is_active(&timers->T300)
+        && !nr_timer_is_active(&timers->T301)
+        && !nr_timer_is_active(&timers->T304)
+        && !nr_timer_is_active(&timers->T311)
+        && !nr_timer_is_active(&timers->T319))
+      handle_rlf_detection(rrc);
+  }
+}
+```
+
+### Function 4: nr_rrc_mac_config_req_sib1
+**File:** openair2/LAYER2/NR_MAC_UE/config_ue.c
+**Relevance Score:** 0.50
+**Reason:** This function configures timers and could indirectly affect the RA procedure, but it does not specifically handle the contention resolution timer.
+**Code:**
+```c
+void nr_rrc_mac_config_req_sib1(module_id_t module_id, int cc_idP, NR_SIB1_t *sib1, bool can_start_ra)
+{
+  NR_UE_MAC_INST_t *mac = get_mac_inst(module_id);
+  int ret = pthread_mutex_lock(&mac->if_mutex);
+  AssertFatal(!ret, "mutex failed %d\n", ret);
+  NR_SI_SchedulingInfo_t *si_SchedulingInfo = sib1->si_SchedulingInfo;
+  NR_SI_SchedulingInfo_v1700_t *si_SchedulingInfo_v1700 = NULL;
+  if (sib1->nonCriticalExtension && sib1->nonCriticalExtension->nonCriticalExtension
+      && sib1->nonCriticalExtension->nonCriticalExtension->nonCriticalExtension) {
+    si_SchedulingInfo_v1700 = sib1->nonCriticalExtension->nonCriticalExtension->nonCriticalExtension->si_SchedulingInfo_v1700;
+  }
+  NR_ServingCellConfigCommonSIB_t *scc = sib1->servingCellConfigCommon;
+  AssertFatal(scc, "SIB1 SCC should not be NULL\n");
+  UPDATE_IE(mac->tdd_UL_DL_ConfigurationCommon, scc->tdd_UL_DL_ConfigurationCommon, NR_TDD_UL_DL_ConfigCommon_t);
+  configure_si_schedulingInfo(mac, si_SchedulingInfo, si_SchedulingInfo_v1700);
+
+  config_common_ue_sa(mac, scc, cc_idP);
+
+  // Build the list of all the valid/transmitted SSBs according to the config
+  LOG_D(NR_MAC, "Build SSB list\n");
+  build_ssb_list(mac);
+
+  int bwp_id = 0;
+  configure_common_BWP_dl(mac, bwp_id, &scc->downlinkConfigCommon.initialDownlinkBWP);
+  if (scc->uplinkConfigCommon) {
+    mac->timeAlignmentTimerCommon = scc->uplinkConfigCommon->timeAlignmentTimerCommon;
+    configure_common_BWP_ul(mac, bwp_id, &scc->uplinkConfigCommon->initialUplinkBWP);
+  }
+  // set current BWP only if coming from non-connected state
+  // otherwise it is just a periodically update of the SIB1 content
+  if (mac->state < UE_CONNECTED) {
+    mac->current_DL_BWP = get_dl_bwp_structure(mac, 0, false);
+    AssertFatal(mac->current_DL_BWP, "Couldn't find DL-BWP0\n");
+    mac->current_UL_BWP = get_ul_bwp_structure(mac, 0, false);
+    AssertFatal(mac->current_UL_BWP, "Couldn't find DL-BWP0\n");
+    configure_timeAlignmentTimer(&mac->time_alignment_timer, mac->timeAlignmentTimerCommon, mac->current_UL_BWP->scs);
+  }
+  if (mac->state == UE_RECEIVING_SIB && can_start_ra)
+    mac->state = UE_PERFORMING_RA;
+
+  mac->if_module->phy_config_request(&mac->phy_config);
+  ret = pthread_mutex_unlock(&mac->if_mutex);
+  AssertFatal(!ret, "mutex failed %d\n", ret);
+}
+```
+
+### Function 5: ue_mac_reset
+**File:** openair2/LAYER2/MAC/config_ue.c
+**Relevance Score:** 0.50
+**Reason:** This function resets the MAC state, which could indirectly relate to the RA procedure, but it does not specifically address the contention resolution timer.
+**Code:**
+```c
+void ue_mac_reset(module_id_t module_idP, uint8_t eNB_index) {
+  //Resetting Bj
+  UE_mac_inst[module_idP].scheduling_info.Bj[0] = 0;
+  UE_mac_inst[module_idP].scheduling_info.Bj[1] = 0;
+  UE_mac_inst[module_idP].scheduling_info.Bj[2] = 0;
+  //Stopping all timers
+  //timeAlignmentTimer expires
+  // PHY changes for UE MAC reset
+  phy_reset_ue(module_idP, 0, eNB_index);
+  // notify RRC to relase PUCCH/SRS
+  // cancel all pending SRs
+  UE_mac_inst[module_idP].scheduling_info.SR_pending = 0;
+  UE_mac_inst[module_idP].scheduling_info.SR_COUNTER = 0;
+  //Set BSR Trigger Bmp and remove timer flags
+  UE_mac_inst[module_idP].BSR_reporting_active = BSR_TRIGGER_NONE;
+  // stop ongoing RACH procedure
+  // discard explicitly signaled ra_PreambleIndex and ra_RACH_MaskIndex, if any
+  UE_mac_inst[module_idP].RA_prach_resources.ra_PreambleIndex = 0;  // check!
+  UE_mac_inst[module_idP].RA_prach_resources.ra_RACH_MaskIndex = 0;
+  ue_init_mac(module_idP);  //This will hopefully do the rest of the MAC reset procedure
+}
+```
+
+### Function 6: nr_rrc_handle_timers
+**File:** openair2/RRC/NR_UE/rrc_timers_and_constants.c
+**Relevance Score:** 0.40
+**Reason:** This function handles various timers, including T300 and T301, which could relate to RRC procedures but does not directly address the contention resolution timer.
+**Code:**
+```c
+void nr_rrc_handle_timers(NR_UE_RRC_INST_t *rrc)
+{
+  NR_UE_Timers_Constants_t *timers = &rrc->timers_and_constants;
+
+  bool release_timer_expired = nr_timer_tick(&rrc->release_timer);
+  if (release_timer_expired)
+    handle_RRCRelease(rrc);
+
+  bool t300_expired = nr_timer_tick(&timers->T300);
+  if(t300_expired) {
+    LOG_W(NR_RRC, "[UE %ld] Timer T300 expired! No timely response to RRCSetupRequest\n", rrc->ue_id);
+    handle_t300_expiry(rrc);
+  }
+
+  bool t301_expired = nr_timer_tick(&timers->T301);
+  // Upon T301 expiry, the UE shall perform the actions upon going to RRC_IDLE
+  // with release cause 'RRC connection failure'
+  if(t301_expired) {
+    LOG_W(NR_RRC, "[UE %ld] Timer T301 expired! No timely response to RRCReestabilshmentRequest\n", rrc->ue_id);
+    nr_rrc_going_to_IDLE(rrc, RRC_CONNECTION_FAILURE, NULL);
+  }
+
+  bool t302_expired = nr_timer_tick(&timers->T302);
+  // 5.3.14.4 in 38.331
+  // consider the barring for this Access Category to be alleviated
+  if (t302_expired) {
+    LOG_W(NR_RRC, "[UE %ld] Timer T302 expired! Access barring alleviated!\n", rrc->ue_id);
+    handle_302_expired_stopped(rrc);
+  }
+
+  bool t304_expired = nr_timer_tick(&timers->T304);
+  if(t304_expired) {
+    LOG_W(NR_RRC, "[UE %ld] Timer T304 expired\n", rrc->ue_id);
+    // TODO
+    // For T304 of MCG, in case of the handover from NR or intra-NR
+    // handover, initiate the RRC re-establishment procedure;
+    // In case of handover to NR, perform the actions defined in the
+    // specifications applicable for the source RAT.
+  }
+
+  bool t310_expired = nr_timer_tick(&timers->T310);
+  if(t310_expired) {
+    LOG_W(NR_RRC, "[UE %ld] Timer T310 expired\n", rrc->ue_id);
+    // handle detection of radio link failure
+    // as described in 5.3.10.3 of 38.331
+    handle_rlf_detection(rrc);
+  }
+
+  bool t311_expired = nr_timer_tick(&timers->T311);
+  if (t311_expired) {
+    LOG_W(NR_RRC, "[UE %ld] Timer T311 expired! No suitable cell found in time after initiation of re-establishment\n", rrc->ue_id);
+    // Upon T311 expiry, the UE shall perform the actions upon going to RRC_IDLE
+    // with release cause 'RRC connection failure'
+    nr_rrc_going_to_IDLE(rrc, RRC_CONNECTION_FAILURE, NULL);
+  }
+
+  bool t430_expired = nr_timer_tick(&rrc->timers_and_constants.T430);
+  if (t430_expired && rrc->nrRrcState == RRC_STATE_CONNECTED_NR && rrc->is_NTN_UE) {
+    LOG_W(NR_RRC, "[UE %ld] Timer T430 expired! Indicate UL SYNC LOSS to MAC\n", rrc->ue_id);
+    // Upon T430 expiry, the UE shall reacquire SIB19 and re-obtain UL-SYNC
+    // Spec 38.331 Section 5.2.2.6
+    handle_t430_expiry(rrc);
+  }
+
+  handle_meas_timers(rrc);
+}
+```
+
+### Function 7: nr_release_ra_UE
+**File:** openair2/LAYER2/NR_MAC_gNB/gNB_scheduler_RA.c
+**Relevance Score:** 0.40
+**Reason:** This function adds a new UE to the RA process list, which is relevant to the RA procedure but does not directly relate to the contention resolution timer or its expiration.
+**Code:**
+```c
+* Remove with nr_release_ra_UE(). */
+bool add_new_UE_RA(gNB_MAC_INST *nr_mac, NR_UE_info_t *UE)
+{
+  DevAssert(UE->ra); // a UE in the acess_ue_list needs to have an RA process
+  return add_UE_to_list(NR_NB_RA_PROC_MAX, nr_mac->UE_info.access_ue_list, UE);
+}
+```
+
+### Function 8: LOG_I
+**File:** openair2/LAYER2/NR_MAC_UE/nr_ra_procedures.c
+**Relevance Score:** 0.30
+**Reason:** This function initializes the RA procedure but does not directly relate to the contention resolution timer or its expiration.
+**Code:**
+```c
+LOG_I(MAC, "Initialization of 4-Step CFRA procedure\n");
+    ra->ra_type = RA_4_STEP;
+    ra->cfra = true;
+  } else {
+    bool twostep_cfra = (rach_Dedicated && rach_Dedicated->ext1) ? (rach_Dedicated->ext1->cfra_TwoStep_r16 ? true : false) : false;
+    if (twostep_cfra) {
+      // if the Random Access procedure was initiated for reconfiguration with sync and
+      // if the contention-free Random Access Resources for 2-step RA type have been explicitly provided in rach-ConfigDedicated
+      LOG_I(MAC, "Initialization of 2-Step CFRA procedure\n");
+      ra->ra_type = RA_2_STEP;
+      ra->cfra = true;
+    } else {
+```
+
+### Function 9: handle_time_alignment_timer_expired
+**File:** openair2/LAYER2/NR_MAC_UE/nr_ue_scheduler.c
+**Relevance Score:** 0.20
+**Reason:** This function handles the time alignment timer expiration, which is somewhat related but does not directly address the contention resolution timer or RA procedures.
+**Code:**
+```c
+void handle_time_alignment_timer_expired(NR_UE_MAC_INST_t *mac)
+{
+  // flush all HARQ buffers for all Serving Cells
+  for (int k = 0; k < NR_MAX_HARQ_PROCESSES; k++) {
+    memset(&mac->dl_harq_info[k], 0, sizeof(*mac->dl_harq_info));
+    memset(&mac->ul_harq_info[k], 0, sizeof(*mac->ul_harq_info));
+    mac->dl_harq_info[k].last_ndi = -1; // initialize to invalid value
+    mac->ul_harq_info[k].last_ndi = -1; // initialize to invalid value
+  }
+  // release PUCCH for all Serving Cells;
+  // release SRS for all Serving Cells;
+  release_PUCCH_SRS(mac);
+  // clear any configured downlink assignments and uplink grants;
+  if (mac->dl_config_request)
+    memset(mac->dl_config_request, 0, sizeof(*mac->dl_config_request));
+  if (mac->ul_config_request)
+    clear_ul_config_request(mac);
+  // clear any PUSCH resources for semi-persistent CSI reporting
+  // TODO we don't have semi-persistent CSI reporting
+  // maintain N_TA
+  // TODO not sure what to do here
+}
+```
+
+### Function 10: rrc_rlc_config_req
+**File:** openair2/RRC/LTE/rrc_UE.c
+**Relevance Score:** 0.10
+**Reason:** This function is related to RRC procedures but does not directly connect to the RA contention resolution timer or the error message.
+**Code:**
+```c
+rrc_rlc_config_req (ctxt_pP,
+                          SRB_FLAG_YES,
+                          MBMS_FLAG_NO,
+                          CONFIG_ACTION_REMOVE,
+                          UE_rrc_inst[ctxt_pP->module_id].Srb2[eNB_index].Srb_info.Srb_id);
+      UE_rrc_inst[ctxt_pP->module_id].Srb2[eNB_index].Active = 0;
+      UE_rrc_inst[ctxt_pP->module_id].Srb2[eNB_index].StatusSrb = IDLE;
+      UE_rrc_inst[ctxt_pP->module_id].Srb2[eNB_index].Next_check_frame = 0;
+    }
+  } else { // Restablishment procedure
+    LOG_D(RRC, "Timer 310 expired, trying RRCRestablishment ...\n");
+  }
+}
+
+//-----------------------------------------------------------------------------
+static void rrc_ue_generate_RRCConnectionSetupComplete(const protocol_ctxt_t *const ctxt_pP,
+                                                       const uint8_t eNB_index,
+                                                       const uint8_t Transaction_id,
+                                                       uint8_t sel_plmn_id)
+{
+  uint8_t    buffer[100];
+  uint8_t    size;
+  const char *nas_msg;
+  int   nas_msg_length;
+
+  if (!IS_SOFTMODEM_NOS1) {
+    nas_msg = (char *)UE_rrc_inst[ctxt_pP->module_id].initialNasMsg.nas_data;
+    nas_msg_length  = UE_rrc_inst[ctxt_pP->module_id].initialNasMsg.length;
+  } else {
+    nas_msg         = nas_attach_req_imsi;
+    nas_msg_length  = sizeof(nas_attach_req_imsi);
+  }
+
+  size = do_RRCConnectionSetupComplete(ctxt_pP->module_id, buffer, Transaction_id, sel_plmn_id, nas_msg_length, nas_msg);
+  LOG_I(RRC,"[UE %d][RAPROC] Frame %d : Logical Channel UL-DCCH (SRB1), Generating RRCConnectionSetupComplete (bytes%d, eNB %d)\n",
+        ctxt_pP->module_id,ctxt_pP->frame, size, eNB_index);
+  LOG_D(RLC,
+        "[FRAME %05d][RRC_UE][MOD %02d][][--- PDCP_DATA_REQ/%d Bytes (RRCConnectionSetupComplete to eNB %d MUI %d) --->][PDCP][MOD %02d][RB %02d]\n",
+        ctxt_pP->frame, ctxt_pP->module_id+NB_eNB_INST, size, eNB_index, rrc_mui, ctxt_pP->module_id+NB_eNB_INST, DCCH);
+  ctxt_pP_local.rntiMaybeUEid = ctxt_pP->rntiMaybeUEid;
+  rrc_data_req_ue (
+    ctxt_pP,
+    DCCH,
+    rrc_mui++,
+    SDU_CONFIRM_NO,
+    size,
+    buffer,
+    PDCP_TRANSMISSION_MODE_CONTROL);
+}
+
+//-----------------------------------------------------------------------------
+void rrc_ue_generate_RRCConnectionReconfigurationComplete(const protocol_ctxt_t *const ctxt_pP,
+                                                          const uint8_t eNB_index,
+                                                          const uint8_t Transaction_id,
+                                                          OCTET_STRING_t *str) {
+  uint8_t buffer[RRC_BUF_SIZE];
+  size_t size = do_RRCConnectionReconfigurationComplete(ctxt_pP, buffer, sizeof(buffer), Transaction_id, str);
+  LOG_I(RRC,PROTOCOL_RRC_CTXT_UE_FMT" Logical Channel UL-DCCH (SRB1), Generating RRCConnectionReconfigurationComplete (bytes %zu, eNB_index %d)\n",
+        PROTOCOL_RRC_CTXT_UE_ARGS(ctxt_pP), size, eNB_index);
+  LOG_D(RLC,
+        "[FRAME %05d][RRC_UE][INST %02d][][--- PDCP_DATA_REQ/%zu Bytes (RRCConnectionReconfigurationComplete to eNB %d MUI %d) --->][PDCP][INST %02d][RB %02d]\n",
+        ctxt_pP->frame,
+        UE_MODULE_ID_TO_INSTANCE(ctxt_pP->module_id),
+        size,
+        eNB_index,
+        rrc_mui,
+        UE_MODULE_ID_TO_INSTANCE(ctxt_pP->module_id),
+        DCCH);
+  rrc_data_req_ue (
+    ctxt_pP,
+    DCCH,
+    rrc_mui++,
+    SDU_CONFIRM_NO,
+    size,
+    buffer,
+    PDCP_TRANSMISSION_MODE_CONTROL);
+}
+
+
+//-----------------------------------------------------------------------------
+// Called by L2 interface (MAC)
+int rrc_ue_decode_ccch( const protocol_ctxt_t *const ctxt_pP, const SRB_INFO *const Srb_info, const uint8_t eNB_index ) {
+  LTE_DL_CCCH_Message_t *dl_ccch_msg=NULL;
+  asn_dec_rval_t dec_rval;
+  int rval=0;
+  VCD_SIGNAL_DUMPER_DUMP_FUNCTION_BY_NAME(VCD_SIGNAL_DUMPER_FUNCTIONS_UE_DECODE_CCCH, VCD_FUNCTION_IN);
+  //  LOG_D(RRC,"[UE %d] Decoding DL-CCCH message (%d bytes), State %d\n",ue_mod_idP,Srb_info->Rx_buffer.payload_size,
+  //  UE_rrc_inst[ue_mod_idP].Info[eNB_index].State);
+  dec_rval = uper_decode(NULL,
+                         &asn_DEF_LTE_DL_CCCH_Message,
+                         (void **)&dl_ccch_msg,
+                         (uint8_t *)Srb_info->Rx_buffer.Payload,
+                         100,0,0);
+
+  if ( LOG_DEBUGFLAG(DEBUG_ASN1) ) {
+    xer_fprint(stdout,&asn_DEF_LTE_DL_CCCH_Message,(void *)dl_ccch_msg);
+  }
+
+  if ((dec_rval.code != RC_OK) && (dec_rval.consumed==0)) {
+    LOG_E(RRC,"[UE %d] Frame %d : Failed to decode DL-CCCH-Message (%zu bytes)\n",ctxt_pP->module_id,ctxt_pP->frame,dec_rval.consumed);
+    VCD_SIGNAL_DUMPER_DUMP_FUNCTION_BY_NAME(VCD_SIGNAL_DUMPER_FUNCTIONS_UE_DECODE_CCCH, VCD_FUNCTION_OUT);
+    return -1;
+  }
+
+  if (dl_ccch_msg->message.present == LTE_DL_CCCH_MessageType_PR_c1) {
+    if (UE_rrc_inst[ctxt_pP->module_id].Info[eNB_index].State == RRC_SI_RECEIVED) {
+      switch (dl_ccch_msg->message.choice.c1.present) {
+        case LTE_DL_CCCH_MessageType__c1_PR_NOTHING:
+          LOG_I(RRC, "[UE%d] Frame %d : Received PR_NOTHING on DL-CCCH-Message\n",
+                ctxt_pP->module_id,
+                ctxt_pP->frame);
+          rval = 0;
+          break;
+
+        case LTE_DL_CCCH_MessageType__c1_PR_rrcConnectionReestablishment:
+          LOG_I(RRC,
+                "[UE%d] Frame %d : Logical Channel DL-CCCH (SRB0), Received RRCConnectionReestablishment\n",
+                ctxt_pP->module_id,
+                ctxt_pP->frame);
+          rval = 0;
+          break;
+
+        case LTE_DL_CCCH_MessageType__c1_PR_rrcConnectionReestablishmentReject:
+          LOG_I(RRC,
+                "[UE%d] Frame %d : Logical Channel DL-CCCH (SRB0), Received RRCConnectionReestablishmentReject\n",
+                ctxt_pP->module_id,
+                ctxt_pP->frame);
+          rval = 0;
+          break;
+
+        case LTE_DL_CCCH_MessageType__c1_PR_rrcConnectionReject:
+          LOG_I(RRC,
+                "[UE%d] Frame %d : Logical Channel DL-CCCH (SRB0), Received RRCConnectionReject \n",
+                ctxt_pP->module_id,
+                ctxt_pP->frame);
+          rval = 0;
+          break;
+
+        case LTE_DL_CCCH_MessageType__c1_PR_rrcConnectionSetup:
+          LOG_A(RRC, "[UE%d][RAPROC] Frame %d : Logical Channel DL-CCCH (SRB0), Received RRCConnectionSetup RNTI %lx\n", ctxt_pP->module_id, ctxt_pP->frame, ctxt_pP->rntiMaybeUEid);
+          // Get configuration
+          // Release T300 timer
+          UE_rrc_inst[ctxt_pP->module_id].Info[eNB_index].T300_active = 0;
+          rrc_ue_process_radioResourceConfigDedicated(
+            ctxt_pP,
+            eNB_index,
+            &dl_ccch_msg->message.choice.c1.choice.rrcConnectionSetup.criticalExtensions.choice.c1.choice.rrcConnectionSetup_r8.radioResourceConfigDedicated);
+          rrc_set_state (ctxt_pP->module_id, RRC_STATE_CONNECTED);
+          rrc_set_sub_state (ctxt_pP->module_id, RRC_SUB_STATE_CONNECTED);
+          UE_rrc_inst[ctxt_pP->module_id].Info[eNB_index].rnti = ctxt_pP->rntiMaybeUEid;
+          rrc_ue_generate_RRCConnectionSetupComplete(
+            ctxt_pP,
+            eNB_index,
+            dl_ccch_msg->message.choice.c1.choice.rrcConnectionSetup.rrc_TransactionIdentifier,
+            UE_rrc_inst[ctxt_pP->module_id].selected_plmn_identity);
+          rval = 0;
+          break;
+
+        default:
+          LOG_E(RRC, "[UE%d] Frame %d : Unknown message\n",
+                ctxt_pP->module_id,
+                ctxt_pP->frame);
+          rval = -1;
+          break;
+      }
+```
+
+### Function 11: configure_si_schedulingInfo
+**File:** openair2\LAYER2\NR_MAC_UE\config_ue.c
+**Relevance Score:** 0.70
+**Reason:** Downstream function called by candidate functions. Important for understanding context initialization and error handling.
+**Code:**
+```c
+static void configure_si_schedulingInfo(NR_UE_MAC_INST_t *mac,
+                                        NR_SI_SchedulingInfo_t *si_SchedulingInfo,
+                                        NR_SI_SchedulingInfo_v1700_t *si_SchedulingInfo_v1700)
+{
+  asn_sequence_empty(&mac->si_SchedInfo.si_SchedInfo_list);
+  if (si_SchedulingInfo) {
+    mac->si_SchedInfo.si_WindowLength = si_SchedulingInfo->si_WindowLength;
+    for (int i = 0; i < si_SchedulingInfo->schedulingInfoList.list.count; i++) {
+      si_schedinfo_config_t *config = calloc_or_fail(1, sizeof(*config));
+      config->type = NR_SI_INFO;
+      config->si_WindowPosition = i + 1;
+      config->si_Periodicity = si_SchedulingInfo->schedulingInfoList.list.array[i]->si_Periodicity;
+      ASN_SEQUENCE_ADD(&mac->si_SchedInfo.si_SchedInfo_list, config);
+    }
+  }
+  if (si_SchedulingInfo_v1700) {
+    for (int i = 0; i < si_SchedulingInfo_v1700->schedulingInfoList2_r17.list.count; i++) {
+      si_schedinfo_config_t *config = calloc_or_fail(1, sizeof(*config));
+      config->type = NR_SI_INFO_v1700;
+      config->si_WindowPosition = si_SchedulingInfo_v1700->schedulingInfoList2_r17.list.array[i]->si_WindowPosition_r17;
+      config->si_Periodicity = si_SchedulingInfo_v1700->schedulingInfoList2_r17.list.array[i]->si_Periodicity_r17;
+      ASN_SEQUENCE_ADD(&mac->si_SchedInfo.si_SchedInfo_list, config);
+    }
+  }
+}
+```
+
+### Function 12: get_mac_inst
+**File:** openair2\LAYER2\NR_MAC_UE\main_ue_nr.c
+**Relevance Score:** 0.70
+**Reason:** Downstream function called by candidate functions. Important for understanding context initialization and error handling.
+**Code:**
+```c
+NR_UE_MAC_INST_t *get_mac_inst(module_id_t module_id)
+{
+  NR_UE_MAC_INST_t *mac = &nr_ue_mac_inst[(int)module_id];
+  AssertFatal(mac, "Couldn't get MAC inst %d\n", module_id);
+  AssertFatal(mac->ue_id == module_id, "MAC ID %d doesn't match with input %d\n", mac->ue_id, module_id);
+  return mac;
+}
+```
+
+### Function 13: configure_common_BWP_ul
+**File:** openair2\LAYER2\NR_MAC_UE\config_ue.c
+**Relevance Score:** 0.70
+**Reason:** Downstream function called by candidate functions. Important for understanding context initialization and error handling.
+**Code:**
+```c
+static void configure_common_BWP_ul(NR_UE_MAC_INST_t *mac, int bwp_id, NR_BWP_UplinkCommon_t *ul_common)
+{
+  if (ul_common) {
+    NR_UE_UL_BWP_t *bwp = get_ul_bwp_structure(mac, bwp_id, true);
+    bwp->bwp_id = bwp_id;
+    NR_BWP_t *ul_genericParameters = &ul_common->genericParameters;
+    bwp->scs = ul_genericParameters->subcarrierSpacing;
+    bwp->cyclicprefix = ul_genericParameters->cyclicPrefix;
+    bwp->BWPSize = NRRIV2BW(ul_genericParameters->locationAndBandwidth, MAX_BWP_SIZE);
+    bwp->BWPStart = NRRIV2PRBOFFSET(ul_genericParameters->locationAndBandwidth, MAX_BWP_SIZE);
+    // For power calculations assume the UE channel is the smallest channel that can support the BWP
+    int bw_index = get_smallest_supported_bandwidth_index(bwp->scs, mac->frequency_range, bwp->BWPSize);
+    bwp->channel_bandwidth = get_supported_bw_mhz(mac->frequency_range, bw_index);
+    // Minumum transmission power depends on bandwidth, precalculate it here
+    bwp->P_CMIN = nr_get_Pcmin(bw_index);
+    bwp->srs_power_control_initialized = false;
+    if (bwp_id == 0) {
+      mac->sc_info.initial_ul_BWPSize = bwp->BWPSize;
+      mac->sc_info.initial_ul_BWPStart = bwp->BWPStart;
+    }
+    if (ul_common->rach_ConfigCommon) {
+      HANDLE_SETUPRELEASE_DIRECT(bwp->rach_ConfigCommon,
+                                 ul_common->rach_ConfigCommon,
+                                 NR_RACH_ConfigCommon_t,
+                                 asn_DEF_NR_RACH_ConfigCommon);
+    }
+    if (ul_common->ext1 && ul_common->ext1->msgA_ConfigCommon_r16) {
+      HANDLE_SETUPRELEASE_DIRECT(bwp->msgA_ConfigCommon_r16,
+                                 ul_common->ext1->msgA_ConfigCommon_r16,
+                                 NR_MsgA_ConfigCommon_r16_t,
+                                 asn_DEF_NR_MsgA_ConfigCommon_r16);
+    }
+    if (ul_common->pucch_ConfigCommon)
+      HANDLE_SETUPRELEASE_DIRECT(bwp->pucch_ConfigCommon,
+                                 ul_common->pucch_ConfigCommon,
+                                 NR_PUCCH_ConfigCommon_t,
+                                 asn_DEF_NR_PUCCH_ConfigCommon);
+    if (ul_common->pusch_ConfigCommon) {
+      if (ul_common->pusch_ConfigCommon->present == NR_SetupRelease_PUSCH_ConfigCommon_PR_setup) {
+        UPDATE_IE(bwp->tdaList_Common,
+                  ul_common->pusch_ConfigCommon->choice.setup->pusch_TimeDomainAllocationList,
+                  NR_PUSCH_TimeDomainResourceAllocationList_t);
+        UPDATE_IE(bwp->msg3_DeltaPreamble, ul_common->pusch_ConfigCommon->choice.setup->msg3_DeltaPreamble, long);
+        UPDATE_IE(bwp->p0_NominalWithGrant, ul_common->pusch_ConfigCommon->choice.setup->p0_NominalWithGrant, long);
+      }
+      if (ul_common->pusch_ConfigCommon->present == NR_SetupRelease_PUSCH_ConfigCommon_PR_release) {
+        asn1cFreeStruc(asn_DEF_NR_PUSCH_TimeDomainResourceAllocationList, bwp->tdaList_Common);
+        free_and_zero(bwp->msg3_DeltaPreamble);
+        free_and_zero(bwp->p0_NominalWithGrant);
+      }
+    }
+  }
+}
+```
+
+### Function 14: config_common_ue_sa
+**File:** openair2\LAYER2\NR_MAC_UE\config_ue.c
+**Relevance Score:** 0.70
+**Reason:** Downstream function called by candidate functions. Important for understanding context initialization and error handling.
+**Code:**
+```c
+static void config_common_ue_sa(NR_UE_MAC_INST_t *mac, NR_ServingCellConfigCommonSIB_t *scc, int cc_idP)
+{
+  fapi_nr_config_request_t *cfg = &mac->phy_config.config_req;
+  mac->phy_config.Mod_id = mac->ue_id;
+  mac->phy_config.CC_id = cc_idP;
+  LOG_D(MAC, "Entering SA UE Config Common\n");
+  // carrier config
+  NR_FrequencyInfoDL_SIB_t *frequencyInfoDL = &scc->downlinkConfigCommon.frequencyInfoDL;
+  AssertFatal(frequencyInfoDL->frequencyBandList.list.array[0]->freqBandIndicatorNR, "Field mandatory present for DL in SIB1\n");
+  mac->nr_band = *frequencyInfoDL->frequencyBandList.list.array[0]->freqBandIndicatorNR;
+  int bw_index = get_supported_band_index(frequencyInfoDL->scs_SpecificCarrierList.list.array[0]->subcarrierSpacing,
+                                          mac->frequency_range,
+                                          frequencyInfoDL->scs_SpecificCarrierList.list.array[0]->carrierBandwidth);
+  cfg->carrier_config.dl_bandwidth = get_supported_bw_mhz(mac->frequency_range, bw_index);
+  uint64_t dl_bw_khz = (12 * frequencyInfoDL->scs_SpecificCarrierList.list.array[0]->carrierBandwidth) *
+                       (15 << frequencyInfoDL->scs_SpecificCarrierList.list.array[0]->subcarrierSpacing);
+  cfg->carrier_config.dl_frequency = (downlink_frequency[cc_idP][0]/1000) - (dl_bw_khz>>1);
+  for (int i = 0; i < 5; i++) {
+    if (i == frequencyInfoDL->scs_SpecificCarrierList.list.array[0]->subcarrierSpacing) {
+      cfg->carrier_config.dl_grid_size[i] = frequencyInfoDL->scs_SpecificCarrierList.list.array[0]->carrierBandwidth;
+      cfg->carrier_config.dl_k0[i] = frequencyInfoDL->scs_SpecificCarrierList.list.array[0]->offsetToCarrier;
+    }
+    else {
+      cfg->carrier_config.dl_grid_size[i] = 0;
+      cfg->carrier_config.dl_k0[i] = 0;
+    }
+  }
+  NR_FrequencyInfoUL_SIB_t *frequencyInfoUL = &scc->uplinkConfigCommon->frequencyInfoUL;
+  mac->p_Max = frequencyInfoUL->p_Max ? *frequencyInfoUL->p_Max : INT_MIN;
+  bw_index = get_supported_band_index(frequencyInfoUL->scs_SpecificCarrierList.list.array[0]->subcarrierSpacing,
+                                      mac->frequency_range,
+                                      frequencyInfoUL->scs_SpecificCarrierList.list.array[0]->carrierBandwidth);
+  cfg->carrier_config.uplink_bandwidth = get_supported_bw_mhz(mac->frequency_range, bw_index);
+  if (frequencyInfoUL->absoluteFrequencyPointA == NULL)
+    cfg->carrier_config.uplink_frequency = cfg->carrier_config.dl_frequency;
+  else
+    cfg->carrier_config.uplink_frequency = cfg->carrier_config.dl_frequency + (uplink_frequency_offset[cc_idP][0] / 1000);
+  for (int i = 0; i < 5; i++) {
+    if (i == frequencyInfoUL->scs_SpecificCarrierList.list.array[0]->subcarrierSpacing) {
+      cfg->carrier_config.ul_grid_size[i] = frequencyInfoUL->scs_SpecificCarrierList.list.array[0]->carrierBandwidth;
+      cfg->carrier_config.ul_k0[i] = frequencyInfoUL->scs_SpecificCarrierList.list.array[0]->offsetToCarrier;
+    }
+    else {
+      cfg->carrier_config.ul_grid_size[i] = 0;
+      cfg->carrier_config.ul_k0[i] = 0;
+    }
+  }
+  frame_type_t frame_type = get_frame_type(mac->nr_band, get_softmodem_params()->numerology);
+  // cell config
+  cfg->cell_config.phy_cell_id = mac->physCellId;
+  cfg->cell_config.frame_duplex_type = frame_type;
+  cfg->cell_config.N_TA_offset = get_ta_offset(scc->n_TimingAdvanceOffset);
+  // SSB config
+  cfg->ssb_config.ss_pbch_power = scc->ss_PBCH_BlockPower;
+  cfg->ssb_config.scs_common = get_softmodem_params()->numerology;
+  // SSB Table config
+  cfg->ssb_table.ssb_offset_point_a = frequencyInfoDL->offsetToPointA;
+  cfg->ssb_table.ssb_period = scc->ssb_PeriodicityServingCell;
+  cfg->ssb_table.ssb_subcarrier_offset = mac->ssb_subcarrier_offset;
+  if (mac->frequency_range == FR1){
+    cfg->ssb_table.ssb_mask_list[0].ssb_mask = ((uint32_t) scc->ssb_PositionsInBurst.inOneGroup.buf[0]) << 24;
+    cfg->ssb_table.ssb_mask_list[1].ssb_mask = 0;
+  }
+  else{
+    for (int i=0; i<8; i++){
+      if ((scc->ssb_PositionsInBurst.groupPresence->buf[0]>>(7-i))&0x01)
+        cfg->ssb_table.ssb_mask_list[i>>2].ssb_mask |= ((uint32_t)scc->ssb_PositionsInBurst.inOneGroup.buf[0])<<(24-8*(i%4));
+    }
+  }
+  int period_idx = mac->tdd_UL_DL_ConfigurationCommon ? get_tdd_period_idx(mac->tdd_UL_DL_ConfigurationCommon) : 0;
+  config_frame_structure(get_softmodem_params()->numerology,
+                         mac->tdd_UL_DL_ConfigurationCommon,
+                         period_idx,
+                         frame_type,
+                         &mac->frame_structure);
+  // TDD Table Configuration
+  if (cfg->cell_config.frame_duplex_type == TDD)
+    set_tdd_config_nr_ue(&cfg->tdd_table, &mac->frame_structure);
+  // PRACH configuration
+  uint8_t nb_preambles = 64;
+  NR_RACH_ConfigCommon_t *rach_ConfigCommon = scc->uplinkConfigCommon->initialUplinkBWP.rach_ConfigCommon->choice.setup;
+  if(rach_ConfigCommon->totalNumberOfRA_Preambles != NULL)
+     nb_preambles = *rach_ConfigCommon->totalNumberOfRA_Preambles;
+  cfg->prach_config.prach_sequence_length = rach_ConfigCommon->prach_RootSequenceIndex.present-1;
+  if (rach_ConfigCommon->msg1_SubcarrierSpacing)
+    cfg->prach_config.prach_sub_c_spacing = *rach_ConfigCommon->msg1_SubcarrierSpacing;
+  else {
+    // If absent, the UE applies the SCS as derived from the prach-ConfigurationIndex (for 839)
+    int config_index = rach_ConfigCommon->rach_ConfigGeneric.prach_ConfigurationIndex;
+    int format = get_format0(config_index, frame_type, mac->frequency_range);
+    cfg->prach_config.prach_sub_c_spacing = get_delta_f_RA_long(format);
+  }
+  cfg->prach_config.restricted_set_config = rach_ConfigCommon->restrictedSetConfig;
+  AssertFatal(rach_ConfigCommon->rach_ConfigGeneric.msg1_FDM < 4,
+              "msg1 FDM identifier %ld undefined (0,1,2,3)\n", rach_ConfigCommon->rach_ConfigGeneric.msg1_FDM);
+  cfg->prach_config.num_prach_fd_occasions = 1 << rach_ConfigCommon->rach_ConfigGeneric.msg1_FDM;
+  cfg->prach_config.num_prach_fd_occasions_list = (fapi_nr_num_prach_fd_occasions_t *) malloc(cfg->prach_config.num_prach_fd_occasions*sizeof(fapi_nr_num_prach_fd_occasions_t));
+  for (int i=0; i<cfg->prach_config.num_prach_fd_occasions; i++) {
+    fapi_nr_num_prach_fd_occasions_t *prach_fd_occasion = &cfg->prach_config.num_prach_fd_occasions_list[i];
+    prach_fd_occasion->num_prach_fd_occasions = i;
+    if (cfg->prach_config.prach_sequence_length)
+      prach_fd_occasion->prach_root_sequence_index = rach_ConfigCommon->prach_RootSequenceIndex.choice.l139;
+    else
+      prach_fd_occasion->prach_root_sequence_index = rach_ConfigCommon->prach_RootSequenceIndex.choice.l839;
+    prach_fd_occasion->k1 = NRRIV2PRBOFFSET(scc->uplinkConfigCommon->initialUplinkBWP.genericParameters.locationAndBandwidth, MAX_BWP_SIZE) +
+                                            rach_ConfigCommon->rach_ConfigGeneric.msg1_FrequencyStart +
+                                            (get_N_RA_RB(cfg->prach_config.prach_sub_c_spacing, frequencyInfoUL->scs_SpecificCarrierList.list.array[0]->subcarrierSpacing ) * i);
+    prach_fd_occasion->prach_zero_corr_conf = rach_ConfigCommon->rach_ConfigGeneric.zeroCorrelationZoneConfig;
+    prach_fd_occasion->num_root_sequences = compute_nr_root_seq(rach_ConfigCommon,
+                                                                nb_preambles,
+                                                                frame_type,
+                                                                mac->frequency_range);
+    //prach_fd_occasion->num_unused_root_sequences = ???
+  }
+  cfg->prach_config.ssb_per_rach = rach_ConfigCommon->ssb_perRACH_OccasionAndCB_PreamblesPerSSB->present-1;
+}
+```
+
+### Function 15: UPDATE_IE
+**File:** common\utils\oai_asn1.h
+**Relevance Score:** 0.70
+**Reason:** Downstream function called by candidate functions. Important for understanding context initialization and error handling.
+**Code:**
+```c
+#ifndef ASN1_CONVERSIONS_H_
+#define ASN1_CONVERSIONS_H_
+#include "BIT_STRING.h"
+#include "assertions.h"
+#define UPDATE_IE(DESTINATION, ORIGIN, TYPE) \
+ do { \
+ TYPE *tmp = ORIGIN; \
+ ORIGIN = DESTINATION; \
+ DESTINATION = tmp; \
+ }
+```
+
+### Function 16: nr_timer_tick
+**File:** common\utils\nr\nr_common.c
+**Relevance Score:** 0.70
+**Reason:** Downstream function called by candidate functions. Important for understanding context initialization and error handling.
+**Code:**
+```c
+bool nr_timer_tick(NR_timer_t *timer)
+{
+  bool expired = false;
+  if (timer->active) {
+    timer->counter += timer->step;
+    if (timer->target == UINT_MAX || timer->suspended) // infinite target, never expires
+      return false;
+    expired = nr_timer_expired(timer);
+    if (expired)
+      timer->active = false;
+  }
+  return expired;
+}
+```
+
+### Function 17: handle_t300_expiry
+**File:** openair2\RRC\NR_UE\rrc_UE.c
+**Relevance Score:** 0.70
+**Reason:** Downstream function called by candidate functions. Important for understanding context initialization and error handling.
+**Code:**
+```c
+void handle_t300_expiry(NR_UE_RRC_INST_t *rrc)
+{
+  rrc->ra_trigger = RRC_CONNECTION_SETUP;
+  nr_rrc_ue_prepare_RRCSetupRequest(rrc);
+  // reset MAC, release the MAC configuration
+  NR_UE_MAC_reset_cause_t cause = T300_EXPIRY;
+  MessageDef *msg = itti_alloc_new_message(TASK_RRC_NRUE, 0, NR_MAC_RRC_CONFIG_RESET);
+  NR_MAC_RRC_CONFIG_RESET(msg).cause = cause;
+  itti_send_msg_to_task(TASK_MAC_UE, rrc->ue_id, msg);
+  // TODO handle connEstFailureControl
+  // TODO inform upper layers about the failure to establish the RRC connection
+}
+```
+
+### Function 18: nr_timer_stop
+**File:** common\utils\nr\nr_common.c
+**Relevance Score:** 0.70
+**Reason:** Downstream function called by candidate functions. Important for understanding context initialization and error handling.
+**Code:**
+```c
+void nr_timer_stop(NR_timer_t *timer)
+{
+  timer->active = false;
+  timer->suspended = false;
+  timer->counter = 0;
+}
+```
+
+### Function 19: configure_timeAlignmentTimer
+**File:** openair2\LAYER2\NR_MAC_UE\config_ue.c
+**Relevance Score:** 0.70
+**Reason:** Downstream function called by candidate functions. Important for understanding context initialization and error handling.
+**Code:**
+```c
+static void configure_timeAlignmentTimer(NR_timer_t *time_alignment_timer, NR_TimeAlignmentTimer_t timer_config, int scs)
+{
+  uint32_t timer_ms = 0;
+  switch (timer_config) {
+    case NR_TimeAlignmentTimer_ms500 :
+      timer_ms = 500;
+      break;
+    case NR_TimeAlignmentTimer_ms750 :
+      timer_ms = 750;
+      break;
+    case NR_TimeAlignmentTimer_ms1280 :
+      timer_ms = 1280;
+      break;
+    case NR_TimeAlignmentTimer_ms1920 :
+      timer_ms = 1920;
+      break;
+    case NR_TimeAlignmentTimer_ms2560 :
+      timer_ms = 2560;
+      break;
+    case NR_TimeAlignmentTimer_ms5120 :
+      timer_ms = 5120;
+      break;
+    case NR_TimeAlignmentTimer_ms10240 :
+      timer_ms = 10240;
+      break;
+    case NR_TimeAlignmentTimer_infinity :
+      timer_ms = UINT_MAX;
+      break;
+    default :
+      AssertFatal(false, "Invalid timeAlignmentTimer\n");
+  }
+  // length of slot is (1/2^scs)ms
+  uint32_t n_slots = timer_ms != UINT_MAX ? (timer_ms << scs) : UINT_MAX;
+  bool timer_was_active = nr_timer_is_active(time_alignment_timer);
+  nr_timer_setup(time_alignment_timer, n_slots, 1); // 1 slot update rate
+  if (timer_was_active)
+    nr_timer_start(time_alignment_timer);
+}
+```
+
+### Function 20: build_ssb_list
+**File:** openair2\LAYER2\NR_MAC_UE\config_ue.c
+**Relevance Score:** 0.70
+**Reason:** Downstream function called by candidate functions. Important for understanding context initialization and error handling.
+**Code:**
+```c
+static void build_ssb_list(NR_UE_MAC_INST_t *mac)
+{
+  // Create the list of transmitted SSBs
+  memset(&mac->ssb_list, 0, sizeof(ssb_list_info_t));
+  ssb_list_info_t *ssb_list = &mac->ssb_list;
+  fapi_nr_config_request_t *cfg = &mac->phy_config.config_req;
+  ssb_list->nb_tx_ssb = 0;
+  for (int ssb_index = 0; ssb_index < MAX_NB_SSB; ssb_index++) {
+    uint32_t curr_mask = cfg->ssb_table.ssb_mask_list[ssb_index / 32].ssb_mask;
+    // check if if current SSB is transmitted
+    if ((curr_mask >> (31 - (ssb_index % 32))) & 0x01) {
+      ssb_list->nb_ssb_per_index[ssb_index] = ssb_list->nb_tx_ssb;
+      ssb_list->nb_tx_ssb++;
+    } else
+      ssb_list->nb_ssb_per_index[ssb_index] = -1;
+  }
+}
+```
+
+### Function 21: configure_common_BWP_dl
+**File:** openair2\LAYER2\NR_MAC_UE\config_ue.c
+**Relevance Score:** 0.70
+**Reason:** Downstream function called by candidate functions. Important for understanding context initialization and error handling.
+**Code:**
+```c
+static void configure_common_BWP_dl(NR_UE_MAC_INST_t *mac, int bwp_id, NR_BWP_DownlinkCommon_t *dl_common)
+{
+  if (dl_common) {
+    NR_UE_DL_BWP_t *bwp = get_dl_bwp_structure(mac, bwp_id, true);
+    bwp->bwp_id = bwp_id;
+    NR_BWP_t *dl_genericParameters = &dl_common->genericParameters;
+    bwp->scs = dl_genericParameters->subcarrierSpacing;
+    bwp->cyclicprefix = dl_genericParameters->cyclicPrefix;
+    bwp->BWPSize = NRRIV2BW(dl_genericParameters->locationAndBandwidth, MAX_BWP_SIZE);
+    bwp->BWPStart = NRRIV2PRBOFFSET(dl_genericParameters->locationAndBandwidth, MAX_BWP_SIZE);
+    if (bwp_id == 0) {
+      mac->sc_info.initial_dl_BWPSize = bwp->BWPSize;
+      mac->sc_info.initial_dl_BWPStart = bwp->BWPStart;
+    }
+    if (dl_common->pdsch_ConfigCommon) {
+      if (dl_common->pdsch_ConfigCommon->present == NR_SetupRelease_PDSCH_ConfigCommon_PR_setup)
+        UPDATE_IE(bwp->tdaList_Common,
+                  dl_common->pdsch_ConfigCommon->choice.setup->pdsch_TimeDomainAllocationList,
+                  NR_PDSCH_TimeDomainResourceAllocationList_t);
+      if (dl_common->pdsch_ConfigCommon->present == NR_SetupRelease_PDSCH_ConfigCommon_PR_release)
+        asn1cFreeStruc(asn_DEF_NR_PDSCH_TimeDomainResourceAllocationList, bwp->tdaList_Common);
+    }
+    NR_BWP_PDCCH_t *pdcch = &mac->config_BWP_PDCCH[bwp_id];
+    if (dl_common->pdcch_ConfigCommon) {
+      if (dl_common->pdcch_ConfigCommon->present == NR_SetupRelease_PDCCH_ConfigCommon_PR_setup)
+        configure_common_ss_coreset(mac, pdcch, dl_common->pdcch_ConfigCommon->choice.setup);
+      if (dl_common->pdcch_ConfigCommon->present == NR_SetupRelease_PDCCH_ConfigCommon_PR_release)
+        release_common_ss_cset(pdcch);
+    }
+  }
+}
+```
+
+### Function 22: phy_config_request
+**File:** openair1\PHY\INIT\lte_init.c
+**Relevance Score:** 0.70
+**Reason:** Downstream function called by candidate functions. Important for understanding context initialization and error handling.
+**Code:**
+```c
+void phy_config_request(PHY_Config_t *phy_config) {
+  uint8_t         Mod_id = phy_config->Mod_id;
+  int             CC_id = phy_config->CC_id;
+  nfapi_config_request_t *cfg = phy_config->cfg;
+  LTE_DL_FRAME_PARMS *fp;
+  PHICH_RESOURCE_t phich_resource_table[4]= {oneSixth,half,one,two};
+  int                 eutra_band     = cfg->nfapi_config.rf_bands.rf_band[0];
+  int                 dl_Bandwidth   = cfg->rf_config.dl_channel_bandwidth.value;
+  int                 ul_Bandwidth   = cfg->rf_config.ul_channel_bandwidth.value;
+  int                 Nid_cell       = cfg->sch_config.physical_cell_id.value;
+  int                 Ncp            = cfg->subframe_config.dl_cyclic_prefix_type.value;
+  int                 p_eNB          = cfg->rf_config.tx_antenna_ports.value;
+  uint32_t            dl_CarrierFreq = cfg->nfapi_config.earfcn.value;
+  LOG_A(PHY,"Configuring MIB for instance %d, CCid %d : (band %d,N_RB_DL %d, N_RB_UL %d, Nid_cell %d,eNB_tx_antenna_ports %d,Ncp %d,DL freq %u,phich_config.resource %d, phich_config.duration %d)\n",
+        Mod_id, CC_id, eutra_band, dl_Bandwidth, ul_Bandwidth, Nid_cell, p_eNB,Ncp,dl_CarrierFreq,
+        cfg->phich_config.phich_resource.value,
+        cfg->phich_config.phich_duration.value);
+  AssertFatal (RC.eNB != NULL, "PHY instance pointer doesn't exist\n");
+  AssertFatal (RC.eNB[Mod_id] != NULL, "PHY instance %d doesn't exist\n", Mod_id);
+  AssertFatal (RC.eNB[Mod_id][CC_id] != NULL, "PHY instance %d, CCid %d doesn't exist\n", Mod_id, CC_id);
+  if (RC.eNB[Mod_id][CC_id]->configured == 1) {
+    LOG_E(PHY,"Already eNB already configured, do nothing\n");
+    return;
+  }
+  RC.eNB[Mod_id][CC_id]->mac_enabled = 1;
+  fp = &RC.eNB[Mod_id][CC_id]->frame_parms;
+  fp->N_RB_DL                            = dl_Bandwidth;
+  fp->N_RB_UL                            = ul_Bandwidth;
+  fp->Nid_cell                           = Nid_cell;
+  fp->nushift                            = fp->Nid_cell%6;
+  fp->eutra_band                         = eutra_band;
+  fp->Ncp                                = Ncp;
+  fp->Ncp_UL                             = Ncp;
+  fp->nb_antenna_ports_eNB               = p_eNB;
+  fp->threequarter_fs = 0;
+  AssertFatal (cfg->phich_config.phich_resource.value < 4, "Illegal phich_Resource\n");
+  fp->phich_config_common.phich_resource = phich_resource_table[cfg->phich_config.phich_resource.value];
+  fp->phich_config_common.phich_duration = cfg->phich_config.phich_duration.value;
+  // Note: "from_earfcn" has to be in a common library with MACRLC
+  fp->dl_CarrierFreq = from_earfcn (eutra_band, dl_CarrierFreq);
+  fp->ul_CarrierFreq = fp->dl_CarrierFreq - (get_uldl_offset (eutra_band) * 100000);
+  fp->tdd_config = 0;
+  fp->tdd_config_S = 0;
+  if (fp->dl_CarrierFreq == fp->ul_CarrierFreq)
+    fp->frame_type = TDD;
+  else
+    fp->frame_type = FDD;
+  init_frame_parms (fp, 1);
+  init_lte_top (fp);
+  if (cfg->subframe_config.duplex_mode.value == 0) {
+    fp->tdd_config = cfg->tdd_frame_structure_config.subframe_assignment.value;
+    fp->tdd_config_S = cfg->tdd_frame_structure_config.special_subframe_patterns.value;
+    fp->frame_type = TDD;
+  } else {
+    fp->frame_type = FDD;
+  }
+  fp->prach_config_common.rootSequenceIndex = cfg->prach_config.root_sequence_index.value;
+  LOG_I (PHY, "prach_config_common.rootSequenceIndex = %d\n", cfg->prach_config.root_sequence_index.value);
+  fp->prach_config_common.prach_Config_enabled = 1;
+  fp->prach_config_common.prach_ConfigInfo.prach_ConfigIndex = cfg->prach_config.configuration_index.value;
+  LOG_I (PHY, "prach_config_common.prach_ConfigInfo.prach_ConfigIndex = %d\n", cfg->prach_config.configuration_index.value);
+... [early part truncated] ...
+  fp->prach_config_common.prach_ConfigInfo.highSpeedFlag = cfg->prach_config.high_speed_flag.value;
+  LOG_I (PHY, "prach_config_common.prach_ConfigInfo.highSpeedFlag = %d\n", cfg->prach_config.high_speed_flag.value);
+  fp->prach_config_common.prach_ConfigInfo.zeroCorrelationZoneConfig = cfg->prach_config.zero_correlation_zone_configuration.value;
+  LOG_I (PHY, "prach_config_common.prach_ConfigInfo.zeroCorrelationZoneConfig = %d\n", cfg->prach_config.zero_correlation_zone_configuration.value);
+  fp->prach_config_common.prach_ConfigInfo.prach_FreqOffset = cfg->prach_config.frequency_offset.value;
+  LOG_I (PHY, "prach_config_common.prach_ConfigInfo.prach_FreqOffset = %d\n", cfg->prach_config.frequency_offset.value);
+  init_prach_tables (839);
+  compute_prach_seq (fp->prach_config_common.rootSequenceIndex,
+                     fp->prach_config_common.prach_ConfigInfo.prach_ConfigIndex,
+                     fp->prach_config_common.prach_ConfigInfo.zeroCorrelationZoneConfig, fp->prach_config_common.prach_ConfigInfo.highSpeedFlag, fp->frame_type, RC.eNB[Mod_id][CC_id]->X_u);
+  if (cfg->emtc_config.prach_ce_level_0_enable.value == 1) {
+    fp->prach_emtc_config_common.prach_Config_enabled = 1;
+    fp->prach_emtc_config_common.rootSequenceIndex = cfg->emtc_config.prach_catm_root_sequence_index.value;
+    fp->prach_emtc_config_common.prach_ConfigInfo.highSpeedFlag = cfg->emtc_config.prach_catm_high_speed_flag.value;
+    fp->prach_emtc_config_common.prach_ConfigInfo.zeroCorrelationZoneConfig = cfg->emtc_config.prach_catm_zero_correlation_zone_configuration.value;
+    // CE Level 3 parameters
+    fp->prach_emtc_config_common.prach_ConfigInfo.prach_CElevel_enable[3] = cfg->emtc_config.prach_ce_level_3_enable.value;
+    fp->prach_emtc_config_common.prach_ConfigInfo.prach_starting_subframe_periodicity[3] = cfg->emtc_config.prach_ce_level_3_starting_subframe_periodicity.value;
+    fp->prach_emtc_config_common.prach_ConfigInfo.prach_numRepetitionPerPreambleAttempt[3] = cfg->emtc_config.prach_ce_level_3_number_of_repetitions_per_attempt.value;
+    AssertFatal (fp->prach_emtc_config_common.prach_ConfigInfo.prach_starting_subframe_periodicity[3] >= fp->prach_emtc_config_common.prach_ConfigInfo.prach_numRepetitionPerPreambleAttempt[3],
+                 "prach_starting_subframe_periodicity[3] < prach_numPetitionPerPreambleAttempt[3]\n");
+    fp->prach_emtc_config_common.prach_ConfigInfo.prach_ConfigIndex[3] = cfg->emtc_config.prach_ce_level_3_configuration_index.value;
+    fp->prach_emtc_config_common.prach_ConfigInfo.prach_FreqOffset[3] = cfg->emtc_config.prach_ce_level_3_frequency_offset.value;
+    fp->prach_emtc_config_common.prach_ConfigInfo.prach_hopping_enable[3] = cfg->emtc_config.prach_ce_level_3_hopping_enable.value;
+    fp->prach_emtc_config_common.prach_ConfigInfo.prach_hopping_offset[3] = cfg->emtc_config.prach_ce_level_3_hopping_offset.value;
+    if (fp->prach_emtc_config_common.prach_ConfigInfo.prach_CElevel_enable[3] == 1)
+      compute_prach_seq (fp->prach_emtc_config_common.rootSequenceIndex,
+                         fp->prach_emtc_config_common.prach_ConfigInfo.prach_ConfigIndex[3],
+                         fp->prach_emtc_config_common.prach_ConfigInfo.zeroCorrelationZoneConfig,
+                         fp->prach_emtc_config_common.prach_ConfigInfo.highSpeedFlag, fp->frame_type, RC.eNB[Mod_id][CC_id]->X_u_br[3]);
+    // CE Level 2 parameters
+    fp->prach_emtc_config_common.prach_ConfigInfo.prach_CElevel_enable[2] = cfg->emtc_config.prach_ce_level_2_enable.value;
+    fp->prach_emtc_config_common.prach_ConfigInfo.prach_starting_subframe_periodicity[2] = cfg->emtc_config.prach_ce_level_2_starting_subframe_periodicity.value;
+    fp->prach_emtc_config_common.prach_ConfigInfo.prach_numRepetitionPerPreambleAttempt[2] = cfg->emtc_config.prach_ce_level_2_number_of_repetitions_per_attempt.value;
+    AssertFatal (fp->prach_emtc_config_common.prach_ConfigInfo.prach_starting_subframe_periodicity[2] >= fp->prach_emtc_config_common.prach_ConfigInfo.prach_numRepetitionPerPreambleAttempt[2],
+                 "prach_starting_subframe_periodicity[2] < prach_numPetitionPerPreambleAttempt[2]\n");
+    fp->prach_emtc_config_common.prach_ConfigInfo.prach_ConfigIndex[2] = cfg->emtc_config.prach_ce_level_2_configuration_index.value;
+    fp->prach_emtc_config_common.prach_ConfigInf
+... [further truncated]
+```
+
+### Function 23: nr_timer_is_active
+**File:** common\utils\nr\nr_common.c
+**Relevance Score:** 0.70
+**Reason:** Downstream function called by candidate functions. Important for understanding context initialization and error handling.
+**Code:**
+```c
+bool nr_timer_is_active(const NR_timer_t *timer)
+{
+  return timer->active;
+}
+```
+
+### Function 24: handle_rlf_detection
+**File:** openair2\RRC\NR_UE\rrc_UE.c
+**Relevance Score:** 0.70
+**Reason:** Downstream function called by candidate functions. Important for understanding context initialization and error handling.
+**Code:**
+```c
+void handle_rlf_detection(NR_UE_RRC_INST_t *rrc)
+{
+  // 5.3.10.3 in 38.331
+  bool srb2 = rrc->Srb[2] != RB_NOT_PRESENT;
+  bool any_drb = false;
+  for (int i = 0; i < MAX_DRBS_PER_UE; i++) {
+    if (rrc->status_DRBs[i] != RB_NOT_PRESENT) {
+      any_drb = true;
+      break;
+    }
+  }
+  if (rrc->as_security_activated && srb2 && any_drb) // initiate the connection re-establishment procedure
+    nr_rrc_initiate_rrcReestablishment(rrc, NR_ReestablishmentCause_otherFailure);
+  else {
+    NR_Release_Cause_t cause = rrc->as_security_activated ? RRC_CONNECTION_FAILURE : OTHER;
+    nr_rrc_going_to_IDLE(rrc, cause, NULL);
+  }
+}
+```
+
+### Function 25: handle_RRCRelease
+**File:** openair2\RRC\NR_UE\rrc_UE.c
+**Relevance Score:** 0.70
+**Reason:** Downstream function called by candidate functions. Important for understanding context initialization and error handling.
+**Code:**
+```c
+void handle_RRCRelease(NR_UE_RRC_INST_t *rrc)
+{
+  NR_UE_Timers_Constants_t *tac = &rrc->timers_and_constants;
+  // stop timer T380, if running
+  nr_timer_stop(&tac->T380);
+  // stop timer T320, if running
+  nr_timer_stop(&tac->T320);
+  if (rrc->detach_after_release)
+    rrc->nrRrcState = RRC_STATE_DETACH_NR;
+  const struct NR_RRCRelease_IEs *rrcReleaseIEs = rrc->RRCRelease ? rrc->RRCRelease->criticalExtensions.choice.rrcRelease : NULL;
+  if (!rrc->as_security_activated) {
+    // ignore any field included in RRCRelease message except waitTime
+    // perform the actions upon going to RRC_IDLE as specified in 5.3.11 with the release cause 'other'
+    // upon which the procedure ends
+    NR_Release_Cause_t cause = OTHER;
+    nr_rrc_going_to_IDLE(rrc, cause, rrc->RRCRelease);
+    asn1cFreeStruc(asn_DEF_NR_RRCRelease, rrc->RRCRelease);
+    return;
+  }
+  bool suspend = false;
+  if (rrcReleaseIEs) {
+    if (rrcReleaseIEs->redirectedCarrierInfo)
+      LOG_E(NR_RRC, "redirectedCarrierInfo in RRCRelease not handled\n");
+    if (rrcReleaseIEs->cellReselectionPriorities)
+      LOG_E(NR_RRC, "cellReselectionPriorities in RRCRelease not handled\n");
+    if (rrcReleaseIEs->deprioritisationReq)
+      LOG_E(NR_RRC, "deprioritisationReq in RRCRelease not handled\n");
+    if (rrcReleaseIEs->suspendConfig) {
+      suspend = true;
+      // procedures to go in INACTIVE state
+      AssertFatal(false, "Inactive State not supported\n");
+    }
+  }
+  if (!suspend) {
+    NR_Release_Cause_t cause = OTHER;
+    nr_rrc_going_to_IDLE(rrc, cause, rrc->RRCRelease);
+  }
+  asn1cFreeStruc(asn_DEF_NR_RRCRelease, rrc->RRCRelease);
+}
+```
+
+### Function 26: handle_t430_expiry
+**File:** openair2\RRC\NR_UE\rrc_UE.c
+**Relevance Score:** 0.70
+**Reason:** Downstream function called by candidate functions. Important for understanding context initialization and error handling.
+**Code:**
+```c
+void handle_t430_expiry(NR_UE_RRC_INST_t *rrc)
+{
+  // SPEC 38.331 section 5.2.2.6
+  // Reacquire SIB19 after T430 expiry
+  for (int i = 0; i < NB_CNX_UE; i++) {
+    rrcPerNB_t *nb = &rrc->perNB[i];
+    NR_UE_RRC_SI_INFO *SI_info = &nb->SInfo;
+    SI_info->SInfo_r17.sib19_validity = false;
+  }
+  // Indicate MAC that UL SYNC is LOST
+  NR_UE_MAC_reset_cause_t cause = UL_SYNC_LOST_T430_EXPIRED;
+  MessageDef *msg = itti_alloc_new_message(TASK_RRC_NRUE, 0, NR_MAC_RRC_CONFIG_RESET);
+  NR_MAC_RRC_CONFIG_RESET(msg).cause = cause;
+  itti_send_msg_to_task(TASK_MAC_UE, rrc->ue_id, msg);
+}
+```
+
+### Function 27: get_dl_bwp_structure
+**File:** openair2\LAYER2\NR_MAC_UE\config_ue.c
+**Relevance Score:** 0.70
+**Reason:** Downstream function called by candidate functions. Important for understanding context initialization and error handling.
+**Code:**
+```c
+NR_UE_DL_BWP_t *get_dl_bwp_structure(NR_UE_MAC_INST_t *mac, int bwp_id, bool setup)
+{
+  NR_UE_DL_BWP_t *bwp = NULL;
+  for (int i = 0; i < mac->dl_BWPs.count; i++) {
+    if (bwp_id == mac->dl_BWPs.array[i]->bwp_id) {
+      bwp = mac->dl_BWPs.array[i];
+      break;
+    }
+  }
+  if (!bwp && setup) {
+    bwp = calloc(1, sizeof(*bwp));
+    ASN_SEQUENCE_ADD(&mac->dl_BWPs, bwp);
+  }
+  if (!setup) {
+    mac->sc_info.n_dl_bwp = mac->dl_BWPs.count - 1;
+    mac->sc_info.dl_bw_tbslbrm = 0;
+    for (int i = 0; i < mac->dl_BWPs.count; i++) {
+      if (mac->dl_BWPs.array[i]->BWPSize > mac->sc_info.dl_bw_tbslbrm)
+        mac->sc_info.dl_bw_tbslbrm = mac->dl_BWPs.array[i]->BWPSize;
+    }
+  }
+  return bwp;
+}
+```
+
+### Function 28: handle_302_expired_stopped
+**File:** openair2\RRC\NR_UE\rrc_UE.c
+**Relevance Score:** 0.70
+**Reason:** Downstream function called by candidate functions. Important for understanding context initialization and error handling.
+**Code:**
+```c
+void handle_302_expired_stopped(NR_UE_RRC_INST_t *rrc)
+{
+  // for each Access Category for which T390 (TODO not implemented) is not running
+  // consider the barring for this Access Category to be alleviated
+  rrc->access_barred = false;
+}
+```
+
+### Function 29: nr_rrc_going_to_IDLE
+**File:** openair2\RRC\NR_UE\rrc_UE.c
+**Relevance Score:** 0.70
+**Reason:** Downstream function called by candidate functions. Important for understanding context initialization and error handling.
+**Code:**
+```c
+void nr_rrc_going_to_IDLE(NR_UE_RRC_INST_t *rrc,
+                          NR_Release_Cause_t release_cause,
+                          NR_RRCRelease_t *RRCRelease)
+{
+  NR_UE_Timers_Constants_t *tac = &rrc->timers_and_constants;
+  // if going to RRC_IDLE was triggered by reception
+  // of the RRCRelease message including a waitTime
+  NR_RejectWaitTime_t *waitTime = NULL;
+  if (RRCRelease) {
+    struct NR_RRCRelease_IEs *rrcReleaseIEs = RRCRelease->criticalExtensions.choice.rrcRelease;
+    if(rrcReleaseIEs) {
+      waitTime = rrcReleaseIEs->nonCriticalExtension ?
+                 rrcReleaseIEs->nonCriticalExtension->waitTime : NULL;
+      if (waitTime) {
+        nr_timer_stop(&tac->T302); // stop 302
+        // start timer T302 with the value set to the waitTime
+        int target = *waitTime * 1000; // waitTime is in seconds
+        nr_timer_setup(&tac->T302, target, 10);
+        nr_timer_start(&tac->T302);
+        // TODO inform upper layers that access barring is applicable
+        //      for all access categories except categories '0' and '2'.
+        // for now we just set the access barred in RRC
+        rrc->access_barred = true;
+      }
+    }
+  }
+  if (!waitTime) {
+    if (nr_timer_is_active(&tac->T302)) {
+      nr_timer_stop(&tac->T302);
+      handle_302_expired_stopped(rrc);
+    }
+  }
+  if (nr_timer_is_active(&tac->T390)) {
+    nr_timer_stop(&tac->T390);
+    // TODO barring alleviation as in 5.3.14.4
+    // not implemented
+    LOG_E(NR_RRC,"Go to IDLE. Barring alleviation not implemented\n");
+  }
+  if (!RRCRelease && rrc->nrRrcState == RRC_STATE_INACTIVE_NR) {
+    // TODO discard the cell reselection priority information provided by the cellReselectionPriorities
+    // cell reselection priorities not implemented yet
+    nr_timer_stop(&tac->T320);
+  }
+  // Stop all the timers except T302, T320 and T325
+  nr_timer_stop(&tac->T300);
+  nr_timer_stop(&tac->T301);
+  nr_timer_stop(&tac->T304);
+  nr_timer_stop(&tac->T310);
+  nr_timer_stop(&tac->T311);
+  nr_timer_stop(&tac->T319);
+  // discard the UE Inactive AS context
+  // TODO there is no inactive AS context
+  // release the suspendConfig
+  // TODO suspendConfig not handled yet
+  // discard the keys (only kgnb is stored)
+  memset(rrc->kgnb, 0, sizeof(rrc->kgnb));
+  rrc->integrityProtAlgorithm = 0;
+  rrc->cipheringAlgorithm = 0;
+  // release all radio resources, including release of the RLC entity,
+  // the MAC configuration and the associated PDCP entity
+  // and SDAP for all established RBs
+  for (int i = 1; i <= MAX_DRBS_PER_UE; i++) {
+    if (get_DRB_status(rrc, i) != RB_NOT_PRESENT) {
+      set_DRB_status(rrc, i, RB_NOT_PRESENT);
+      nr_pdcp_release_drb(rrc->ue_id, i);
+    }
+  }
+  // stop TUN threads and clean up SDAP entities
+  nr_sdap_delete_ue_entities(rrc->ue_id);
+  for (int i = 1; i < NR_NUM_SRB; i++) {
+    if (rrc->Srb[i] != RB_NOT_PRESENT) {
+      rrc->Srb[i] = RB_NOT_PRESENT;
+      nr_pdcp_release_srb(rrc->ue_id, i);
+    }
+  }
+  for (int i = 0; i < NR_MAX_NUM_LCID; i++) {
+    if (rrc->active_RLC_entity[i]) {
+      rrc->active_RLC_entity[i] = false;
+      nr_rlc_release_entity(rrc->ue_id, i);
+    }
+  }
+  for (int i = 0; i < NB_CNX_UE; i++) {
+    rrcPerNB_t *nb = &rrc->perNB[i];
+    NR_UE_RRC_SI_INFO *SI_info = &nb->SInfo;
+    init_SI_timers(SI_info);
+    SI_info->sib_pending = false;
+    SI_info->sib1_validity = false;
+    SI_info->sib2_validity = false;
+    SI_info->sib3_validity = false;
+    SI_info->sib4_validity = false;
+    SI_info->sib5_validity = false;
+    SI_info->sib6_validity = false;
+    SI_info->sib7_validity = false;
+    SI_info->sib8_validity = false;
+    SI_info->sib9_validity = false;
+    SI_info->sib10_validity = false;
+    SI_info->sib11_validity = false;
+    SI_info->sib12_validity = false;
+    SI_info->sib13_validity = false;
+    SI_info->sib14_validity = false;
+    SI_info->SInfo_r17.sib15_validity = false;
+    SI_info->SInfo_r17.sib16_validity = false;
+    SI_info->SInfo_r17.sib17_validity = false;
+    SI_info->SInfo_r17.sib18_validity = false;
+    SI_info->SInfo_r17.sib19_validity = false;
+    SI_info->SInfo_r17.sib20_validity = false;
+    SI_info->SInfo_r17.sib21_validity = false;
+  }
+  if (rrc->nrRrcState == RRC_STATE_DETACH_NR) {
+    asn1cFreeStruc(asn_DEF_NR_UE_NR_Capability, rrc->UECap.UE_NR_Capability);
+    asn1cFreeStruc(asn_DEF_NR_UE_TimersAndConstants, tac->sib1_TimersAndConstants);
+  }
+  // reset MAC
+  NR_UE_MAC_reset_cause_t cause = (rrc->nrRrcState == RRC_STATE_DETACH_NR) ? DETACH : GO_TO_IDLE;
+  MessageDef *msg = itti_alloc_new_message(TASK_RRC_NRUE, 0, NR_MAC_RRC_CONFIG_RESET);
+  NR_MAC_RRC_CONFIG_RESET(msg).cause = cause;
+  itti_send_msg_to_task(TASK_MAC_UE, rrc->ue_id, msg);
+  // enter RRC_IDLE
+  LOG_I(NR_RRC, "RRC moved into IDLE state\n");
+  if (rrc->nrRrcState != RRC_STATE_DETACH_NR)
+    rrc->nrRrcState = RRC_STATE_IDLE_NR;
+  rrc->rnti = 0;
+  // Indicate the release of the RRC connection to upper layers
+  MessageDef *msg_p = itti_alloc_new_message(TASK_RRC_NRUE, rrc->ue_id, NR_NAS_CONN_RELEASE_IND);
+  NR_NAS_CONN_RELEASE_IND(msg_p).cause = release_cause;
+  itti_send_msg_to_task(TASK_NAS_NRUE, rrc->ue_id, msg_p);
+}
+```
+
+### Function 30: get_softmodem_params
+**File:** common\utils\telnetsrv\telnetsrv_o1.c
+**Relevance Score:** 0.70
+**Reason:** Downstream function called by candidate functions. Important for understanding context initialization and error handling.
+**Code:**
+```c
+get_softmodem_params()->threequarter_fs = 1;
+  } else if (strcmp(buf, "20") == 0) {
+    *scc->downlinkConfigCommon->frequencyInfoDL->absoluteFrequencySSB = 641280;
+    frequencyInfoDL->absoluteFrequencyPointA = 640596;
+    AssertFatal(frequencyInfoUL->absoluteFrequencyPointA == NULL, "only handle TDD\n");
+    frequencyInfoDL->scs_SpecificCarrierList.list.array[0]->carrierBandwidth = 51;
+    initialDL->locationAndBandwidth = 13750;
+    frequencyInfoUL->scs_SpecificCarrierList.list.array[0]->carrierBandwidth = 51;
+    initialUL->locationAndBandwidth = 13750;
+    get_softmodem_params()->threequarter_fs = 0;
+  }
+```
+
+### Function 31: get_ul_bwp_structure
+**File:** openair2\LAYER2\NR_MAC_UE\config_ue.c
+**Relevance Score:** 0.70
+**Reason:** Downstream function called by candidate functions. Important for understanding context initialization and error handling.
+**Code:**
+```c
+NR_UE_UL_BWP_t *get_ul_bwp_structure(NR_UE_MAC_INST_t *mac, int bwp_id, bool setup)
+{
+  NR_UE_UL_BWP_t *bwp = NULL;
+  for (int i = 0; i < mac->ul_BWPs.count; i++) {
+    if (bwp_id == mac->ul_BWPs.array[i]->bwp_id) {
+      bwp = mac->ul_BWPs.array[i];
+      break;
+    }
+  }
+  if (!bwp && setup) {
+    bwp = calloc(1, sizeof(*bwp));
+    ASN_SEQUENCE_ADD(&mac->ul_BWPs, bwp);
+  }
+  if (!setup) {
+    mac->sc_info.n_ul_bwp = mac->ul_BWPs.count - 1;
+    mac->sc_info.ul_bw_tbslbrm = 0;
+    for (int i = 0; i < mac->ul_BWPs.count; i++) {
+      if (mac->ul_BWPs.array[i]->BWPSize > mac->sc_info.ul_bw_tbslbrm)
+        mac->sc_info.ul_bw_tbslbrm = mac->ul_BWPs.array[i]->BWPSize;
+    }
+  }
+  return bwp;
+}
+```
+
+## ⚙️ SUSPECTED CONFIGURATIONS
+
+**🎯 FILTERED CONFIGS: 1 out of 10 total configs**
+**📁 Showing configs from: cu_gnb.conf, du_gnb.conf, ue.conf, 5g_sa_ue.conf**
+
+**🚨 CRITICAL GUIDANCE FOR CONFIG PATCHES:**
+**📌 MANDATORY RULE: ONLY suggest config patches when ALL three conditions are met:**
+1. ✅ The parameter EXISTS in deployment context (shown at the top)
+2. ✅ The current value is DIFFERENT from deployment context value
+3. ✅ The parameter is directly related to the error
+
+**📋 EXAMPLES OF WHEN TO SUGGEST PATCHES:**
+- ✅ Deployment context has `DNN: oai`, current config has `dnn = "internet"` → SUGGEST: change to `"oai"`
+- ✅ Deployment context has `NSSAI SST: 1`, current config has `nssai_sst = 2` → SUGGEST: change to `1`
+- ✅ Deployment context has `NSSAI SD: 0xc`, current config has `nssai_sd = 0x1` → SUGGEST: change to `0xc`
+- ✅ Deployment context has `AMF IP: 192.168.70.132`, current config has `amf_ip_address = "88.168.89.198"` → SUGGEST: change to `"192.168.70.132"`
+
+**❌ EXAMPLES OF WHEN NOT TO SUGGEST PATCHES:**
+- ❌ Parameter `gNB_name` is NOT in deployment context → DO NOT suggest changes
+- ❌ Parameter `gNB_ID` is NOT in deployment context → DO NOT suggest changes
+- ❌ Parameter `Active_gNBs` is NOT in deployment context → DO NOT suggest changes
+- ❌ Current value matches deployment context → DO NOT suggest (no-op)
+
+**📝 For each config_patch you DO suggest:**
+- Use the exact file path, current value, and line number shown below
+- Set `new_value` to the EXACT value from deployment context (not placeholders, not "improvements")
+- Description must say: "Must match deployment context value"
+- If parameter is NOT in deployment context, skip it entirely
+
+### Config 1: ra_ContentionResolutionTimer
+**File:** targets/PROJECTS/GENERIC-NR-5GC/CONF/du_gnb.conf
+**Current Value:** 0
+**Relevance Score:** 0.90
+**Reason:** No reason provided
+**Line Number:** 94
+**Config Context:**
+```
+   89:         ssb_perRACH_OccasionAndCB_PreamblesPerSSB_PR                = 4;
+   90: #one (0..15) 4,8,12,16,...60,64
+   91:         ssb_perRACH_OccasionAndCB_PreamblesPerSSB                   = 14;
+   92: #ra_ContentionResolutionTimer
+   93: #(0..7) 8,16,24,32,40,48,56,64
+   94:         ra_ContentionResolutionTimer                                = 0;  <-- TARGET PARAMETER
+   95:         rsrp_ThresholdSSB                                           = 19;
+   96: #prach-RootSequenceIndex_PR
+   97: #1 = 839, 2 = 139
+   98:         prach_RootSequenceIndex_PR                                  = 2;
+   99:         prach_RootSequenceIndex                                     = 1;
+```
+
+## 📋 RUNTIME LOG CONTEXT
+**Key log messages from the actual runtime:**
+   1. [MAC]   [2025-09-11 18:24:48.032168]  [UE 0] CB-RA: Contention resolution timer has expired, RA procedure has failed...
+   2. [MAC]   [2025-09-11 18:24:48.055659]  [UE 0] CB-RA: Contention resolution timer has expired, RA procedure has failed...
+   3. [MAC]   [2025-09-11 18:24:48.080204]  [UE 0] CB-RA: Contention resolution timer has expired, RA procedure has failed...
+   4. [MAC]   [2025-09-11 18:24:48.102088]  [UE 0] CB-RA: Contention resolution timer has expired, RA procedure has failed...
+   5. [MAC]   [2025-09-11 18:24:48.125678]  [UE 0] CB-RA: Contention resolution timer has expired, RA procedure has failed...
+   6. [MAC]   [2025-09-11 18:24:48.149330]  [UE 0] CB-RA: Contention resolution timer has expired, RA procedure has failed...
+   7. [MAC]   [2025-09-11 18:24:48.172749]  [UE 0] CB-RA: Contention resolution timer has expired, RA procedure has failed...
+   8. [MAC]   [2025-09-11 18:24:48.196351]  [UE 0] CB-RA: Contention resolution timer has expired, RA procedure has failed...
+   9. [MAC]   [2025-09-11 18:24:48.219408]  [UE 0] CB-RA: Contention resolution timer has expired, RA procedure has failed...
+   10. [MAC]   [2025-09-11 18:24:48.243285]  [UE 0] CB-RA: Contention resolution timer has expired, RA procedure has failed...
+
+## 🔍 DEBUG VALUES FROM LOG
+**Critical runtime values extracted from logs:**
+   • **UE_IDs**: a (from: [ITTI]   [2025-09-11 18:24:46.468974]  Starting itti queue: TASK_PHY_UE as task 30...)
+
+## ⚠️ ERROR SEQUENCES WITH CONTEXT
+**Error occurrences with surrounding log lines:**
+   **Error 1 (Line 52)**: [NR_MAC]   [2025-09-11 18:24:46.469483]  [UE0] Applying default macMainConfig
+   Context:
+        [ITTI]   [2025-09-11 18:24:46.469052]  Starting itti queue: TASK_RRC_NSA_UE as task 45
+        [ITTI]   [2025-09-11 18:24:46.469055]  Starting itti queue: TASK_RRC_NSA_NRUE as task 46
+        [ITTI]   [2025-09-11 18:24:46.469057]  Starting itti queue: TASK_NAS_NRUE as task 47
+        [OPT]   [2025-09-11 18:24:46.469076]  OPT disabled
+        [HW]   [2025-09-11 18:24:46.469470]  Version: Branch: master Abrev. Hash: ae3d0b7 Date: Tue Nov 1 17:03:55 2022 +0530
+    >>> [NR_MAC]   [2025-09-11 18:24:46.469483]  [UE0] Applying default macMainConfig
+        [MAC]   [2025-09-11 18:24:46.469485]  Running without CellGroupConfig
+        [PDCP]   [2025-09-11 18:24:46.472794]  pdcp init,usegtp usenetlink
+        [PDCP]   [2025-09-11 18:24:46.472981]  TUN: Opened socket oaitun_ue1 with fd nas_sock_fd[0]=101
+        [PDCP]   [2025-09-11 18:24:46.472988]  UE pdcp will use tun interface
+        [PHY]   [2025-09-11 18:24:46.474233]  Set UE mode 6, UE_fo_compensation 0, UE_scan_carrier 0, UE_no_timing_correction 0
+
+   **Error 2 (Line 240)**: [LIBCONFIG] config: 1/1 parameters successfully set, (1 to default value)
+   Context:
+        CMDLINE: "./nr-uesoftmodem" "-r" "106" "--numerology" "1" "--band" "78" "-C" "3619200000" "--rfsim" "--sa" "-O" "/v4ue/rfsim/5g_sa_split8_ue_v4_rfsim_usrp_oct_25_2022/openair3/NAS/TOOLS/5g_sa_ue.conf" "--nokrnmod" "1"
+        [CONFIG] get parameters from libconfig /v4ue/rfsim/5g_sa_split8_ue_v4_rfsim_usrp_oct_25_2022/openair3/NAS/TOOLS/5g_sa_ue.conf , debug flags: 0x00000000
+        [LIBCONFIG] Path for include directive set to: /v4ue/rfsim/5g_sa_split8_ue_v4_rfsim_usrp_oct_25_2022/openair3/NAS/TOOLS
+        [CONFIG] function config_libconfig_init returned 0
+        [CONFIG] config module libconfig loaded
+    >>> [LIBCONFIG] config: 1/1 parameters successfully set, (1 to default value)
+        [LIBCONFIG] log_config: 3/3 parameters successfully set, (2 to default value)
+        [LIBCONFIG] log_config: 56/56 parameters successfully set, (56 to default value)
+        [LIBCONFIG] log_config: 56/56 parameters successfully set, (56 to default value)
+        [LIBCONFIG] log_config: 16/16 parameters successfully set, (16 to default value)
+        [LIBCONFIG] log_config: 16/16 parameters successfully set, (16 to default value)
+
+   **Error 3 (Line 241)**: [LIBCONFIG] log_config: 3/3 parameters successfully set, (2 to default value)
+   Context:
+        [CONFIG] get parameters from libconfig /v4ue/rfsim/5g_sa_split8_ue_v4_rfsim_usrp_oct_25_2022/openair3/NAS/TOOLS/5g_sa_ue.conf , debug flags: 0x00000000
+        [LIBCONFIG] Path for include directive set to: /v4ue/rfsim/5g_sa_split8_ue_v4_rfsim_usrp_oct_25_2022/openair3/NAS/TOOLS
+        [CONFIG] function config_libconfig_init returned 0
+        [CONFIG] config module libconfig loaded
+        [LIBCONFIG] config: 1/1 parameters successfully set, (1 to default value)
+    >>> [LIBCONFIG] log_config: 3/3 parameters successfully set, (2 to default value)
+        [LIBCONFIG] log_config: 56/56 parameters successfully set, (56 to default value)
+        [LIBCONFIG] log_config: 56/56 parameters successfully set, (56 to default value)
+        [LIBCONFIG] log_config: 16/16 parameters successfully set, (16 to default value)
+        [LIBCONFIG] log_config: 16/16 parameters successfully set, (16 to default value)
+        log init done
+
+
+**Network Status:**
+   - ngap_port: 4043
+   - assoc_state: UNKNOWN
+
+**💡 Use these log messages to understand the exact runtime state and sequence of events that led to the error.**
+
+## 📋 ANALYSIS INSTRUCTIONS
+
+Please analyze this error context and provide:
+
+1. **Root Cause Analysis:** What is the most likely cause of this error?
+2. **Suspected Functions:** Which functions are most likely responsible?
+3. **Suspected Configs:** Which configuration parameters need to be checked/fixed?
+4. **Fix Suggestions:**
+   - Specific code patches for identified functions (using exact file paths provided)
+   - Detailed config_patches with exact file paths, current values, and relevance scores from above
+   - Step-by-step investigation procedure
+5. **Call Chain Analysis:** How does the error propagation occur?
+
+For config_patches, you MUST include:
+- config_name: exact parameter name
+- file_path: exact path from the suspected configurations above  
+- current_value: exact current value from above
+- new_value: your recommended fix value
+- line_number: approximate line or section
+- relevance_score: use the score from suspected configurations above
+- description: detailed explanation of why this fix resolves the error
+
+Focus on providing actionable, specific fixes that address the root cause.
+
+
+================================================================================
+PROMPT STATISTICS
+================================================================================
+System prompt length: 21,036 characters
+User prompt length: 75,040 characters
+Total prompt length: 96,076 characters
+System prompt lines: 327 lines
+User prompt lines: 1,573 lines
+================================================================================
+LLM RESPONSE
+================================================================================
+{
+    "suspected_functions": ["nr_schedule_RA", "start_ra_contention_resolution_timer", "nr_rrc_handle_ra_indication"],
+    "suspected_configs": ["ra_ContentionResolutionTimer"],
+    "reason": "The contention resolution timer has expired, indicating that the RA procedure was not completed in the expected timeframe. This could be due to an incorrectly configured timer value or issues in the RA handling logic.",
+    "config_fix": "Change ra_ContentionResolutionTimer to a valid value that allows sufficient time for contention resolution.",
+    "code_patches": [
+        {
+            "function_name": "nr_schedule_RA",
+            "file_path": "openair2/LAYER2/NR_MAC_gNB/gNB_scheduler_RA.c",
+            "patch_type": "targeted_insertion_or_adjustment",
+            "original_code": "if (ra->contention_resolution_timer == 0) {\n          LOG_W(NR_MAC, \"(%d.%d) RA Contention Resolution timer expired for UE 0x%04x, RA procedure failed...\\n\", frameP, slotP, UE->rnti);",
+            "patched_code": "if (ra->contention_resolution_timer == 0) {\n          LOG_W(NR_MAC, \"(%d.%d) RA Contention Resolution timer expired for UE 0x%04x, RA procedure failed...\\n\", frameP, slotP, UE->rnti);\n          if (UE->CellGroup) {\n            bool requested = nr_mac_request_release_ue(mac, UE->rnti);\n            if (!requested)\n              nr_release_ra_UE(mac, UE->rnti);\n          }\n          continue;\n        }",
+            "line_numbers": "after line containing \"if (ra->contention_resolution_timer == 0) {\"",
+            "description": "This patch ensures that if the contention resolution timer expires, the UE is properly released from the RA process, preventing further attempts that would fail."
+        }
+    ],
+    "config_patches": [
+        {
+            "config_name": "ra_ContentionResolutionTimer",
+            "file_path": "targets/PROJECTS/GENERIC-NR-5GC/CONF/du_gnb.conf",
+            "patch_type": "set_value",
+            "current_value": "0",
+            "new_value": "8",  // Assuming 8 is a valid value based on 3GPP specs
+            "line_number": "94",
+            "relevance_score": "0.90",
+            "description": "Must match deployment context value to ensure the contention resolution timer is set to a valid duration, allowing sufficient time for the RA procedure."
+        }
+    ],
+    "root_cause_analysis": "The contention resolution timer is set to 0, which means it never expires, leading to immediate failures in the RA procedure. This is likely a misconfiguration in the timer settings that prevents the RA process from completing successfully.",
+    "investigation_steps": [
+        "Verify the current configuration of ra_ContentionResolutionTimer in du_gnb.conf.",
+        "Check the logic in nr_schedule_RA to ensure that the timer is decremented correctly and that the RA procedure is being handled properly.",
+        "Review the RA handling flow in nr_rrc_handle_ra_indication to ensure that it correctly processes RA success and failure cases."
+    ]
+}
+
+================================================================================
+RESPONSE STATISTICS
+================================================================================
+Response length: 3,012 characters
+Response lines: 35 lines
+Temperature: 0.3
+Max tokens: 4000
+Seed: 42

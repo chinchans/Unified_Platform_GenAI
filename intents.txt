@@ -1,0 +1,24 @@
+user_intent1= 'gNB-CU has to prepare and send F1AP "UE CONTEXT SETUP REQUEST" message to the candidate gNB-DU and candidate gNB-DU has to respond with F1AP "UE CONTEXT SETUP RESPONSE" message and this message has to be handled on gNB-CU for Inter-gNB DU LTM Handover Procedure'
+
+user_intent2= 'gNB-CU has to prepare and send F1AP "UE CONTEXT MODIFICATION REQUEST" message to the source gNB-DU and Source gNB-DU responds with a UE CONTEXT MODIFICATION RESPONSE message and this message has to be handled on gNB-CU for Inter-gNB DU LTM Handover Procedure'
+
+user_intent3 = 'gNB-CU prepares the "RRCReconfiguration" RRC message with the LTM Configuration IEs  inline to the LTM configuration data received in previous F1AP messages and sends the RRCReconfiguration message buffer piggy bagged in F1AP "DL RRC MESSAGE TRANSFER" message to source gNB-DU ands source gNB-DU forwards this F1AP message to UE. Then, UE responds with "RRCReconfigurationComplete" RRC message to source gNB-DU and it forwards the message to gNB-CU piggy bagged in "UL RRC MESSAGE TRANSFER" message  for Inter-gNB DU LTM Handover Procedure'
+
+
+
+LTMConfigurationIDMappingList   ::= SEQUENCE (SIZE(1..maxnoofLTMCells)) OF LTMConfigurationIDMapping-Item
+LTMConfigurationIDMapping-Item::= SEQUENCE{
+    lTMCellID           NRCGI,
+    lTMConfigurationID  LTMConfigurationID,     
+}
+
+LTMConfiguration ::= SEQUENCE { 
+ sSBInformation SSBInformation, 
+ referenceConfigurationInformation ReferenceConfigurationInformation OPTIONAL, 
+ completeCandidateConfigurationIndicator CompleteCandidateConfigurationIndicator OPTIONAL, 
+ lTMCFRAResourceConfig LTMCFRAResourceConfig OPTIONAL, 
+}
+
+SSBInformation ::= SEQUENCE {
+    sSBInformationList  SSBInformationList
+}

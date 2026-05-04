@@ -1,0 +1,15 @@
+{
+  "name": "unified-platform-ui",
+  "version": "1.0.0",
+  "description": "Electron UI for unified GenAI platform",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "test": "node --test src/stream-utils.test.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "electron": "^41.2.1",
+    "express": "^4.21.2"
+  }
+}

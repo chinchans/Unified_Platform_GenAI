@@ -1,0 +1,9 @@
+/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c:61:6: [encode_cu_to_du_rrc_info] (unknown_type_name) unknown type name ‘F1AP_ProtocolExtensionContainer_10696P60_t’; did you mean ‘F1AP_ProtocolExtensionContainer_19016P60_t’?
+/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c:92:12: [decode_cu_to_du_rrc_info] (unknown_type_name) unknown type name ‘F1AP_ProtocolExtensionContainer_10696P60_t’
+/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c:92:69: [decode_cu_to_du_rrc_info] (unknown_type_name) unknown type name ‘F1AP_ProtocolExtensionContainer_10696P60_t’
+/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c:669:6: [encode_drbs_to_setup] (unknown_type_name) unknown type name ‘F1AP_ProtocolExtensionContainer_10696P82_t’; did you mean ‘F1AP_ProtocolExtensionContainer_19016P82_t’?
+/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c:726:6: [encode_drbs_to_setupmod] (unknown_type_name) unknown type name ‘F1AP_ProtocolExtensionContainer_10696P83_t’; did you mean ‘F1AP_ProtocolExtensionContainer_19016P83_t’?
+/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c:784:12: [decode_drbs_to_setup] (unknown_type_name) unknown type name ‘F1AP_ProtocolExtensionContainer_10696P82_t’
+/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c:784:69: [decode_drbs_to_setup] (unknown_type_name) unknown type name ‘F1AP_ProtocolExtensionContainer_10696P82_t’
+/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c:850:12: [decode_drbs_to_setupmod] (unknown_type_name) unknown type name ‘F1AP_ProtocolExtensionContainer_10696P83_t’
+/home/tcs/Downloads/OAI-CU/openair2/F1AP/lib/f1ap_ue_context.c:850:69: [decode_drbs_to_setupmod] (unknown_type_name) unknown type name ‘F1AP_ProtocolExtensionContainer_10696P83_t’

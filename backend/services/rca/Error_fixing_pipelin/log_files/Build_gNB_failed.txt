@@ -1,0 +1,1151 @@
+Will compile gNB
+OPENAIR_DIR    = /home/tcs/Phani/openairinterface-5g-new_feature
+Running "cmake ../../.."
+-- Ccache not found. Consider installing it for faster compilation. Command: sudo apt/dnf install ccache
+-- Check if /opt/asn1c/bin/asn1c supports -gen-APER
+-- Check if /opt/asn1c/bin/asn1c supports -no-gen-UPER
+-- Check if /opt/asn1c/bin/asn1c supports -no-gen-JER
+-- Check if /opt/asn1c/bin/asn1c supports -no-gen-BER
+-- Check if /opt/asn1c/bin/asn1c supports -no-gen-OER
+-- CMAKE_BUILD_TYPE is RelWithDebInfo
+-- CPU architecture is x86_64
+-- AVX512 intrinsics are ON
+-- AVX2 intrinsics are ON
+fatal: not a git repository (or any of the parent directories): .git
+fatal: not a git repository (or any of the parent directories): .git
+fatal: not a git repository (or any of the parent directories): .git
+-- Checking for module 'cblas'
+--   No package 'cblas' found
+-- LTTNG support disabled
+-- No Doxygen documentation requested
+-- No Support for Aerial
+-- No Support for WLS
+-- Configuring done
+-- Generating done
+-- Build files have been written to: /home/tcs/Phani/openairinterface-5g-new_feature/cmake_targets/ran_build/build
+Running "cmake --build . --target  nr-softmodem nr-cuup params_libconfig coding rfsimulator dfts params_yaml vrtsim rf_emulator -- -j8"
+Consolidate compiler generated dependencies of target genids
+[  0%] Built target genids
+Consolidate compiler generated dependencies of target ds
+[  0%] Built target ds
+Consolidate compiler generated dependencies of target asn1_m3ap
+[  1%] Built target asn1_m3ap
+Consolidate compiler generated dependencies of target asn1_m2ap
+Consolidate compiler generated dependencies of target actor
+[  1%] Built target actor
+Consolidate compiler generated dependencies of target barrier
+[  1%] Built target barrier
+[  3%] Built target asn1_m2ap
+Consolidate compiler generated dependencies of target nfapi_common
+[  3%] Built target nfapi_common
+Consolidate compiler generated dependencies of target alg
+[  3%] Built target alg
+Consolidate compiler generated dependencies of target tracer_view
+[  3%] Built target tracer_view
+[  3%] Built target gen_nr_rrc_hdrs
+Consolidate compiler generated dependencies of target tracer_utils
+Consolidate compiler generated dependencies of target tracer_filter
+[  3%] Built target tracer_utils
+[  3%] Built target gen_lte_rrc_hdrs
+[  3%] Built target tracer_filter
+Consolidate compiler generated dependencies of target cnProc_gen_avx512
+Consolidate compiler generated dependencies of target bnProc_gen_avx2
+[  3%] Built target cnProc_gen_avx512
+Consolidate compiler generated dependencies of target bnProc_gen_128
+[  3%] Built target bnProc_gen_avx2
+Consolidate compiler generated dependencies of target bnProc_gen_avx512
+[  3%] Built target bnProc_gen_128
+Consolidate compiler generated dependencies of target cnProc_gen_avx2
+[  3%] Built target bnProc_gen_avx512
+Consolidate compiler generated dependencies of target cnProc_gen_128
+[  3%] Built target cnProc_gen_avx2
+[  3%] Built target cnProc_gen_128
+Consolidate compiler generated dependencies of target _check_vcd
+[  3%] Built target _check_vcd
+Consolidate compiler generated dependencies of target asn1_ngap
+Consolidate compiler generated dependencies of target asn1_s1ap
+Consolidate compiler generated dependencies of target asn1_e1ap
+[  9%] Built target asn1_ngap
+Consolidate compiler generated dependencies of target asn1_x2ap
+Consolidate compiler generated dependencies of target nr_fapi_common
+[  9%] Built target nr_fapi_common
+Consolidate compiler generated dependencies of target tracer_logger
+[  9%] Built target tracer_logger
+Consolidate compiler generated dependencies of target record
+[  9%] Built target record
+[ 15%] Built target asn1_s1ap
+[ 20%] Built target asn1_e1ap
+Consolidate compiler generated dependencies of target extract_config
+Consolidate compiler generated dependencies of target replay
+Consolidate compiler generated dependencies of target extract_input_subframe
+[ 20%] Built target extract_config
+[ 20%] Built target replay
+[ 20%] Built target extract_input_subframe
+Consolidate compiler generated dependencies of target extract
+Consolidate compiler generated dependencies of target extract_output_subframe
+Consolidate compiler generated dependencies of target macpdu2wireshark
+[ 20%] Built target extract
+[ 20%] Built target extract_output_subframe
+[ 20%] Built target macpdu2wireshark
+[ 20%] Built target bnProc_gen_avx2_files
+[ 20%] Built target cnProc_gen_avx512_files
+[ 20%] Generating LDPC bnProc header files for 128-bit SIMD
+[ 20%] Built target cnProc_gen_avx2_files
+[ 21%] Built target bnProc_gen_avx512_files
+[ 27%] Built target asn1_x2ap
+Consolidate compiler generated dependencies of target nr_fapi_p7
+[ 27%] Generating LDPC cnProc header files for 128-bit SIMD
+[ 27%] Checking validity of VCD files
+[ 27%] Built target nr_fapi_p7
+Consolidate compiler generated dependencies of target nr_fapi_p5
+Consolidate compiler generated dependencies of target asn1_lpp
+[ 27%] Built target nr_fapi_p5
+[ 27%] Built target check_vcd
+Consolidate compiler generated dependencies of target e1ap_lib
+Consolidate compiler generated dependencies of target textlog
+[ 27%] Built target textlog
+[ 27%] Built target e1ap_lib
+[ 27%] Built target cnProc_gen_128_files
+Consolidate compiler generated dependencies of target nfapi_hex_parser
+[ 27%] Built target bnProc_gen_128_files
+[ 27%] Built target generate_T
+[ 27%] Built target nfapi_hex_parser
+Consolidate compiler generated dependencies of target HASHTABLE
+[ 27%] Built target HASHTABLE
+Consolidate compiler generated dependencies of target ITTI
+Consolidate compiler generated dependencies of target SIMU
+[ 27%] Built target ITTI
+[ 34%] Built target asn1_lpp
+[ 34%] Built target SIMU
+Consolidate compiler generated dependencies of target config_internals
+Consolidate compiler generated dependencies of target SECURITY
+[ 34%] Built target config_internals
+[ 34%] Built target SECURITY
+Consolidate compiler generated dependencies of target SCHED_LIB
+Consolidate compiler generated dependencies of target NFAPI_LIB
+Consolidate compiler generated dependencies of target SCHED_RU_LIB
+[ 34%] Built target NFAPI_LIB
+[ 34%] Built target SCHED_LIB
+[ 34%] Built target SCHED_RU_LIB
+Consolidate compiler generated dependencies of target ngap
+Consolidate compiler generated dependencies of target NFAPI_VNF_LIB
+Consolidate compiler generated dependencies of target crc_byte
+Consolidate compiler generated dependencies of target NFAPI_PNF_LIB
+[ 34%] Built target NFAPI_VNF_LIB
+[ 34%] Built target crc_byte
+Consolidate compiler generated dependencies of target dfts
+Consolidate compiler generated dependencies of target x2ap
+[ 34%] Built target NFAPI_PNF_LIB
+[ 34%] Built target dfts
+[ 34%] Built target ngap
+Consolidate compiler generated dependencies of target nr_rlc_core
+[ 34%] Built target nr_rlc_core
+Consolidate compiler generated dependencies of target MAC_NR_COMMON
+[ 34%] Built target x2ap
+Consolidate compiler generated dependencies of target SCTP_CLIENT
+Consolidate compiler generated dependencies of target time_management_core
+[ 34%] Built target MAC_NR_COMMON
+[ 34%] Built target time_management_core
+[ 34%] Built target SCTP_CLIENT
+Consolidate compiler generated dependencies of target ldpc_segment
+Consolidate compiler generated dependencies of target thread-pool
+[ 34%] Built target ldpc_segment
+Consolidate compiler generated dependencies of target PHY
+[ 34%] Built target thread-pool
+Consolidate compiler generated dependencies of target time_management
+Consolidate compiler generated dependencies of target ldpc_orig
+[ 34%] Built target time_management
+[ 34%] Built target ldpc_orig
+Consolidate compiler generated dependencies of target ldpc
+Consolidate compiler generated dependencies of target GTPV1U
+Consolidate compiler generated dependencies of target LOG
+[ 34%] Built target PHY
+[ 34%] Built target ldpc
+[ 34%] Built target LOG
+Consolidate compiler generated dependencies of target T
+[ 34%] Built target T
+[ 34%] Built target GTPV1U
+Consolidate compiler generated dependencies of target utils
+[ 34%] Built target utils
+Consolidate compiler generated dependencies of target UTIL
+[ 34%] Built target UTIL
+Consolidate compiler generated dependencies of target CONFIG_LIB
+Consolidate compiler generated dependencies of target LIB_NAS_UE
+[ 34%] Built target CONFIG_LIB
+Consolidate compiler generated dependencies of target shlib_loader
+Consolidate compiler generated dependencies of target SCHED_NR_LIB
+Consolidate compiler generated dependencies of target PHY_NR_COMMON
+[ 34%] Built target shlib_loader
+[ 34%] Built target SCHED_NR_LIB
+[ 34%] Built target PHY_NR_COMMON
+Consolidate compiler generated dependencies of target NFAPI_USER_LIB
+Consolidate compiler generated dependencies of target nr_common
+Consolidate compiler generated dependencies of target multi
+[ 34%] Built target nr_common
+[ 34%] Built target multi
+[ 34%] Built target NFAPI_USER_LIB
+[ 35%] Built target LIB_NAS_UE
+[ 35%] Built target T_tools
+Consolidate compiler generated dependencies of target nfapi_socket_lib
+Consolidate compiler generated dependencies of target PHY_RU
+[ 35%] Built target nfapi_socket_lib
+[ 35%] Built target PHY_RU
+Consolidate compiler generated dependencies of target PHY_COMMON
+[ 35%] Built target PHY_COMMON
+Consolidate compiler generated dependencies of target nr_phy_common
+[ 35%] Built target nr_phy_common
+Consolidate compiler generated dependencies of target PHY_NR
+[ 35%] Built target PHY_NR
+Consolidate compiler generated dependencies of target asn1_f1ap
+Consolidate compiler generated dependencies of target asn1_lte_rrc
+[ 50%] Built target asn1_f1ap
+Consolidate compiler generated dependencies of target f1ap_lib
+Consolidate compiler generated dependencies of target e1ap
+[ 50%] Building C object openair2/F1AP/lib/CMakeFiles/f1ap_lib.dir/f1ap_ue_context.c.o
+[ 50%] Building C object openair2/F1AP/lib/CMakeFiles/f1ap_lib.dir/f1ap_rrc_message_transfer.c.o
+[ 50%] Building C object openair2/F1AP/lib/CMakeFiles/f1ap_lib.dir/f1ap_interface_management.c.o
+[ 51%] Built target e1ap
+Consolidate compiler generated dependencies of target e1_if
+[ 51%] Built target e1_if
+[ 75%] Built target asn1_lte_rrc
+Consolidate compiler generated dependencies of target asn1_nr_rrc
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_rrc_message_transfer.c: In function ‘decode_initial_ul_rrc_message_transfer’:
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_rrc_message_transfer.c:117:3: error: unknown type name ‘F1AP_ProtocolIE_Container_10659P31_t’; did you mean ‘F1AP_ProtocolIE_Container_18979P31_t’?
+  117 |   F1AP_ProtocolIE_Container_10659P31_t *pIEs = &container->protocolIEs;
+      |   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      |   F1AP_ProtocolIE_Container_18979P31_t
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_rrc_message_transfer.c:117:48: warning: initialization of ‘int *’ from incompatible pointer type ‘F1AP_ProtocolIE_Container_18979P31_t *’ {aka ‘struct F1AP_ProtocolIE_Container_18979P31 *’} [-Wincompatible-pointer-types]
+  117 |   F1AP_ProtocolIE_Container_10659P31_t *pIEs = &container->protocolIEs;
+      |                                                ^
+In file included from /home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_rrc_message_transfer.c:24:
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_rrc_message_transfer.c:120:68: error: request for member ‘list’ in something not a structure or union
+  120 |   F1AP_LIB_FIND_IE(F1AP_InitialULRRCMessageTransferIEs_t, ie, &pIEs->list, F1AP_ProtocolIE_ID_id_gNB_DU_UE_F1AP_ID, true);
+      |                                                                    ^~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_lib_common.h:74:27: note: in definition of macro ‘F1AP_LIB_FIND_IE’
+   74 |     for (IE_TYPE **ptr = (IE_LIST)->array; ptr < &(IE_LIST)->array[(IE_LIST)->count]; ptr++) {       \
+      |                           ^~~~~~~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_rrc_message_transfer.c:120:68: error: request for member ‘list’ in something not a structure or union
+  120 |   F1AP_LIB_FIND_IE(F1AP_InitialULRRCMessageTransferIEs_t, ie, &pIEs->list, F1AP_ProtocolIE_ID_id_gNB_DU_UE_F1AP_ID, true);
+      |                                                                    ^~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_lib_common.h:74:52: note: in definition of macro ‘F1AP_LIB_FIND_IE’
+   74 |     for (IE_TYPE **ptr = (IE_LIST)->array; ptr < &(IE_LIST)->array[(IE_LIST)->count]; ptr++) {       \
+      |                                                    ^~~~~~~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_rrc_message_transfer.c:120:68: error: request for member ‘list’ in something not a structure or union
+  120 |   F1AP_LIB_FIND_IE(F1AP_InitialULRRCMessageTransferIEs_t, ie, &pIEs->list, F1AP_ProtocolIE_ID_id_gNB_DU_UE_F1AP_ID, true);
+      |                                                                    ^~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_lib_common.h:74:69: note: in definition of macro ‘F1AP_LIB_FIND_IE’
+   74 |     for (IE_TYPE **ptr = (IE_LIST)->array; ptr < &(IE_LIST)->array[(IE_LIST)->count]; ptr++) {       \
+      |                                                                     ^~~~~~~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_rrc_message_transfer.c:123:68: error: request for member ‘list’ in something not a structure or union
+  123 |   F1AP_LIB_FIND_IE(F1AP_InitialULRRCMessageTransferIEs_t, ie, &pIEs->list, F1AP_ProtocolIE_ID_id_NRCGI, true);
+      |                                                                    ^~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_lib_common.h:74:27: note: in definition of macro ‘F1AP_LIB_FIND_IE’
+   74 |     for (IE_TYPE **ptr = (IE_LIST)->array; ptr < &(IE_LIST)->array[(IE_LIST)->count]; ptr++) {       \
+      |                           ^~~~~~~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_rrc_message_transfer.c:123:68: error: request for member ‘list’ in something not a structure or union
+  123 |   F1AP_LIB_FIND_IE(F1AP_InitialULRRCMessageTransferIEs_t, ie, &pIEs->list, F1AP_ProtocolIE_ID_id_NRCGI, true);
+      |                                                                    ^~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_lib_common.h:74:52: note: in definition of macro ‘F1AP_LIB_FIND_IE’
+   74 |     for (IE_TYPE **ptr = (IE_LIST)->array; ptr < &(IE_LIST)->array[(IE_LIST)->count]; ptr++) {       \
+      |                                                    ^~~~~~~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_rrc_message_transfer.c:123:68: error: request for member ‘list’ in something not a structure or union
+  123 |   F1AP_LIB_FIND_IE(F1AP_InitialULRRCMessageTransferIEs_t, ie, &pIEs->list, F1AP_ProtocolIE_ID_id_NRCGI, true);
+      |                                                                    ^~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_lib_common.h:74:69: note: in definition of macro ‘F1AP_LIB_FIND_IE’
+   74 |     for (IE_TYPE **ptr = (IE_LIST)->array; ptr < &(IE_LIST)->array[(IE_LIST)->count]; ptr++) {       \
+      |                                                                     ^~~~~~~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_rrc_message_transfer.c:127:68: error: request for member ‘list’ in something not a structure or union
+  127 |   F1AP_LIB_FIND_IE(F1AP_InitialULRRCMessageTransferIEs_t, ie, &pIEs->list, F1AP_ProtocolIE_ID_id_C_RNTI, true);
+      |                                                                    ^~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_lib_common.h:74:27: note: in definition of macro ‘F1AP_LIB_FIND_IE’
+   74 |     for (IE_TYPE **ptr = (IE_LIST)->array; ptr < &(IE_LIST)->array[(IE_LIST)->count]; ptr++) {       \
+      |                           ^~~~~~~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_rrc_message_transfer.c:127:68: error: request for member ‘list’ in something not a structure or union
+  127 |   F1AP_LIB_FIND_IE(F1AP_InitialULRRCMessageTransferIEs_t, ie, &pIEs->list, F1AP_ProtocolIE_ID_id_C_RNTI, true);
+      |                                                                    ^~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_lib_common.h:74:52: note: in definition of macro ‘F1AP_LIB_FIND_IE’
+   74 |     for (IE_TYPE **ptr = (IE_LIST)->array; ptr < &(IE_LIST)->array[(IE_LIST)->count]; ptr++) {       \
+      |                                                    ^~~~~~~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_rrc_message_transfer.c:127:68: error: request for member ‘list’ in something not a structure or union
+  127 |   F1AP_LIB_FIND_IE(F1AP_InitialULRRCMessageTransferIEs_t, ie, &pIEs->list, F1AP_ProtocolIE_ID_id_C_RNTI, true);
+      |                                                                    ^~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_lib_common.h:74:69: note: in definition of macro ‘F1AP_LIB_FIND_IE’
+   74 |     for (IE_TYPE **ptr = (IE_LIST)->array; ptr < &(IE_LIST)->array[(IE_LIST)->count]; ptr++) {       \
+      |                                                                     ^~~~~~~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_rrc_message_transfer.c:130:68: error: request for member ‘list’ in something not a structure or union
+  130 |   F1AP_LIB_FIND_IE(F1AP_InitialULRRCMessageTransferIEs_t, ie, &pIEs->list, F1AP_ProtocolIE_ID_id_RRCContainer, true);
+      |                                                                    ^~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_lib_common.h:74:27: note: in definition of macro ‘F1AP_LIB_FIND_IE’
+   74 |     for (IE_TYPE **ptr = (IE_LIST)->array; ptr < &(IE_LIST)->array[(IE_LIST)->count]; ptr++) {       \
+      |                           ^~~~~~~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_rrc_message_transfer.c:130:68: error: request for member ‘list’ in something not a structure or union
+  130 |   F1AP_LIB_FIND_IE(F1AP_InitialULRRCMessageTransferIEs_t, ie, &pIEs->list, F1AP_ProtocolIE_ID_id_RRCContainer, true);
+      |                                                                    ^~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_lib_common.h:74:52: note: in definition of macro ‘F1AP_LIB_FIND_IE’
+   74 |     for (IE_TYPE **ptr = (IE_LIST)->array; ptr < &(IE_LIST)->array[(IE_LIST)->count]; ptr++) {       \
+      |                                                    ^~~~~~~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_rrc_message_transfer.c:130:68: error: request for member ‘list’ in something not a structure or union
+  130 |   F1AP_LIB_FIND_IE(F1AP_InitialULRRCMessageTransferIEs_t, ie, &pIEs->list, F1AP_ProtocolIE_ID_id_RRCContainer, true);
+      |                                                                    ^~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_lib_common.h:74:69: note: in definition of macro ‘F1AP_LIB_FIND_IE’
+   74 |     for (IE_TYPE **ptr = (IE_LIST)->array; ptr < &(IE_LIST)->array[(IE_LIST)->count]; ptr++) {       \
+      |                                                                     ^~~~~~~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_rrc_message_transfer.c:133:68: error: request for member ‘list’ in something not a structure or union
+  133 |   F1AP_LIB_FIND_IE(F1AP_InitialULRRCMessageTransferIEs_t, ie, &pIEs->list, F1AP_ProtocolIE_ID_id_DUtoCURRCContainer, false);
+      |                                                                    ^~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_lib_common.h:74:27: note: in definition of macro ‘F1AP_LIB_FIND_IE’
+   74 |     for (IE_TYPE **ptr = (IE_LIST)->array; ptr < &(IE_LIST)->array[(IE_LIST)->count]; ptr++) {       \
+      |                           ^~~~~~~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_rrc_message_transfer.c:133:68: error: request for member ‘list’ in something not a structure or union
+  133 |   F1AP_LIB_FIND_IE(F1AP_InitialULRRCMessageTransferIEs_t, ie, &pIEs->list, F1AP_ProtocolIE_ID_id_DUtoCURRCContainer, false);
+      |                                                                    ^~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_lib_common.h:74:52: note: in definition of macro ‘F1AP_LIB_FIND_IE’
+   74 |     for (IE_TYPE **ptr = (IE_LIST)->array; ptr < &(IE_LIST)->array[(IE_LIST)->count]; ptr++) {       \
+      |                                                    ^~~~~~~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_rrc_message_transfer.c:133:68: error: request for member ‘list’ in something not a structure or union
+  133 |   F1AP_LIB_FIND_IE(F1AP_InitialULRRCMessageTransferIEs_t, ie, &pIEs->list, F1AP_ProtocolIE_ID_id_DUtoCURRCContainer, false);
+      |                                                                    ^~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_lib_common.h:74:69: note: in definition of macro ‘F1AP_LIB_FIND_IE’
+   74 |     for (IE_TYPE **ptr = (IE_LIST)->array; ptr < &(IE_LIST)->array[(IE_LIST)->count]; ptr++) {       \
+      |                                                                     ^~~~~~~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_rrc_message_transfer.c:137:68: error: request for member ‘list’ in something not a structure or union
+  137 |   F1AP_LIB_FIND_IE(F1AP_InitialULRRCMessageTransferIEs_t, ie, &pIEs->list, F1AP_ProtocolIE_ID_id_TransactionID, true);
+      |                                                                    ^~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_lib_common.h:74:27: note: in definition of macro ‘F1AP_LIB_FIND_IE’
+   74 |     for (IE_TYPE **ptr = (IE_LIST)->array; ptr < &(IE_LIST)->array[(IE_LIST)->count]; ptr++) {       \
+      |                           ^~~~~~~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_rrc_message_transfer.c:137:68: error: request for member ‘list’ in something not a structure or union
+  137 |   F1AP_LIB_FIND_IE(F1AP_InitialULRRCMessageTransferIEs_t, ie, &pIEs->list, F1AP_ProtocolIE_ID_id_TransactionID, true);
+      |                                                                    ^~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_lib_common.h:74:52: note: in definition of macro ‘F1AP_LIB_FIND_IE’
+   74 |     for (IE_TYPE **ptr = (IE_LIST)->array; ptr < &(IE_LIST)->array[(IE_LIST)->count]; ptr++) {       \
+      |                                                    ^~~~~~~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_rrc_message_transfer.c:137:68: error: request for member ‘list’ in something not a structure or union
+  137 |   F1AP_LIB_FIND_IE(F1AP_InitialULRRCMessageTransferIEs_t, ie, &pIEs->list, F1AP_ProtocolIE_ID_id_TransactionID, true);
+      |                                                                    ^~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_lib_common.h:74:69: note: in definition of macro ‘F1AP_LIB_FIND_IE’
+   74 |     for (IE_TYPE **ptr = (IE_LIST)->array; ptr < &(IE_LIST)->array[(IE_LIST)->count]; ptr++) {       \
+      |                                                                     ^~~~~~~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_ue_context.c: In function ‘encode_cu_to_du_rrc_info’:
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_ue_context.c:60:3: error: unknown type name ‘F1AP_ProtocolExtensionContainer_10696P60_t’; did you mean ‘F1AP_ProtocolExtensionContainer_19016P60_t’?
+   60 |   F1AP_ProtocolExtensionContainer_10696P60_t *p = NULL;
+      |   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      |   F1AP_ProtocolExtensionContainer_19016P60_t
+In file included from /home/tcs/Phani/openairinterface-5g-new_feature/cmake_targets/ran_build/build/openair2/F1AP/MESSAGES/F1AP_ProtocolIE-Container.h:15,
+                 from /home/tcs/Phani/openairinterface-5g-new_feature/cmake_targets/ran_build/build/openair2/F1AP/MESSAGES/F1AP_InitialULRRCMessageTransfer.h:15,
+                 from /home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_lib_includes.h:26,
+                 from /home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_ue_context.c:25:
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_ue_context.c:64:23: error: request for member ‘list’ in something not a structure or union
+   64 |     asn1cSequenceAdd(p->list, F1AP_CUtoDURRCInformation_ExtIEs_t, ie_ext);
+      |                       ^~
+/home/tcs/Phani/openairinterface-5g-new_feature/cmake_targets/ran_build/build/openair2/F1AP/MESSAGES/asn_SEQUENCE_OF.h:22:27: note: in definition of macro ‘ASN_SEQUENCE_ADD’
+   22 |         asn_sequence_add((headptr), (ptr))
+      |                           ^~~~~~~
+/home/tcs/Phani/openairinterface-5g-new_feature/common/utils/oai_asn1.h:224:3: note: in expansion of macro ‘asn1cSeqAdd’
+  224 |   asn1cSeqAdd(&VaR,lOcPtr)
+      |   ^~~~~~~~~~~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_ue_context.c:64:5: note: in expansion of macro ‘asn1cSequenceAdd’
+   64 |     asn1cSequenceAdd(p->list, F1AP_CUtoDURRCInformation_ExtIEs_t, ie_ext);
+      |     ^~~~~~~~~~~~~~~~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_ue_context.c:78:23: error: request for member ‘list’ in something not a structure or union
+   78 |     asn1cSequenceAdd(p->list, F1AP_CUtoDURRCInformation_ExtIEs_t, ie_ext);
+      |                       ^~
+/home/tcs/Phani/openairinterface-5g-new_feature/cmake_targets/ran_build/build/openair2/F1AP/MESSAGES/asn_SEQUENCE_OF.h:22:27: note: in definition of macro ‘ASN_SEQUENCE_ADD’
+   22 |         asn_sequence_add((headptr), (ptr))
+      |                           ^~~~~~~
+/home/tcs/Phani/openairinterface-5g-new_feature/common/utils/oai_asn1.h:224:3: note: in expansion of macro ‘asn1cSeqAdd’
+  224 |   asn1cSeqAdd(&VaR,lOcPtr)
+      |   ^~~~~~~~~~~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_ue_context.c:78:5: note: in expansion of macro ‘asn1cSequenceAdd’
+   78 |     asn1cSequenceAdd(p->list, F1AP_CUtoDURRCInformation_ExtIEs_t, ie_ext);
+      |     ^~~~~~~~~~~~~~~~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_ue_context.c: In function ‘decode_cu_to_du_rrc_info’:
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_ue_context.c:107:11: error: unknown type name ‘F1AP_ProtocolExtensionContainer_10696P60_t’
+  107 |     const F1AP_ProtocolExtensionContainer_10696P60_t *ext = (const F1AP_ProtocolExtensionContainer_10696P60_t *)cu2du->iE_Extensions;
+      |           ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_ue_context.c:107:68: error: unknown type name ‘F1AP_ProtocolExtensionContainer_10696P60_t’
+  107 |     const F1AP_ProtocolExtensionContainer_10696P60_t *ext = (const F1AP_ProtocolExtensionContainer_10696P60_t *)cu2du->iE_Extensions;
+      |                                                                    ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_ue_context.c:108:28: error: request for member ‘list’ in something not a structure or union
+  108 |     for (int i = 0; i < ext->list.count; ++i) {
+      |                            ^~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_ue_context.c:109:69: error: request for member ‘list’ in something not a structure or union
+  109 |       const F1AP_CUtoDURRCInformation_ExtIEs_t *cu2du_info_ext = ext->list.array[i];
+      |                                                                     ^~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_rrc_message_transfer.c: In function ‘decode_ul_rrc_message_transfer’:
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_rrc_message_transfer.c:262:3: error: unknown type name ‘F1AP_ProtocolIE_Container_10659P33_t’; did you mean ‘F1AP_ProtocolIE_Container_18979P33_t’?
+  262 |   F1AP_ProtocolIE_Container_10659P33_t *pIEs = &container->protocolIEs;
+      |   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      |   F1AP_ProtocolIE_Container_18979P33_t
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_rrc_message_transfer.c:262:48: warning: initialization of ‘int *’ from incompatible pointer type ‘F1AP_ProtocolIE_Container_18979P33_t *’ {aka ‘struct F1AP_ProtocolIE_Container_18979P33 *’} [-Wincompatible-pointer-types]
+  262 |   F1AP_ProtocolIE_Container_10659P33_t *pIEs = &container->protocolIEs;
+      |                                                ^
+In file included from /home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_rrc_message_transfer.c:24:
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_rrc_message_transfer.c:266:61: error: request for member ‘list’ in something not a structure or union
+  266 |   F1AP_LIB_FIND_IE(F1AP_ULRRCMessageTransferIEs_t, ie, &pIEs->list, F1AP_ProtocolIE_ID_id_gNB_CU_UE_F1AP_ID, true);
+      |                                                             ^~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_lib_common.h:74:27: note: in definition of macro ‘F1AP_LIB_FIND_IE’
+   74 |     for (IE_TYPE **ptr = (IE_LIST)->array; ptr < &(IE_LIST)->array[(IE_LIST)->count]; ptr++) {       \
+      |                           ^~~~~~~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_rrc_message_transfer.c:266:61: error: request for member ‘list’ in something not a structure or union
+  266 |   F1AP_LIB_FIND_IE(F1AP_ULRRCMessageTransferIEs_t, ie, &pIEs->list, F1AP_ProtocolIE_ID_id_gNB_CU_UE_F1AP_ID, true);
+      |                                                             ^~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_lib_common.h:74:52: note: in definition of macro ‘F1AP_LIB_FIND_IE’
+   74 |     for (IE_TYPE **ptr = (IE_LIST)->array; ptr < &(IE_LIST)->array[(IE_LIST)->count]; ptr++) {       \
+      |                                                    ^~~~~~~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_rrc_message_transfer.c:266:61: error: request for member ‘list’ in something not a structure or union
+  266 |   F1AP_LIB_FIND_IE(F1AP_ULRRCMessageTransferIEs_t, ie, &pIEs->list, F1AP_ProtocolIE_ID_id_gNB_CU_UE_F1AP_ID, true);
+      |                                                             ^~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_lib_common.h:74:69: note: in definition of macro ‘F1AP_LIB_FIND_IE’
+   74 |     for (IE_TYPE **ptr = (IE_LIST)->array; ptr < &(IE_LIST)->array[(IE_LIST)->count]; ptr++) {       \
+      |                                                                     ^~~~~~~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_rrc_message_transfer.c:269:61: error: request for member ‘list’ in something not a structure or union
+  269 |   F1AP_LIB_FIND_IE(F1AP_ULRRCMessageTransferIEs_t, ie, &pIEs->list, F1AP_ProtocolIE_ID_id_gNB_DU_UE_F1AP_ID, true);
+      |                                                             ^~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_lib_common.h:74:27: note: in definition of macro ‘F1AP_LIB_FIND_IE’
+   74 |     for (IE_TYPE **ptr = (IE_LIST)->array; ptr < &(IE_LIST)->array[(IE_LIST)->count]; ptr++) {       \
+      |                           ^~~~~~~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_rrc_message_transfer.c:269:61: error: request for member ‘list’ in something not a structure or union
+  269 |   F1AP_LIB_FIND_IE(F1AP_ULRRCMessageTransferIEs_t, ie, &pIEs->list, F1AP_ProtocolIE_ID_id_gNB_DU_UE_F1AP_ID, true);
+      |                                                             ^~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_lib_common.h:74:52: note: in definition of macro ‘F1AP_LIB_FIND_IE’
+   74 |     for (IE_TYPE **ptr = (IE_LIST)->array; ptr < &(IE_LIST)->array[(IE_LIST)->count]; ptr++) {       \
+      |                                                    ^~~~~~~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_rrc_message_transfer.c:269:61: error: request for member ‘list’ in something not a structure or union
+  269 |   F1AP_LIB_FIND_IE(F1AP_ULRRCMessageTransferIEs_t, ie, &pIEs->list, F1AP_ProtocolIE_ID_id_gNB_DU_UE_F1AP_ID, true);
+      |                                                             ^~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_lib_common.h:74:69: note: in definition of macro ‘F1AP_LIB_FIND_IE’
+   74 |     for (IE_TYPE **ptr = (IE_LIST)->array; ptr < &(IE_LIST)->array[(IE_LIST)->count]; ptr++) {       \
+      |                                                                     ^~~~~~~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_rrc_message_transfer.c:272:61: error: request for member ‘list’ in something not a structure or union
+  272 |   F1AP_LIB_FIND_IE(F1AP_ULRRCMessageTransferIEs_t, ie, &pIEs->list, F1AP_ProtocolIE_ID_id_SRBID, true);
+      |                                                             ^~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_lib_common.h:74:27: note: in definition of macro ‘F1AP_LIB_FIND_IE’
+   74 |     for (IE_TYPE **ptr = (IE_LIST)->array; ptr < &(IE_LIST)->array[(IE_LIST)->count]; ptr++) {       \
+      |                           ^~~~~~~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_rrc_message_transfer.c:272:61: error: request for member ‘list’ in something not a structure or union
+  272 |   F1AP_LIB_FIND_IE(F1AP_ULRRCMessageTransferIEs_t, ie, &pIEs->list, F1AP_ProtocolIE_ID_id_SRBID, true);
+      |                                                             ^~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_lib_common.h:74:52: note: in definition of macro ‘F1AP_LIB_FIND_IE’
+   74 |     for (IE_TYPE **ptr = (IE_LIST)->array; ptr < &(IE_LIST)->array[(IE_LIST)->count]; ptr++) {       \
+      |                                                    ^~~~~~~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_rrc_message_transfer.c:272:61: error: request for member ‘list’ in something not a structure or union
+  272 |   F1AP_LIB_FIND_IE(F1AP_ULRRCMessageTransferIEs_t, ie, &pIEs->list, F1AP_ProtocolIE_ID_id_SRBID, true);
+      |                                                             ^~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_lib_common.h:74:69: note: in definition of macro ‘F1AP_LIB_FIND_IE’
+   74 |     for (IE_TYPE **ptr = (IE_LIST)->array; ptr < &(IE_LIST)->array[(IE_LIST)->count]; ptr++) {       \
+      |                                                                     ^~~~~~~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_rrc_message_transfer.c:275:61: error: request for member ‘list’ in something not a structure or union
+  275 |   F1AP_LIB_FIND_IE(F1AP_ULRRCMessageTransferIEs_t, ie, &pIEs->list, F1AP_ProtocolIE_ID_id_RRCContainer, true);
+      |                                                             ^~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_lib_common.h:74:27: note: in definition of macro ‘F1AP_LIB_FIND_IE’
+   74 |     for (IE_TYPE **ptr = (IE_LIST)->array; ptr < &(IE_LIST)->array[(IE_LIST)->count]; ptr++) {       \
+      |                           ^~~~~~~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_rrc_message_transfer.c:275:61: error: request for member ‘list’ in something not a structure or union
+  275 |   F1AP_LIB_FIND_IE(F1AP_ULRRCMessageTransferIEs_t, ie, &pIEs->list, F1AP_ProtocolIE_ID_id_RRCContainer, true);
+      |                                                             ^~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_lib_common.h:74:52: note: in definition of macro ‘F1AP_LIB_FIND_IE’
+   74 |     for (IE_TYPE **ptr = (IE_LIST)->array; ptr < &(IE_LIST)->array[(IE_LIST)->count]; ptr++) {       \
+      |                                                    ^~~~~~~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_rrc_message_transfer.c:275:61: error: request for member ‘list’ in something not a structure or union
+  275 |   F1AP_LIB_FIND_IE(F1AP_ULRRCMessageTransferIEs_t, ie, &pIEs->list, F1AP_ProtocolIE_ID_id_RRCContainer, true);
+      |                                                             ^~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_lib_common.h:74:69: note: in definition of macro ‘F1AP_LIB_FIND_IE’
+   74 |     for (IE_TYPE **ptr = (IE_LIST)->array; ptr < &(IE_LIST)->array[(IE_LIST)->count]; ptr++) {       \
+      |                                                                     ^~~~~~~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_ue_context.c: In function ‘encode_drbs_to_setup’:
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_ue_context.c:692:5: error: unknown type name ‘F1AP_ProtocolExtensionContainer_10696P82_t’; did you mean ‘F1AP_ProtocolExtensionContainer_19016P82_t’?
+  692 |     F1AP_ProtocolExtensionContainer_10696P82_t *ext = calloc_or_fail(1, sizeof(*ext));
+      |     ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      |     F1AP_ProtocolExtensionContainer_19016P82_t
+In file included from /home/tcs/Phani/openairinterface-5g-new_feature/cmake_targets/ran_build/build/openair2/F1AP/MESSAGES/F1AP_ProtocolIE-Container.h:15,
+                 from /home/tcs/Phani/openairinterface-5g-new_feature/cmake_targets/ran_build/build/openair2/F1AP/MESSAGES/F1AP_InitialULRRCMessageTransfer.h:15,
+                 from /home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_lib_includes.h:26,
+                 from /home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_ue_context.c:25:
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_ue_context.c:694:25: error: request for member ‘list’ in something not a structure or union
+  694 |     asn1cSequenceAdd(ext->list, F1AP_DRBs_ToBeSetup_ItemExtIEs_t, ext_ie);
+      |                         ^~
+/home/tcs/Phani/openairinterface-5g-new_feature/cmake_targets/ran_build/build/openair2/F1AP/MESSAGES/asn_SEQUENCE_OF.h:22:27: note: in definition of macro ‘ASN_SEQUENCE_ADD’
+   22 |         asn_sequence_add((headptr), (ptr))
+      |                           ^~~~~~~
+/home/tcs/Phani/openairinterface-5g-new_feature/common/utils/oai_asn1.h:224:3: note: in expansion of macro ‘asn1cSeqAdd’
+  224 |   asn1cSeqAdd(&VaR,lOcPtr)
+      |   ^~~~~~~~~~~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_ue_context.c:694:5: note: in expansion of macro ‘asn1cSequenceAdd’
+  694 |     asn1cSequenceAdd(ext->list, F1AP_DRBs_ToBeSetup_ItemExtIEs_t, ext_ie);
+      |     ^~~~~~~~~~~~~~~~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_ue_context.c:702:27: error: request for member ‘list’ in something not a structure or union
+  702 |       asn1cSequenceAdd(ext->list, F1AP_DRBs_ToBeSetup_ItemExtIEs_t, ext_ie);
+      |                           ^~
+/home/tcs/Phani/openairinterface-5g-new_feature/cmake_targets/ran_build/build/openair2/F1AP/MESSAGES/asn_SEQUENCE_OF.h:22:27: note: in definition of macro ‘ASN_SEQUENCE_ADD’
+   22 |         asn_sequence_add((headptr), (ptr))
+      |                           ^~~~~~~
+/home/tcs/Phani/openairinterface-5g-new_feature/common/utils/oai_asn1.h:224:3: note: in expansion of macro ‘asn1cSeqAdd’
+  224 |   asn1cSeqAdd(&VaR,lOcPtr)
+      |   ^~~~~~~~~~~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_ue_context.c:702:7: note: in expansion of macro ‘asn1cSequenceAdd’
+  702 |       asn1cSequenceAdd(ext->list, F1AP_DRBs_ToBeSetup_ItemExtIEs_t, ext_ie);
+      |       ^~~~~~~~~~~~~~~~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_rrc_message_transfer.c: In function ‘decode_dl_rrc_message_transfer’:
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_rrc_message_transfer.c:397:3: error: unknown type name ‘F1AP_ProtocolIE_Container_10659P32_t’; did you mean ‘F1AP_ProtocolIE_Container_18979P32_t’?
+  397 |   F1AP_ProtocolIE_Container_10659P32_t *pIEs = &container->protocolIEs;
+      |   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      |   F1AP_ProtocolIE_Container_18979P32_t
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_rrc_message_transfer.c:397:48: warning: initialization of ‘int *’ from incompatible pointer type ‘F1AP_ProtocolIE_Container_18979P32_t *’ {aka ‘struct F1AP_ProtocolIE_Container_18979P32 *’} [-Wincompatible-pointer-types]
+  397 |   F1AP_ProtocolIE_Container_10659P32_t *pIEs = &container->protocolIEs;
+      |                                                ^
+In file included from /home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_rrc_message_transfer.c:24:
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_rrc_message_transfer.c:400:61: error: request for member ‘list’ in something not a structure or union
+  400 |   F1AP_LIB_FIND_IE(F1AP_DLRRCMessageTransferIEs_t, ie, &pIEs->list, F1AP_ProtocolIE_ID_id_gNB_CU_UE_F1AP_ID, true);
+      |                                                             ^~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_lib_common.h:74:27: note: in definition of macro ‘F1AP_LIB_FIND_IE’
+   74 |     for (IE_TYPE **ptr = (IE_LIST)->array; ptr < &(IE_LIST)->array[(IE_LIST)->count]; ptr++) {       \
+      |                           ^~~~~~~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_rrc_message_transfer.c:400:61: error: request for member ‘list’ in something not a structure or union
+  400 |   F1AP_LIB_FIND_IE(F1AP_DLRRCMessageTransferIEs_t, ie, &pIEs->list, F1AP_ProtocolIE_ID_id_gNB_CU_UE_F1AP_ID, true);
+      |                                                             ^~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_lib_common.h:74:52: note: in definition of macro ‘F1AP_LIB_FIND_IE’
+   74 |     for (IE_TYPE **ptr = (IE_LIST)->array; ptr < &(IE_LIST)->array[(IE_LIST)->count]; ptr++) {       \
+      |                                                    ^~~~~~~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_rrc_message_transfer.c:400:61: error: request for member ‘list’ in something not a structure or union
+  400 |   F1AP_LIB_FIND_IE(F1AP_DLRRCMessageTransferIEs_t, ie, &pIEs->list, F1AP_ProtocolIE_ID_id_gNB_CU_UE_F1AP_ID, true);
+      |                                                             ^~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_lib_common.h:74:69: note: in definition of macro ‘F1AP_LIB_FIND_IE’
+   74 |     for (IE_TYPE **ptr = (IE_LIST)->array; ptr < &(IE_LIST)->array[(IE_LIST)->count]; ptr++) {       \
+      |                                                                     ^~~~~~~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_rrc_message_transfer.c:403:61: error: request for member ‘list’ in something not a structure or union
+  403 |   F1AP_LIB_FIND_IE(F1AP_DLRRCMessageTransferIEs_t, ie, &pIEs->list, F1AP_ProtocolIE_ID_id_gNB_DU_UE_F1AP_ID, true);
+      |                                                             ^~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_lib_common.h:74:27: note: in definition of macro ‘F1AP_LIB_FIND_IE’
+   74 |     for (IE_TYPE **ptr = (IE_LIST)->array; ptr < &(IE_LIST)->array[(IE_LIST)->count]; ptr++) {       \
+      |                           ^~~~~~~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_rrc_message_transfer.c:403:61: error: request for member ‘list’ in something not a structure or union
+  403 |   F1AP_LIB_FIND_IE(F1AP_DLRRCMessageTransferIEs_t, ie, &pIEs->list, F1AP_ProtocolIE_ID_id_gNB_DU_UE_F1AP_ID, true);
+      |                                                             ^~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_lib_common.h:74:52: note: in definition of macro ‘F1AP_LIB_FIND_IE’
+   74 |     for (IE_TYPE **ptr = (IE_LIST)->array; ptr < &(IE_LIST)->array[(IE_LIST)->count]; ptr++) {       \
+      |                                                    ^~~~~~~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_rrc_message_transfer.c:403:61: error: request for member ‘list’ in something not a structure or union
+  403 |   F1AP_LIB_FIND_IE(F1AP_DLRRCMessageTransferIEs_t, ie, &pIEs->list, F1AP_ProtocolIE_ID_id_gNB_DU_UE_F1AP_ID, true);
+      |                                                             ^~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_lib_common.h:74:69: note: in definition of macro ‘F1AP_LIB_FIND_IE’
+   74 |     for (IE_TYPE **ptr = (IE_LIST)->array; ptr < &(IE_LIST)->array[(IE_LIST)->count]; ptr++) {       \
+      |                                                                     ^~~~~~~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_rrc_message_transfer.c:407:61: error: request for member ‘list’ in something not a structure or union
+  407 |   F1AP_LIB_FIND_IE(F1AP_DLRRCMessageTransferIEs_t, ie, &pIEs->list, F1AP_ProtocolIE_ID_id_oldgNB_DU_UE_F1AP_ID, false);
+      |                                                             ^~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_lib_common.h:74:27: note: in definition of macro ‘F1AP_LIB_FIND_IE’
+   74 |     for (IE_TYPE **ptr = (IE_LIST)->array; ptr < &(IE_LIST)->array[(IE_LIST)->count]; ptr++) {       \
+      |                           ^~~~~~~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_rrc_message_transfer.c:407:61: error: request for member ‘list’ in something not a structure or union
+  407 |   F1AP_LIB_FIND_IE(F1AP_DLRRCMessageTransferIEs_t, ie, &pIEs->list, F1AP_ProtocolIE_ID_id_oldgNB_DU_UE_F1AP_ID, false);
+      |                                                             ^~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_lib_common.h:74:52: note: in definition of macro ‘F1AP_LIB_FIND_IE’
+   74 |     for (IE_TYPE **ptr = (IE_LIST)->array; ptr < &(IE_LIST)->array[(IE_LIST)->count]; ptr++) {       \
+      |                                                    ^~~~~~~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_rrc_message_transfer.c:407:61: error: request for member ‘list’ in something not a structure or union
+  407 |   F1AP_LIB_FIND_IE(F1AP_DLRRCMessageTransferIEs_t, ie, &pIEs->list, F1AP_ProtocolIE_ID_id_oldgNB_DU_UE_F1AP_ID, false);
+      |                                                             ^~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_lib_common.h:74:69: note: in definition of macro ‘F1AP_LIB_FIND_IE’
+   74 |     for (IE_TYPE **ptr = (IE_LIST)->array; ptr < &(IE_LIST)->array[(IE_LIST)->count]; ptr++) {       \
+      |                                                                     ^~~~~~~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_rrc_message_transfer.c:413:61: error: request for member ‘list’ in something not a structure or union
+  413 |   F1AP_LIB_FIND_IE(F1AP_DLRRCMessageTransferIEs_t, ie, &pIEs->list, F1AP_ProtocolIE_ID_id_SRBID, true);
+      |                                                             ^~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_lib_common.h:74:27: note: in definition of macro ‘F1AP_LIB_FIND_IE’
+   74 |     for (IE_TYPE **ptr = (IE_LIST)->array; ptr < &(IE_LIST)->array[(IE_LIST)->count]; ptr++) {       \
+      |                           ^~~~~~~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_rrc_message_transfer.c:413:61: error: request for member ‘list’ in something not a structure or union
+  413 |   F1AP_LIB_FIND_IE(F1AP_DLRRCMessageTransferIEs_t, ie, &pIEs->list, F1AP_ProtocolIE_ID_id_SRBID, true);
+      |                                                             ^~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_lib_common.h:74:52: note: in definition of macro ‘F1AP_LIB_FIND_IE’
+   74 |     for (IE_TYPE **ptr = (IE_LIST)->array; ptr < &(IE_LIST)->array[(IE_LIST)->count]; ptr++) {       \
+      |                                                    ^~~~~~~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_rrc_message_transfer.c:413:61: error: request for member ‘list’ in something not a structure or union
+  413 |   F1AP_LIB_FIND_IE(F1AP_DLRRCMessageTransferIEs_t, ie, &pIEs->list, F1AP_ProtocolIE_ID_id_SRBID, true);
+      |                                                             ^~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_lib_common.h:74:69: note: in definition of macro ‘F1AP_LIB_FIND_IE’
+   74 |     for (IE_TYPE **ptr = (IE_LIST)->array; ptr < &(IE_LIST)->array[(IE_LIST)->count]; ptr++) {       \
+      |                                                                     ^~~~~~~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_rrc_message_transfer.c:416:61: error: request for member ‘list’ in something not a structure or union
+  416 |   F1AP_LIB_FIND_IE(F1AP_DLRRCMessageTransferIEs_t, ie, &pIEs->list, F1AP_ProtocolIE_ID_id_ExecuteDuplication, false);
+      |                                                             ^~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_lib_common.h:74:27: note: in definition of macro ‘F1AP_LIB_FIND_IE’
+   74 |     for (IE_TYPE **ptr = (IE_LIST)->array; ptr < &(IE_LIST)->array[(IE_LIST)->count]; ptr++) {       \
+      |                           ^~~~~~~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_rrc_message_transfer.c:416:61: error: request for member ‘list’ in something not a structure or union
+  416 |   F1AP_LIB_FIND_IE(F1AP_DLRRCMessageTransferIEs_t, ie, &pIEs->list, F1AP_ProtocolIE_ID_id_ExecuteDuplication, false);
+      |                                                             ^~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_lib_common.h:74:52: note: in definition of macro ‘F1AP_LIB_FIND_IE’
+   74 |     for (IE_TYPE **ptr = (IE_LIST)->array; ptr < &(IE_LIST)->array[(IE_LIST)->count]; ptr++) {       \
+      |                                                    ^~~~~~~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_rrc_message_transfer.c:416:61: error: request for member ‘list’ in something not a structure or union
+  416 |   F1AP_LIB_FIND_IE(F1AP_DLRRCMessageTransferIEs_t, ie, &pIEs->list, F1AP_ProtocolIE_ID_id_ExecuteDuplication, false);
+      |                                                             ^~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_lib_common.h:74:69: note: in definition of macro ‘F1AP_LIB_FIND_IE’
+   74 |     for (IE_TYPE **ptr = (IE_LIST)->array; ptr < &(IE_LIST)->array[(IE_LIST)->count]; ptr++) {       \
+      |                                                                     ^~~~~~~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_rrc_message_transfer.c:421:61: error: request for member ‘list’ in something not a structure or union
+  421 |   F1AP_LIB_FIND_IE(F1AP_DLRRCMessageTransferIEs_t, ie, &pIEs->list, F1AP_ProtocolIE_ID_id_RRCContainer, true);
+      |                                                             ^~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_lib_common.h:74:27: note: in definition of macro ‘F1AP_LIB_FIND_IE’
+   74 |     for (IE_TYPE **ptr = (IE_LIST)->array; ptr < &(IE_LIST)->array[(IE_LIST)->count]; ptr++) {       \
+      |                           ^~~~~~~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_rrc_message_transfer.c:421:61: error: request for member ‘list’ in something not a structure or union
+  421 |   F1AP_LIB_FIND_IE(F1AP_DLRRCMessageTransferIEs_t, ie, &pIEs->list, F1AP_ProtocolIE_ID_id_RRCContainer, true);
+      |                                                             ^~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_lib_common.h:74:52: note: in definition of macro ‘F1AP_LIB_FIND_IE’
+   74 |     for (IE_TYPE **ptr = (IE_LIST)->array; ptr < &(IE_LIST)->array[(IE_LIST)->count]; ptr++) {       \
+      |                                                    ^~~~~~~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_rrc_message_transfer.c:421:61: error: request for member ‘list’ in something not a structure or union
+  421 |   F1AP_LIB_FIND_IE(F1AP_DLRRCMessageTransferIEs_t, ie, &pIEs->list, F1AP_ProtocolIE_ID_id_RRCContainer, true);
+      |                                                             ^~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_lib_common.h:74:69: note: in definition of macro ‘F1AP_LIB_FIND_IE’
+   74 |     for (IE_TYPE **ptr = (IE_LIST)->array; ptr < &(IE_LIST)->array[(IE_LIST)->count]; ptr++) {       \
+      |                                                                     ^~~~~~~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_ue_context.c: In function ‘encode_drbs_to_setupmod’:
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_ue_context.c:749:5: error: unknown type name ‘F1AP_ProtocolExtensionContainer_10696P83_t’; did you mean ‘F1AP_ProtocolExtensionContainer_19016P83_t’?
+  749 |     F1AP_ProtocolExtensionContainer_10696P83_t *ext = calloc_or_fail(1, sizeof(*ext));
+      |     ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      |     F1AP_ProtocolExtensionContainer_19016P83_t
+In file included from /home/tcs/Phani/openairinterface-5g-new_feature/cmake_targets/ran_build/build/openair2/F1AP/MESSAGES/F1AP_ProtocolIE-Container.h:15,
+                 from /home/tcs/Phani/openairinterface-5g-new_feature/cmake_targets/ran_build/build/openair2/F1AP/MESSAGES/F1AP_InitialULRRCMessageTransfer.h:15,
+                 from /home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_lib_includes.h:26,
+                 from /home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_ue_context.c:25:
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_ue_context.c:752:27: error: request for member ‘list’ in something not a structure or union
+  752 |       asn1cSequenceAdd(ext->list, F1AP_DRBs_ToBeSetupMod_ItemExtIEs_t, ext_ie);
+      |                           ^~
+/home/tcs/Phani/openairinterface-5g-new_feature/cmake_targets/ran_build/build/openair2/F1AP/MESSAGES/asn_SEQUENCE_OF.h:22:27: note: in definition of macro ‘ASN_SEQUENCE_ADD’
+   22 |         asn_sequence_add((headptr), (ptr))
+      |                           ^~~~~~~
+/home/tcs/Phani/openairinterface-5g-new_feature/common/utils/oai_asn1.h:224:3: note: in expansion of macro ‘asn1cSeqAdd’
+  224 |   asn1cSeqAdd(&VaR,lOcPtr)
+      |   ^~~~~~~~~~~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_ue_context.c:752:7: note: in expansion of macro ‘asn1cSequenceAdd’
+  752 |       asn1cSequenceAdd(ext->list, F1AP_DRBs_ToBeSetupMod_ItemExtIEs_t, ext_ie);
+      |       ^~~~~~~~~~~~~~~~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_ue_context.c:760:27: error: request for member ‘list’ in something not a structure or union
+  760 |       asn1cSequenceAdd(ext->list, F1AP_DRBs_ToBeSetupMod_ItemExtIEs_t, ext_ie);
+      |                           ^~
+/home/tcs/Phani/openairinterface-5g-new_feature/cmake_targets/ran_build/build/openair2/F1AP/MESSAGES/asn_SEQUENCE_OF.h:22:27: note: in definition of macro ‘ASN_SEQUENCE_ADD’
+   22 |         asn_sequence_add((headptr), (ptr))
+      |                           ^~~~~~~
+/home/tcs/Phani/openairinterface-5g-new_feature/common/utils/oai_asn1.h:224:3: note: in expansion of macro ‘asn1cSeqAdd’
+  224 |   asn1cSeqAdd(&VaR,lOcPtr)
+      |   ^~~~~~~~~~~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_ue_context.c:760:7: note: in expansion of macro ‘asn1cSequenceAdd’
+  760 |       asn1cSequenceAdd(ext->list, F1AP_DRBs_ToBeSetupMod_ItemExtIEs_t, ext_ie);
+      |       ^~~~~~~~~~~~~~~~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_ue_context.c: In function ‘decode_drbs_to_setup’:
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_ue_context.c:807:11: error: unknown type name ‘F1AP_ProtocolExtensionContainer_10696P82_t’
+  807 |     const F1AP_ProtocolExtensionContainer_10696P82_t *ext = (const F1AP_ProtocolExtensionContainer_10696P82_t *)it->iE_Extensions;
+      |           ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_ue_context.c:807:68: error: unknown type name ‘F1AP_ProtocolExtensionContainer_10696P82_t’
+  807 |     const F1AP_ProtocolExtensionContainer_10696P82_t *ext = (const F1AP_ProtocolExtensionContainer_10696P82_t *)it->iE_Extensions;
+      |                                                                    ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+In file included from /home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_ue_context.c:24:
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_ue_context.c:809:64: error: request for member ‘list’ in something not a structure or union
+  809 |     F1AP_LIB_FIND_IE(F1AP_DRBs_ToBeSetup_ItemExtIEs_t, ie, &ext->list, F1AP_ProtocolIE_ID_id_DLPDCPSNLength, true);
+      |                                                                ^~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_lib_common.h:74:27: note: in definition of macro ‘F1AP_LIB_FIND_IE’
+   74 |     for (IE_TYPE **ptr = (IE_LIST)->array; ptr < &(IE_LIST)->array[(IE_LIST)->count]; ptr++) {       \
+      |                           ^~~~~~~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_ue_context.c:809:64: error: request for member ‘list’ in something not a structure or union
+  809 |     F1AP_LIB_FIND_IE(F1AP_DRBs_ToBeSetup_ItemExtIEs_t, ie, &ext->list, F1AP_ProtocolIE_ID_id_DLPDCPSNLength, true);
+      |                                                                ^~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_lib_common.h:74:52: note: in definition of macro ‘F1AP_LIB_FIND_IE’
+   74 |     for (IE_TYPE **ptr = (IE_LIST)->array; ptr < &(IE_LIST)->array[(IE_LIST)->count]; ptr++) {       \
+      |                                                    ^~~~~~~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_ue_context.c:809:64: error: request for member ‘list’ in something not a structure or union
+  809 |     F1AP_LIB_FIND_IE(F1AP_DRBs_ToBeSetup_ItemExtIEs_t, ie, &ext->list, F1AP_ProtocolIE_ID_id_DLPDCPSNLength, true);
+      |                                                                ^~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_lib_common.h:74:69: note: in definition of macro ‘F1AP_LIB_FIND_IE’
+   74 |     for (IE_TYPE **ptr = (IE_LIST)->array; ptr < &(IE_LIST)->array[(IE_LIST)->count]; ptr++) {       \
+      |                                                                     ^~~~~~~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_ue_context.c:811:28: error: request for member ‘list’ in something not a structure or union
+  811 |     for (int j = 0; j < ext->list.count; ++j) {
+      |                            ^~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_ue_context.c:812:15: error: request for member ‘list’ in something not a structure or union
+  812 |       ie = ext->list.array[j];
+      |               ^~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_ue_context.c: In function ‘decode_drbs_to_setupmod’:
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_ue_context.c:873:11: error: unknown type name ‘F1AP_ProtocolExtensionContainer_10696P83_t’
+  873 |     const F1AP_ProtocolExtensionContainer_10696P83_t *ext = (const F1AP_ProtocolExtensionContainer_10696P83_t *)it->iE_Extensions;
+      |           ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_ue_context.c:873:68: error: unknown type name ‘F1AP_ProtocolExtensionContainer_10696P83_t’
+  873 |     const F1AP_ProtocolExtensionContainer_10696P83_t *ext = (const F1AP_ProtocolExtensionContainer_10696P83_t *)it->iE_Extensions;
+      |                                                                    ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_ue_context.c:876:28: error: request for member ‘list’ in something not a structure or union
+  876 |     for (int j = 0; j < ext->list.count; ++j) {
+      |                            ^~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_ue_context.c:877:15: error: request for member ‘list’ in something not a structure or union
+  877 |       ie = ext->list.array[j];
+      |               ^~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_interface_management.c: In function ‘read_slice_info’:
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_interface_management.c:386:9: error: unknown type name ‘F1AP_ProtocolExtensionContainer_10696P34_t’
+  386 |   const F1AP_ProtocolExtensionContainer_10696P34_t *p = (F1AP_ProtocolExtensionContainer_10696P34_t *)plmn->iE_Extensions;
+      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+gmake[3]: *** [openair2/F1AP/lib/CMakeFiles/f1ap_lib.dir/build.make:90: openair2/F1AP/lib/CMakeFiles/f1ap_lib.dir/f1ap_rrc_message_transfer.c.o] Error 1
+gmake[3]: *** Waiting for unfinished jobs....
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_ue_context.c: In function ‘encode_ue_context_setup_req’:
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_ue_context.c:1245:5: error: unknown type name ‘F1AP_ReferenceConfiguration_t’; did you mean ‘f1ap_reference_configuration_t’?
+ 1245 |     F1AP_ReferenceConfiguration_t *rc = &asn_ltm->referenceConfiguration;
+      |     ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      |     f1ap_reference_configuration_t
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_ue_context.c:1245:41: warning: initialization of ‘int *’ from incompatible pointer type ‘struct F1AP_ReferenceConfiguration **’ [-Wincompatible-pointer-types]
+ 1245 |     F1AP_ReferenceConfiguration_t *rc = &asn_ltm->referenceConfiguration;
+      |                                         ^
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_ue_context.c:1248:11: error: request for member ‘present’ in something not a structure or union
+ 1248 |         rc->present = F1AP_ReferenceConfiguration_PR_requestforReferenceConfiguration;
+      |           ^~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_interface_management.c:386:58: error: ‘F1AP_ProtocolExtensionContainer_10696P34_t’ undeclared (first use in this function); did you mean ‘F1AP_ProtocolExtensionContainer_19016P34_t’?
+  386 |   const F1AP_ProtocolExtensionContainer_10696P34_t *p = (F1AP_ProtocolExtensionContainer_10696P34_t *)plmn->iE_Extensions;
+      |                                                          ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      |                                                          F1AP_ProtocolExtensionContainer_19016P34_t
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_interface_management.c:386:58: note: each undeclared identifier is reported only once for each function it appears in
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_interface_management.c:386:102: error: expected expression before ‘)’ token
+  386 |   const F1AP_ProtocolExtensionContainer_10696P34_t *p = (F1AP_ProtocolExtensionContainer_10696P34_t *)plmn->iE_Extensions;
+      |                                                                                                      ^
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_interface_management.c:387:8: error: request for member ‘list’ in something not a structure or union
+  387 |   if (p->list.count == 0)
+      |        ^~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_interface_management.c:390:49: error: request for member ‘list’ in something not a structure or union
+  390 |   const F1AP_ServedPLMNs_ItemExtIEs_t *splmn = p->list.array[0];
+      |                                                 ^~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_interface_management.c: At top level:
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_interface_management.c:403:8: error: unknown type name ‘F1AP_ProtocolExtensionContainer_10696P34_t’
+  403 | static F1AP_ProtocolExtensionContainer_10696P34_t *write_slice_info(int num_ssi, const nssai_t *nssai)
+      |        ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_interface_management.c: In function ‘write_slice_info’:
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_interface_management.c:408:3: error: unknown type name ‘F1AP_ProtocolExtensionContainer_10696P34_t’; did you mean ‘F1AP_ProtocolExtensionContainer_19016P34_t’?
+  408 |   F1AP_ProtocolExtensionContainer_10696P34_t *p = calloc_or_fail(1, sizeof(*p));
+      |   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      |   F1AP_ProtocolExtensionContainer_19016P34_t
+In file included from /home/tcs/Phani/openairinterface-5g-new_feature/cmake_targets/ran_build/build/openair2/F1AP/MESSAGES/F1AP_ProtocolIE-Container.h:15,
+                 from /home/tcs/Phani/openairinterface-5g-new_feature/cmake_targets/ran_build/build/openair2/F1AP/MESSAGES/F1AP_InitialULRRCMessageTransfer.h:15,
+                 from /home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_lib_includes.h:26,
+                 from /home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_interface_management.c:31:
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_interface_management.c:409:21: error: request for member ‘list’ in something not a structure or union
+  409 |   asn1cSequenceAdd(p->list, F1AP_ServedPLMNs_ItemExtIEs_t, served_plmns_itemExtIEs);
+      |                     ^~
+/home/tcs/Phani/openairinterface-5g-new_feature/cmake_targets/ran_build/build/openair2/F1AP/MESSAGES/asn_SEQUENCE_OF.h:22:27: note: in definition of macro ‘ASN_SEQUENCE_ADD’
+   22 |         asn_sequence_add((headptr), (ptr))
+      |                           ^~~~~~~
+/home/tcs/Phani/openairinterface-5g-new_feature/common/utils/oai_asn1.h:224:3: note: in expansion of macro ‘asn1cSeqAdd’
+  224 |   asn1cSeqAdd(&VaR,lOcPtr)
+      |   ^~~~~~~~~~~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_interface_management.c:409:3: note: in expansion of macro ‘asn1cSequenceAdd’
+  409 |   asn1cSequenceAdd(p->list, F1AP_ServedPLMNs_ItemExtIEs_t, served_plmns_itemExtIEs);
+      |   ^~~~~~~~~~~~~~~~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_interface_management.c: In function ‘encode_cells_to_activate’:
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_interface_management.c:635:5: error: unknown type name ‘F1AP_ProtocolExtensionContainer_10696P112_t’; did you mean ‘F1AP_ProtocolExtensionContainer_19016P112_t’?
+  635 |     F1AP_ProtocolExtensionContainer_10696P112_t *p = calloc_or_fail(1, sizeof(*p));
+      |     ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      |     F1AP_ProtocolExtensionContainer_19016P112_t
+In file included from /home/tcs/Phani/openairinterface-5g-new_feature/cmake_targets/ran_build/build/openair2/F1AP/MESSAGES/F1AP_ProtocolIE-Container.h:15,
+                 from /home/tcs/Phani/openairinterface-5g-new_feature/cmake_targets/ran_build/build/openair2/F1AP/MESSAGES/F1AP_InitialULRRCMessageTransfer.h:15,
+                 from /home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_lib_includes.h:26,
+                 from /home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_interface_management.c:31:
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_interface_management.c:637:23: error: request for member ‘list’ in something not a structure or union
+  637 |     asn1cSequenceAdd(p->list, F1AP_Cells_to_be_Activated_List_ItemExtIEs_t, cells_to_be_activated_itemExtIEs);
+      |                       ^~
+/home/tcs/Phani/openairinterface-5g-new_feature/cmake_targets/ran_build/build/openair2/F1AP/MESSAGES/asn_SEQUENCE_OF.h:22:27: note: in definition of macro ‘ASN_SEQUENCE_ADD’
+   22 |         asn_sequence_add((headptr), (ptr))
+      |                           ^~~~~~~
+/home/tcs/Phani/openairinterface-5g-new_feature/common/utils/oai_asn1.h:224:3: note: in expansion of macro ‘asn1cSeqAdd’
+  224 |   asn1cSeqAdd(&VaR,lOcPtr)
+      |   ^~~~~~~~~~~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_interface_management.c:637:5: note: in expansion of macro ‘asn1cSequenceAdd’
+  637 |     asn1cSequenceAdd(p->list, F1AP_Cells_to_be_Activated_List_ItemExtIEs_t, cells_to_be_activated_itemExtIEs);
+      |     ^~~~~~~~~~~~~~~~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_interface_management.c: In function ‘decode_cells_to_activate’:
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_interface_management.c:670:3: error: unknown type name ‘F1AP_ProtocolExtensionContainer_10696P112_t’; did you mean ‘F1AP_ProtocolExtensionContainer_19016P112_t’?
+  670 |   F1AP_ProtocolExtensionContainer_10696P112_t *ext = (F1AP_ProtocolExtensionContainer_10696P112_t *)cell->iE_Extensions;
+      |   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      |   F1AP_ProtocolExtensionContainer_19016P112_t
+[ 98%] Built target asn1_nr_rrc
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_ue_context.c:1248:23: error: ‘F1AP_ReferenceConfiguration_PR_requestforReferenceConfiguration’ undeclared (first use in this function)
+ 1248 |         rc->present = F1AP_ReferenceConfiguration_PR_requestforReferenceConfiguration;
+      |                       ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_ue_context.c:1248:23: note: each undeclared identifier is reported only once for each function it appears in
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_ue_context.c:1251:11: error: request for member ‘present’ in something not a structure or union
+ 1251 |         rc->present = F1AP_ReferenceConfiguration_PR_referenceConfigurationInformation;
+      |           ^~
+Consolidate compiler generated dependencies of target nr_rrc
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_interface_management.c:670:55: error: ‘F1AP_ProtocolExtensionContainer_10696P112_t’ undeclared (first use in this function); did you mean ‘F1AP_ProtocolExtensionContainer_19016P112_t’?
+  670 |   F1AP_ProtocolExtensionContainer_10696P112_t *ext = (F1AP_ProtocolExtensionContainer_10696P112_t *)cell->iE_Extensions;
+      |                                                       ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      |                                                       F1AP_ProtocolExtensionContainer_19016P112_t
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_interface_management.c:670:100: error: expected expression before ‘)’ token
+  670 |   F1AP_ProtocolExtensionContainer_10696P112_t *ext = (F1AP_ProtocolExtensionContainer_10696P112_t *)cell->iE_Extensions;
+      |                                                                                                    ^
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_interface_management.c:672:32: error: request for member ‘list’ in something not a structure or union
+  672 |     for (int cnt = 0; cnt < ext->list.count; cnt++) {
+      |                                ^~
+In file included from /home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_interface_management.c:24:
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_interface_management.c:673:22: error: request for member ‘list’ in something not a structure or union
+  673 |       AssertError(ext->list.count == 1, return false, "At least one SI message should be present, and only 1 is supported");
+      |                      ^~
+/home/tcs/Phani/openairinterface-5g-new_feature/common/utils/assertions.h:49:11: note: in definition of macro ‘_Assert_’
+   49 |     if (!(cOND)) {                                          \
+      |           ^~~~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_interface_management.c:673:7: note: in expansion of macro ‘AssertError’
+  673 |       AssertError(ext->list.count == 1, return false, "At least one SI message should be present, and only 1 is supported");
+      |       ^~~~~~~~~~~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_interface_management.c:675:62: error: request for member ‘list’ in something not a structure or union
+  675 |           (F1AP_Cells_to_be_Activated_List_ItemExtIEs_t *)ext->list.array[cnt];
+      |                                                              ^~
+[ 98%] Built target nr_rrc
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_interface_management.c: In function ‘encode_f1ap_setup_request’:
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_interface_management.c:789:3: error: unknown type name ‘F1AP_ProtocolExtensionContainer_10696P228_t’; did you mean ‘F1AP_ProtocolExtensionContainer_19016P228_t’?
+  789 |   F1AP_ProtocolExtensionContainer_10696P228_t *p = calloc_or_fail(1, sizeof(*p));
+      |   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      |   F1AP_ProtocolExtensionContainer_19016P228_t
+In file included from /home/tcs/Phani/openairinterface-5g-new_feature/cmake_targets/ran_build/build/openair2/F1AP/MESSAGES/F1AP_ProtocolIE-Container.h:15,
+                 from /home/tcs/Phani/openairinterface-5g-new_feature/cmake_targets/ran_build/build/openair2/F1AP/MESSAGES/F1AP_InitialULRRCMessageTransfer.h:15,
+                 from /home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_lib_includes.h:26,
+                 from /home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_interface_management.c:31:
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_interface_management.c:790:21: error: request for member ‘list’ in something not a structure or union
+  790 |   asn1cSequenceAdd(p->list, F1AP_RRC_Version_ExtIEs_t, rrcv_ext);
+      |                     ^~
+/home/tcs/Phani/openairinterface-5g-new_feature/cmake_targets/ran_build/build/openair2/F1AP/MESSAGES/asn_SEQUENCE_OF.h:22:27: note: in definition of macro ‘ASN_SEQUENCE_ADD’
+   22 |         asn_sequence_add((headptr), (ptr))
+      |                           ^~~~~~~
+/home/tcs/Phani/openairinterface-5g-new_feature/common/utils/oai_asn1.h:224:3: note: in expansion of macro ‘asn1cSeqAdd’
+  224 |   asn1cSeqAdd(&VaR,lOcPtr)
+      |   ^~~~~~~~~~~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_interface_management.c:790:3: note: in expansion of macro ‘asn1cSequenceAdd’
+  790 |   asn1cSequenceAdd(p->list, F1AP_RRC_Version_ExtIEs_t, rrcv_ext);
+      |   ^~~~~~~~~~~~~~~~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_interface_management.c: In function ‘decode_f1ap_setup_request’:
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_interface_management.c:869:11: error: unknown type name ‘F1AP_ProtocolExtensionContainer_10696P228_t’; did you mean ‘F1AP_ProtocolExtensionContainer_19016P228_t’?
+  869 |           F1AP_ProtocolExtensionContainer_10696P228_t *ext =
+      |           ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      |           F1AP_ProtocolExtensionContainer_19016P228_t
+Consolidate compiler generated dependencies of target lte_rrc
+[ 98%] Built target lte_rrc
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_interface_management.c:870:16: error: ‘F1AP_ProtocolExtensionContainer_10696P228_t’ undeclared (first use in this function); did you mean ‘F1AP_ProtocolExtensionContainer_19016P228_t’?
+  870 |               (F1AP_ProtocolExtensionContainer_10696P228_t *)ie->value.choice.RRC_Version.iE_Extensions;
+      |                ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      |                F1AP_ProtocolExtensionContainer_19016P228_t
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_interface_management.c:870:61: error: expected expression before ‘)’ token
+  870 |               (F1AP_ProtocolExtensionContainer_10696P228_t *)ie->value.choice.RRC_Version.iE_Extensions;
+      |                                                             ^
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_interface_management.c:871:18: error: request for member ‘list’ in something not a structure or union
+  871 |           if (ext->list.count > 0) {
+      |                  ^~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_interface_management.c:872:52: error: request for member ‘list’ in something not a structure or union
+  872 |             F1AP_RRC_Version_ExtIEs_t *rrcext = ext->list.array[0];
+      |                                                    ^~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_interface_management.c: In function ‘encode_f1ap_setup_response’:
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_interface_management.c:1061:3: error: unknown type name ‘F1AP_ProtocolExtensionContainer_10696P228_t’; did you mean ‘F1AP_ProtocolExtensionContainer_19016P228_t’?
+ 1061 |   F1AP_ProtocolExtensionContainer_10696P228_t *p = calloc_or_fail(1, sizeof(*p));
+      |   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      |   F1AP_ProtocolExtensionContainer_19016P228_t
+In file included from /home/tcs/Phani/openairinterface-5g-new_feature/cmake_targets/ran_build/build/openair2/F1AP/MESSAGES/F1AP_ProtocolIE-Container.h:15,
+                 from /home/tcs/Phani/openairinterface-5g-new_feature/cmake_targets/ran_build/build/openair2/F1AP/MESSAGES/F1AP_InitialULRRCMessageTransfer.h:15,
+                 from /home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_lib_includes.h:26,
+                 from /home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_interface_management.c:31:
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_interface_management.c:1062:21: error: request for member ‘list’ in something not a structure or union
+ 1062 |   asn1cSequenceAdd(p->list, F1AP_RRC_Version_ExtIEs_t, rrcv_ext);
+      |                     ^~
+/home/tcs/Phani/openairinterface-5g-new_feature/cmake_targets/ran_build/build/openair2/F1AP/MESSAGES/asn_SEQUENCE_OF.h:22:27: note: in definition of macro ‘ASN_SEQUENCE_ADD’
+   22 |         asn_sequence_add((headptr), (ptr))
+      |                           ^~~~~~~
+/home/tcs/Phani/openairinterface-5g-new_feature/common/utils/oai_asn1.h:224:3: note: in expansion of macro ‘asn1cSeqAdd’
+  224 |   asn1cSeqAdd(&VaR,lOcPtr)
+      |   ^~~~~~~~~~~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_interface_management.c:1062:3: note: in expansion of macro ‘asn1cSequenceAdd’
+ 1062 |   asn1cSequenceAdd(p->list, F1AP_RRC_Version_ExtIEs_t, rrcv_ext);
+      |   ^~~~~~~~~~~~~~~~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_interface_management.c: In function ‘decode_f1ap_setup_response’:
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_interface_management.c:1115:11: error: unknown type name ‘F1AP_ProtocolExtensionContainer_10696P228_t’; did you mean ‘F1AP_ProtocolExtensionContainer_19016P228_t’?
+ 1115 |           F1AP_ProtocolExtensionContainer_10696P228_t *ext =
+      |           ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      |           F1AP_ProtocolExtensionContainer_19016P228_t
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_ue_context.c:1251:23: error: ‘F1AP_ReferenceConfiguration_PR_referenceConfigurationInformation’ undeclared (first use in this function)
+ 1251 |         rc->present = F1AP_ReferenceConfiguration_PR_referenceConfigurationInformation;
+      |                       ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_ue_context.c:1254:35: error: request for member ‘choice’ in something not a structure or union
+ 1254 |           OCTET_STRING_fromBuf(&rc->choice.referenceConfigurationInformation,
+      |                                   ^~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_ue_context.c:1260:11: error: request for member ‘present’ in something not a structure or union
+ 1260 |         rc->present = F1AP_ReferenceConfiguration_PR_NOTHING;
+      |           ^~
+Consolidate compiler generated dependencies of target s1ap
+Consolidate compiler generated dependencies of target m2ap
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_interface_management.c:1116:16: error: ‘F1AP_ProtocolExtensionContainer_10696P228_t’ undeclared (first use in this function); did you mean ‘F1AP_ProtocolExtensionContainer_19016P228_t’?
+ 1116 |               (F1AP_ProtocolExtensionContainer_10696P228_t *)ie->value.choice.RRC_Version.iE_Extensions;
+      |                ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      |                F1AP_ProtocolExtensionContainer_19016P228_t
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_interface_management.c:1116:61: error: expected expression before ‘)’ token
+ 1116 |               (F1AP_ProtocolExtensionContainer_10696P228_t *)ie->value.choice.RRC_Version.iE_Extensions;
+      |                                                             ^
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_interface_management.c:1117:18: error: request for member ‘list’ in something not a structure or union
+ 1117 |           if (ext->list.count > 0) {
+      |                  ^~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_interface_management.c:1118:52: error: request for member ‘list’ in something not a structure or union
+ 1118 |             F1AP_RRC_Version_ExtIEs_t *rrcext = ext->list.array[0];
+      |                                                    ^~
+[ 98%] Built target s1ap
+[ 98%] Built target m2ap
+gmake[3]: *** [openair2/F1AP/lib/CMakeFiles/f1ap_lib.dir/build.make:104: openair2/F1AP/lib/CMakeFiles/f1ap_lib.dir/f1ap_interface_management.c.o] Error 1
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_ue_context.c:1260:23: error: ‘F1AP_ReferenceConfiguration_PR_NOTHING’ undeclared (first use in this function); did you mean ‘F1AP_ReferenceConfiguration_ExtIEs’?
+ 1260 |         rc->present = F1AP_ReferenceConfiguration_PR_NOTHING;
+      |                       ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      |                       F1AP_ReferenceConfiguration_ExtIEs
+In file included from /home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_ue_context.c:30:
+/home/tcs/Phani/openairinterface-5g-new_feature/common/utils/oai_asn1.h:221:45: error: invalid application of ‘sizeof’ to incomplete type ‘struct F1AP_CSIResourceConfiguration’
+  221 |   typeof(VaR) lOcPtr = VaR = calloc(1,sizeof(*VaR))
+      |                                             ^
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_ue_context.c:1266:7: note: in expansion of macro ‘asn1cCalloc’
+ 1266 |       asn1cCalloc(asn_ltm->cSIResourceConfiguration, asn_csi);
+      |       ^~~~~~~~~~~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_ue_context.c:1270:38: error: invalid use of undefined type ‘struct F1AP_CSIResourceConfiguration’
+ 1270 |         OCTET_STRING_fromBuf(&asn_csi->cSIResourceConfigToAddModList,
+      |                                      ^~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_ue_context.c:1275:38: error: invalid use of undefined type ‘struct F1AP_CSIResourceConfiguration’
+ 1275 |         OCTET_STRING_fromBuf(&asn_csi->cSIResourceConfigToReleaseList,
+      |                                      ^~
+In file included from /home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_ue_context.c:30:
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_ue_context.c:1292:40: error: unknown type name ‘F1AP_LTMConfigurationIDMapping_Item_t’; did you mean ‘F1AP_LTMConfigurationIDMappingList_t’?
+ 1292 |       asn1cSequenceAdd(asn_list->list, F1AP_LTMConfigurationIDMapping_Item_t, asn_item);
+      |                                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/tcs/Phani/openairinterface-5g-new_feature/common/utils/oai_asn1.h:223:3: note: in definition of macro ‘asn1cSequenceAdd’
+  223 |   TyPe *lOcPtr= calloc(1,sizeof(TyPe)); \
+      |   ^~~~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_ue_context.c:1292:40: error: ‘F1AP_LTMConfigurationIDMapping_Item_t’ undeclared (first use in this function); did you mean ‘F1AP_LTMConfigurationIDMapping_Item’?
+ 1292 |       asn1cSequenceAdd(asn_list->list, F1AP_LTMConfigurationIDMapping_Item_t, asn_item);
+      |                                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/tcs/Phani/openairinterface-5g-new_feature/common/utils/oai_asn1.h:223:33: note: in definition of macro ‘asn1cSequenceAdd’
+  223 |   TyPe *lOcPtr= calloc(1,sizeof(TyPe)); \
+      |                                 ^~~~
+In file included from /home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_lib_common.h:28,
+                 from /home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_ue_context.c:24:
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_ue_context.c:1296:34: error: request for member ‘lTMCellID’ in something not a structure or union
+ 1296 |                         &asn_item->lTMCellID.pLMN_Identity);
+      |                                  ^~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair3/UTILS/conversions.h:307:6: note: in definition of macro ‘MCC_MNC_TO_PLMNID’
+  307 |     (oCTETsTRING)->buf = calloc(3, sizeof(uint8_t));                           \
+      |      ^~~~~~~~~~~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_ue_context.c:1296:34: error: request for member ‘lTMCellID’ in something not a structure or union
+ 1296 |                         &asn_item->lTMCellID.pLMN_Identity);
+      |                                  ^~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair3/UTILS/conversions.h:308:6: note: in definition of macro ‘MCC_MNC_TO_PLMNID’
+  308 |     (oCTETsTRING)->buf[0] = (MCC_MNC_DECIMAL(mCC) << 4) | MCC_HUNDREDS(mCC);   \
+      |      ^~~~~~~~~~~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_ue_context.c:1296:34: error: request for member ‘lTMCellID’ in something not a structure or union
+ 1296 |                         &asn_item->lTMCellID.pLMN_Identity);
+      |                                  ^~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair3/UTILS/conversions.h:309:6: note: in definition of macro ‘MCC_MNC_TO_PLMNID’
+  309 |     (oCTETsTRING)->buf[1] = (MNC_HUNDREDS(mNC,mNCdIGITlENGTH) << 4) | MCC_MNC_DIGIT(mCC);     \
+      |      ^~~~~~~~~~~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_ue_context.c:1296:34: error: request for member ‘lTMCellID’ in something not a structure or union
+ 1296 |                         &asn_item->lTMCellID.pLMN_Identity);
+      |                                  ^~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair3/UTILS/conversions.h:310:6: note: in definition of macro ‘MCC_MNC_TO_PLMNID’
+  310 |     (oCTETsTRING)->buf[2] = (MCC_MNC_DIGIT(mNC) << 4) | MCC_MNC_DECIMAL(mNC);  \
+      |      ^~~~~~~~~~~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_ue_context.c:1296:34: error: request for member ‘lTMCellID’ in something not a structure or union
+ 1296 |                         &asn_item->lTMCellID.pLMN_Identity);
+      |                                  ^~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair3/UTILS/conversions.h:311:6: note: in definition of macro ‘MCC_MNC_TO_PLMNID’
+  311 |     (oCTETsTRING)->size = 3;                                                   \
+      |      ^~~~~~~~~~~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_ue_context.c:1297:58: error: request for member ‘lTMCellID’ in something not a structure or union
+ 1297 |       NR_CELL_ID_TO_BIT_STRING(item->nr_cellid, &asn_item->lTMCellID.nRCellIdentity);
+      |                                                          ^~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair3/UTILS/conversions.h:431:6: note: in definition of macro ‘NR_CELL_ID_TO_BIT_STRING’
+  431 |     (bITsTRING)->buf = calloc(5, sizeof(uint8_t));      \
+      |      ^~~~~~~~~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_ue_context.c:1297:58: error: request for member ‘lTMCellID’ in something not a structure or union
+ 1297 |       NR_CELL_ID_TO_BIT_STRING(item->nr_cellid, &asn_item->lTMCellID.nRCellIdentity);
+      |                                                          ^~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair3/UTILS/conversions.h:432:6: note: in definition of macro ‘NR_CELL_ID_TO_BIT_STRING’
+  432 |     (bITsTRING)->buf[0] = ((mACRO) >> 28) & 0xff;       \
+      |      ^~~~~~~~~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_ue_context.c:1297:58: error: request for member ‘lTMCellID’ in something not a structure or union
+ 1297 |       NR_CELL_ID_TO_BIT_STRING(item->nr_cellid, &asn_item->lTMCellID.nRCellIdentity);
+      |                                                          ^~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair3/UTILS/conversions.h:433:6: note: in definition of macro ‘NR_CELL_ID_TO_BIT_STRING’
+  433 |     (bITsTRING)->buf[1] = ((mACRO) >> 20) & 0xff;       \
+      |      ^~~~~~~~~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_ue_context.c:1297:58: error: request for member ‘lTMCellID’ in something not a structure or union
+ 1297 |       NR_CELL_ID_TO_BIT_STRING(item->nr_cellid, &asn_item->lTMCellID.nRCellIdentity);
+      |                                                          ^~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair3/UTILS/conversions.h:434:6: note: in definition of macro ‘NR_CELL_ID_TO_BIT_STRING’
+  434 |     (bITsTRING)->buf[2] = ((mACRO) >> 12) & 0xff;       \
+      |      ^~~~~~~~~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_ue_context.c:1297:58: error: request for member ‘lTMCellID’ in something not a structure or union
+ 1297 |       NR_CELL_ID_TO_BIT_STRING(item->nr_cellid, &asn_item->lTMCellID.nRCellIdentity);
+      |                                                          ^~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair3/UTILS/conversions.h:435:6: note: in definition of macro ‘NR_CELL_ID_TO_BIT_STRING’
+  435 |     (bITsTRING)->buf[3] = ((mACRO) >> 4)  & 0xff;       \
+      |      ^~~~~~~~~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_ue_context.c:1297:58: error: request for member ‘lTMCellID’ in something not a structure or union
+ 1297 |       NR_CELL_ID_TO_BIT_STRING(item->nr_cellid, &asn_item->lTMCellID.nRCellIdentity);
+      |                                                          ^~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair3/UTILS/conversions.h:436:6: note: in definition of macro ‘NR_CELL_ID_TO_BIT_STRING’
+  436 |     (bITsTRING)->buf[4] = ((mACRO) & 0x0f) << 4;        \
+      |      ^~~~~~~~~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_ue_context.c:1297:58: error: request for member ‘lTMCellID’ in something not a structure or union
+ 1297 |       NR_CELL_ID_TO_BIT_STRING(item->nr_cellid, &asn_item->lTMCellID.nRCellIdentity);
+      |                                                          ^~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair3/UTILS/conversions.h:437:6: note: in definition of macro ‘NR_CELL_ID_TO_BIT_STRING’
+  437 |     (bITsTRING)->size = 5;                              \
+      |      ^~~~~~~~~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_ue_context.c:1297:58: error: request for member ‘lTMCellID’ in something not a structure or union
+ 1297 |       NR_CELL_ID_TO_BIT_STRING(item->nr_cellid, &asn_item->lTMCellID.nRCellIdentity);
+      |                                                          ^~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair3/UTILS/conversions.h:438:6: note: in definition of macro ‘NR_CELL_ID_TO_BIT_STRING’
+  438 |     (bITsTRING)->bits_unused = 4;                       \
+      |      ^~~~~~~~~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_ue_context.c:1300:15: error: request for member ‘lTMConfigurationID’ in something not a structure or union
+ 1300 |       asn_item->lTMConfigurationID = item->ltmConfigurationID;
+      |               ^~
+In file included from /home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_ue_context.c:30:
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_ue_context.c:1319:56: error: unknown type name ‘F1AP_LTMgNB_DU_IDs_Item_t’; did you mean ‘F1AP_LTMgNB_DU_IDsList_t’?
+ 1319 |       asn1cSequenceAdd(asn_es->lTMgNB_DU_IDsList.list, F1AP_LTMgNB_DU_IDs_Item_t, asn_item);
+      |                                                        ^~~~~~~~~~~~~~~~~~~~~~~~~
+/home/tcs/Phani/openairinterface-5g-new_feature/common/utils/oai_asn1.h:223:3: note: in definition of macro ‘asn1cSequenceAdd’
+  223 |   TyPe *lOcPtr= calloc(1,sizeof(TyPe)); \
+      |   ^~~~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_ue_context.c:1319:56: error: ‘F1AP_LTMgNB_DU_IDs_Item_t’ undeclared (first use in this function); did you mean ‘F1AP_LTMgNB_DU_IDs_Item’?
+ 1319 |       asn1cSequenceAdd(asn_es->lTMgNB_DU_IDsList.list, F1AP_LTMgNB_DU_IDs_Item_t, asn_item);
+      |                                                        ^~~~~~~~~~~~~~~~~~~~~~~~~
+/home/tcs/Phani/openairinterface-5g-new_feature/common/utils/oai_asn1.h:223:33: note: in definition of macro ‘asn1cSequenceAdd’
+  223 |   TyPe *lOcPtr= calloc(1,sizeof(TyPe)); \
+      |                                 ^~~~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_ue_context.c:1320:15: error: request for member ‘lTMgNB_DU_ID’ in something not a structure or union
+ 1320 |       asn_item->lTMgNB_DU_ID = id_item->gnb_du_id;
+      |               ^~
+Consolidate compiler generated dependencies of target m3ap
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_ue_context.c: In function ‘decode_ue_context_setup_req’:
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_ue_context.c:1408:9: error: unknown type name ‘F1AP_ReferenceConfiguration_t’; did you mean ‘f1ap_reference_configuration_t’?
+ 1408 |         F1AP_ReferenceConfiguration_t *rc = (F1AP_ReferenceConfiguration_t *)&asn_ltm->referenceConfiguration;
+      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      |         f1ap_reference_configuration_t
+[100%] Built target m3ap
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_ue_context.c:1408:46: error: ‘F1AP_ReferenceConfiguration_t’ undeclared (first use in this function); did you mean ‘F1AP_ReferenceConfiguration’?
+ 1408 |         F1AP_ReferenceConfiguration_t *rc = (F1AP_ReferenceConfiguration_t *)&asn_ltm->referenceConfiguration;
+      |                                              ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      |                                              F1AP_ReferenceConfiguration
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_ue_context.c:1408:77: error: expected expression before ‘)’ token
+ 1408 |         F1AP_ReferenceConfiguration_t *rc = (F1AP_ReferenceConfiguration_t *)&asn_ltm->referenceConfiguration;
+      |                                                                             ^
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_ue_context.c:1409:19: error: request for member ‘present’ in something not a structure or union
+ 1409 |         switch (rc->present) {
+      |                   ^~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_ue_context.c:1410:16: error: ‘F1AP_ReferenceConfiguration_PR_requestforReferenceConfiguration’ undeclared (first use in this function)
+ 1410 |           case F1AP_ReferenceConfiguration_PR_requestforReferenceConfiguration:
+      |                ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_ue_context.c:1413:16: error: ‘F1AP_ReferenceConfiguration_PR_referenceConfigurationInformation’ undeclared (first use in this function)
+ 1413 |           case F1AP_ReferenceConfiguration_PR_referenceConfigurationInformation: {
+      |                ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_ue_context.c:1415:37: error: request for member ‘choice’ in something not a structure or union
+ 1415 |             OCTET_STRING_t *os = &rc->choice.referenceConfigurationInformation;
+      |                                     ^~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_ue_context.c:1421:16: error: ‘F1AP_ReferenceConfiguration_PR_NOTHING’ undeclared (first use in this function); did you mean ‘F1AP_ReferenceConfiguration_ExtIEs’?
+ 1421 |           case F1AP_ReferenceConfiguration_PR_NOTHING:
+      |                ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      |                F1AP_ReferenceConfiguration_ExtIEs
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_ue_context.c:1429:17: error: unknown type name ‘F1AP_CSIResourceConfiguration_t’
+ 1429 |           const F1AP_CSIResourceConfiguration_t *asn_csi = asn_ltm->cSIResourceConfiguration;
+      |                 ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_ue_context.c:1429:60: warning: initialization of ‘const int *’ from incompatible pointer type ‘struct F1AP_CSIResourceConfiguration *’ [-Wincompatible-pointer-types]
+ 1429 |           const F1AP_CSIResourceConfiguration_t *asn_csi = asn_ltm->cSIResourceConfiguration;
+      |                                                            ^~~~~~~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_ue_context.c:1433:22: error: request for member ‘cSIResourceConfigToAddModList’ in something not a structure or union
+ 1433 |           if (asn_csi->cSIResourceConfigToAddModList.buf && asn_csi->cSIResourceConfigToAddModList.size > 0) {
+      |                      ^~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_ue_context.c:1433:68: error: request for member ‘cSIResourceConfigToAddModList’ in something not a structure or union
+ 1433 |           if (asn_csi->cSIResourceConfigToAddModList.buf && asn_csi->cSIResourceConfigToAddModList.size > 0) {
+      |                                                                    ^~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_ue_context.c:1436:42: error: request for member ‘cSIResourceConfigToAddModList’ in something not a structure or union
+ 1436 |                 create_byte_array(asn_csi->cSIResourceConfigToAddModList.size,
+      |                                          ^~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_ue_context.c:1437:42: error: request for member ‘cSIResourceConfigToAddModList’ in something not a structure or union
+ 1437 |                                   asn_csi->cSIResourceConfigToAddModList.buf);
+      |                                          ^~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_ue_context.c:1439:22: error: request for member ‘cSIResourceConfigToReleaseList’ in something not a structure or union
+ 1439 |           if (asn_csi->cSIResourceConfigToReleaseList.buf && asn_csi->cSIResourceConfigToReleaseList.size > 0) {
+      |                      ^~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_ue_context.c:1439:69: error: request for member ‘cSIResourceConfigToReleaseList’ in something not a structure or union
+ 1439 |           if (asn_csi->cSIResourceConfigToReleaseList.buf && asn_csi->cSIResourceConfigToReleaseList.size > 0) {
+      |                                                                     ^~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_ue_context.c:1442:42: error: request for member ‘cSIResourceConfigToReleaseList’ in something not a structure or union
+ 1442 |                 create_byte_array(asn_csi->cSIResourceConfigToReleaseList.size,
+      |                                          ^~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_ue_context.c:1443:42: error: request for member ‘cSIResourceConfigToReleaseList’ in something not a structure or union
+ 1443 |                                   asn_csi->cSIResourceConfigToReleaseList.buf);
+      |                                          ^~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_ue_context.c:1457:13: error: unknown type name ‘F1AP_LTMConfigurationIDMapping_Item_t’; did you mean ‘F1AP_LTMConfigurationIDMappingList_t’?
+ 1457 |             F1AP_LTMConfigurationIDMapping_Item_t *asn_item =
+      |             ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      |             F1AP_LTMConfigurationIDMappingList_t
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_ue_context.c:1458:18: error: ‘F1AP_LTMConfigurationIDMapping_Item_t’ undeclared (first use in this function); did you mean ‘F1AP_LTMConfigurationIDMapping_Item’?
+ 1458 |                 (F1AP_LTMConfigurationIDMapping_Item_t *)asn_list->list.array[j];
+      |                  ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      |                  F1AP_LTMConfigurationIDMapping_Item
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_ue_context.c:1458:57: error: expected expression before ‘)’ token
+ 1458 |                 (F1AP_LTMConfigurationIDMapping_Item_t *)asn_list->list.array[j];
+      |                                                         ^
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_ue_context.c:1460:50: error: request for member ‘lTMCellID’ in something not a structure or union
+ 1460 |             const F1AP_NRCGI_t *nrcgi = &asn_item->lTMCellID;
+      |                                                  ^~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_ue_context.c:1466:48: error: request for member ‘lTMConfigurationID’ in something not a structure or union
+ 1466 |             item->ltmConfigurationID = asn_item->lTMConfigurationID;
+      |                                                ^~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_ue_context.c:1485:13: error: unknown type name ‘F1AP_LTMgNB_DU_IDs_Item_t’; did you mean ‘F1AP_LTMgNB_DU_IDsList_t’?
+ 1485 |             F1AP_LTMgNB_DU_IDs_Item_t *asn_item =
+      |             ^~~~~~~~~~~~~~~~~~~~~~~~~
+      |             F1AP_LTMgNB_DU_IDsList_t
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_ue_context.c:1486:18: error: ‘F1AP_LTMgNB_DU_IDs_Item_t’ undeclared (first use in this function); did you mean ‘F1AP_LTMgNB_DU_IDs_Item’?
+ 1486 |                 (F1AP_LTMgNB_DU_IDs_Item_t *)asn_es->lTMgNB_DU_IDsList.list.array[j];
+      |                  ^~~~~~~~~~~~~~~~~~~~~~~~~
+      |                  F1AP_LTMgNB_DU_IDs_Item
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_ue_context.c:1486:45: error: expected expression before ‘)’ token
+ 1486 |                 (F1AP_LTMgNB_DU_IDs_Item_t *)asn_es->lTMgNB_DU_IDsList.list.array[j];
+      |                                             ^
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_ue_context.c:1487:51: error: request for member ‘lTMgNB_DU_ID’ in something not a structure or union
+ 1487 |             es->gnb_du_ids[j].gnb_du_id = asn_item->lTMgNB_DU_ID;
+      |                                                   ^~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_ue_context.c: In function ‘free_ue_context_setup_req’:
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_ue_context.c:1724:50: error: incompatible type for argument 1 of ‘free_byte_array’
+ 1724 |       free_byte_array(ltm->referenceConfiguration.referenceConfigurationInformation);
+      |                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      |                                                  |
+      |                                                  byte_array_t *
+In file included from /home/tcs/Phani/openairinterface-5g-new_feature/openair2/COMMON/f1ap_messages_types.h:29,
+                 from /home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_ue_context.h:26,
+                 from /home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_ue_context.c:22:
+/home/tcs/Phani/openairinterface-5g-new_feature/common/utils/ds/byte_array.h:48:35: note: expected ‘byte_array_t’ but argument is of type ‘byte_array_t *’
+   48 | void free_byte_array(byte_array_t ba);
+      |                      ~~~~~~~~~~~~~^~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_ue_context.c:1730:28: error: incompatible type for argument 1 of ‘free_byte_array’
+ 1730 |         free_byte_array(csi->csiResourceConfigToAddModList);
+      |                         ~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      |                            |
+      |                            byte_array_t *
+In file included from /home/tcs/Phani/openairinterface-5g-new_feature/openair2/COMMON/f1ap_messages_types.h:29,
+                 from /home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_ue_context.h:26,
+                 from /home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_ue_context.c:22:
+/home/tcs/Phani/openairinterface-5g-new_feature/common/utils/ds/byte_array.h:48:35: note: expected ‘byte_array_t’ but argument is of type ‘byte_array_t *’
+   48 | void free_byte_array(byte_array_t ba);
+      |                      ~~~~~~~~~~~~~^~
+/home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_ue_context.c:1734:28: error: incompatible type for argument 1 of ‘free_byte_array’
+ 1734 |         free_byte_array(csi->csiResourceConfigToReleaseList);
+      |                         ~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      |                            |
+      |                            byte_array_t *
+In file included from /home/tcs/Phani/openairinterface-5g-new_feature/openair2/COMMON/f1ap_messages_types.h:29,
+                 from /home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_ue_context.h:26,
+                 from /home/tcs/Phani/openairinterface-5g-new_feature/openair2/F1AP/lib/f1ap_ue_context.c:22:
+/home/tcs/Phani/openairinterface-5g-new_feature/common/utils/ds/byte_array.h:48:35: note: expected ‘byte_array_t’ but argument is of type ‘byte_array_t *’
+   48 | void free_byte_array(byte_array_t ba);
+      |                      ~~~~~~~~~~~~~^~
+gmake[3]: *** [openair2/F1AP/lib/CMakeFiles/f1ap_lib.dir/build.make:118: openair2/F1AP/lib/CMakeFiles/f1ap_lib.dir/f1ap_ue_context.c.o] Error 1
+gmake[2]: *** [CMakeFiles/Makefile2:6477: openair2/F1AP/lib/CMakeFiles/f1ap_lib.dir/all] Error 2
+gmake[1]: *** [CMakeFiles/Makefile2:3912: CMakeFiles/nr-softmodem.dir/rule] Error 2
+gmake: *** [Makefile:865: nr-softmodem] Error 2
+build have failed

@@ -1,0 +1,250 @@
+{
+  "Feature_ID": "INTER_GNB_DU_LTM_HANDOVER_UE_CONTEXT_SETUP",
+  "Feature_Name": "Inter-gNB-DU LTM Handover - UE Context Setup Procedure",
+  "Release": "Release 18",
+  "3GPP_Reference": {
+    "Spec": "TS 38.401",
+    "Title": "NG-RAN; Architecture description",
+    "Section": "8.2.1.6 (TS 38.401), 8.9.2 (TS 38.401), 6.4 (TS 38.401)"
+  },
+  "Feature_Description": [
+    "This procedure describes the F1AP UE Context Setup Request and Response messages exchange for an Inter-gNB-DU LTM handover.",
+    "The gNB-CU initiates the UE Context Setup procedure by sending an F1AP 'UE CONTEXT SETUP REQUEST' message to the candidate gNB-DU.",
+    "The candidate gNB-DU responds with an F1AP 'UE CONTEXT SETUP RESPONSE' message to the gNB-CU.",
+    "This message exchange is essential for establishing the UE context in the target gNB-DU during the LTM handover process.",
+    "An NG-RAN node UE context is a block of information in an NG-RAN node associated to one UE, containing necessary information to maintain NG-RAN services towards the active UE. It is established in the target NG-RAN node after completion of handover resource allocation during handover preparation.",
+    "A UE-associated logical F1-connection is established during the first F1AP message exchange between the F1 peer nodes."
+  ],
+  "Feature_Objectives": [
+    "To establish a UE context in the candidate gNB-DU for a UE undergoing Inter-gNB-DU LTM handover.",
+    "To prepare the candidate gNB-DU with necessary UE context information to serve the UE after the LTM handover.",
+    "To facilitate the setup of one or more bearers in the gNB-DU as part of the F1 UE context setup procedure."
+  ],
+  "Design_Details": {
+    "Protocol_Layers": [
+      "F1AP (Control Plane)"
+    ],
+    "Protocol_Interfaces": [
+      "F1-C (between gNB-CU and gNB-DU)"
+    ]
+  },
+  "Feature_Implementation_Steps": [],
+  "Call_Flow": [
+    {
+      "Message": "UE CONTEXT SETUP REQUEST",
+      "Actors": [
+        "gNB-CU",
+        "candidate gNB-DU"
+      ],
+      "From": "gNB-CU",
+      "To": "candidate gNB-DU"
+    },
+    {
+      "Message": "UE CONTEXT SETUP RESPONSE",
+      "Actors": [
+        "candidate gNB-DU",
+        "gNB-CU"
+      ],
+      "From": "candidate gNB-DU",
+      "To": "gNB-CU"
+    }
+  ],
+  "Procedure_Implementation_Steps": [
+    "1. The gNB-CU prepares and sends the F1AP 'UE CONTEXT SETUP REQUEST' message to the candidate gNB-DU for Inter-gNB-DU LTM handover.",
+    "2. The candidate gNB-DU responds with the F1AP 'UE CONTEXT SETUP RESPONSE' message to the gNB-CU.",
+    "3. This message is handled on the gNB-CU for Inter-gNB-DU LTM handover.",
+    "4. The F1 UE context setup procedure is performed to setup one or more bearers in the gNB-DU."
+  ],
+  "Code_Artifacts": [
+    {
+      "Codebase_Name": "OpenAirInterface 5G",
+      "Code_Instructions": [
+        {
+          "type": "data_structure",
+          "struct_name": "f1ap_ue_context_setup_req_s",
+          "file_path": "openair2\\COMMON\\f1ap_messages_types.h",
+          "line_start": 544,
+          "description": "Data structure defining the F1AP UE CONTEXT SETUP REQUEST message format, essential for constructing the request to be sent from gNB-CU to gNB-DU."
+        },
+        {
+          "type": "data_structure",
+          "struct_name": "f1ap_ue_context_setup_resp_s",
+          "file_path": "openair2\\COMMON\\f1ap_messages_types.h",
+          "line_start": 570,
+          "description": "Data structure defining the F1AP UE CONTEXT SETUP RESPONSE message format, used for parsing the response received by the gNB-CU from the gNB-DU."
+        },
+        {
+          "type": "helper_function",
+          "function_name": "rrc_gNB_generate_UeContextSetupRequest",
+          "file_path": "openair2\\RRC\\NR\\rrc_gNB.c",
+          "line_start": 3032,
+          "line_end": 3032,
+          "description": "Helper function to generate the RRC UE Context Setup Request message, which is typically encapsulated within the F1AP UE Context Setup Request message.",
+          "called_functions": [],
+          "calling_functions": [],
+          "uses_structs": []
+        },
+        {
+          "type": "helper_function",
+          "function_name": "ue_context_setup_request_f1ap",
+          "file_path": "openair2\\RRC\\NR\\mac_rrc_dl_f1ap.c",
+          "line_start": 79,
+          "line_end": 79,
+          "description": "Function responsible for preparing or encoding the F1AP UE Context Setup Request message, likely populating the F1AP message structure with RRC and other necessary information.",
+          "called_functions": [],
+          "calling_functions": [],
+          "uses_structs": []
+        },
+        {
+          "type": "helper_function",
+          "function_name": "set_UE_security_algos",
+          "file_path": "openair2\\RRC\\NR\\rrc_gNB_NGAP.c",
+          "line_start": 603,
+          "line_end": 603,
+          "description": "Utility function to configure the security algorithms for a UE, a critical step during UE context setup.",
+          "called_functions": [],
+          "calling_functions": [],
+          "uses_structs": []
+        },
+        {
+          "type": "helper_function",
+          "function_name": "set_UE_security_key",
+          "file_path": "openair2\\RRC\\NR\\rrc_gNB_NGAP.c",
+          "line_start": 109,
+          "line_end": 109,
+          "description": "Utility function to set the security key for a UE, essential for establishing secure communication channels as part of UE context setup.",
+          "called_functions": [],
+          "calling_functions": [],
+          "uses_structs": []
+        },
+        {
+          "type": "helper_function",
+          "function_name": "trigger_bearer_setup",
+          "file_path": "openair2\\RRC\\NR\\rrc_gNB_NGAP.c",
+          "line_start": 256,
+          "line_end": 256,
+          "description": "Utility function to initiate the setup of data bearers for the UE, which is part of the overall UE context establishment process.",
+          "called_functions": [],
+          "calling_functions": [],
+          "uses_structs": []
+        },
+        {
+          "type": "helper_function",
+          "function_name": "rrc_gNB_get_ue_context",
+          "file_path": "openair2\\RRC\\NR\\rrc_gNB_UE_context.c",
+          "line_start": 90,
+          "line_end": 90,
+          "description": "Utility function to retrieve an existing UE context, necessary for accessing UE-specific information during handover and context setup.",
+          "called_functions": [],
+          "calling_functions": [],
+          "uses_structs": []
+        },
+        {
+          "type": "helper_function",
+          "function_name": "signal_rrc_state_changed_to",
+          "file_path": "openair2\\E2AP\\RAN_FUNCTION\\O-RAN\\ran_func_rc.c",
+          "line_start": 735,
+          "line_end": 735,
+          "description": "Utility function to signal changes in the RRC state of a UE, relevant for managing UE context transitions during procedures like handover.",
+          "called_functions": [],
+          "calling_functions": [],
+          "uses_structs": []
+        },
+        {
+          "type": "helper_function",
+          "function_name": "rrc_gNB_generate_SecurityModeCommand",
+          "file_path": "openair2\\RRC\\NR\\rrc_gNB.c",
+          "line_start": 2895,
+          "line_end": 2895,
+          "description": "Helper function to generate the RRC Security Mode Command message, a key RRC message exchanged during UE context setup to establish security.",
+          "called_functions": [],
+          "calling_functions": [],
+          "uses_structs": []
+        },
+        {
+          "type": "helper_function",
+          "function_name": "nr_rrc_pdcp_config_security",
+          "file_path": "openair2\\RRC\\NR\\rrc_gNB_NGAP.c",
+          "line_start": 127,
+          "line_end": 127,
+          "description": "Utility function to configure PDCP security parameters based on RRC information, crucial for setting up secure data plane communication.",
+          "called_functions": [],
+          "calling_functions": [],
+          "uses_structs": []
+        }
+      ]
+    }
+  ],
+  "ASN_IES_File_Path": [
+    {
+      "ASN_Name": "F1AP",
+      "File_Path": "",
+      "File_Name": ""
+    },
+    {
+      "ASN_Name": "RRC",
+      "File_Path": "",
+      "File_Name": ""
+    }
+  ],
+  "ASN_IES_C_Structures_Path": [
+    {
+      "ASN_Name": "F1AP",
+      "File_Path": ""
+    },
+    {
+      "ASN_Name": "RRC",
+      "File_Path": ""
+    }
+  ],
+  "Information_Elements": [],
+  "Piggy_Backed_IES_Info": "Not applicable for the scoped messages in this procedure.",
+  "Piggy_Backed_IES_Mapping": [
+    {
+      "Piggy_Backed_IE_Name": "N/A",
+      "Piggy_Backed_IE_Type": "N/A",
+      "Carrier_Message": "N/A",
+      "Source_IE_Name": "",
+      "Source_IE_Type": ""
+    }
+  ],
+  "Codebase_Metadata": {
+    "Code_Language": "C",
+    "Build_System": "CMake",
+    "Repo_Path": ".",
+    "Code_Output_Type": "Library/Executable",
+    "Execution_Mode": "Runtime",
+    "CI_Pipeline": "",
+    "Version_Control": "Git"
+  },
+  "Knowledge_Hints": [
+    "8.9.3.2 (ts_138401v180600p): gNB-CU-UP initiated bearer context release",
+    "8.9.3 (ts_138401v180600p): Bearer context release over F1-U",
+    "8.9.3.1 (ts_138401v180600p): gNB-CU-CP initiated bearer context release",
+    "8.9.2 (ts_138401v180600p): Bearer context setup over F1-U",
+    "8.9.5 (ts_138401v180600p): Change of gNB-CU-UP",
+    "8.9.4 (ts_138401v180600p): Inter-gNB handover involving gNB-CU-UP change",
+    "8.9 (ts_138401v180600p): Overall procedures involving E1 and F1",
+    "8.9.15 (ts_138401v180600p): IAB-donor-CU-based NR Cell Identity (NCI) (re-)configuration for mobile IAB cells",
+    "8.9.13 (ts_138401v180600p): IP Address Allocation for IAB-nodes",
+    "8.9.16 (ts_138401v180600p): TAC/RANAC (re-)configuration for mobile IAB",
+    "8.9.12 (ts_138401v180600p): Handling of IAB-MTs in INACTIVE State",
+    "8.9.10 (ts_138401v180600p): IAB-node release",
+    "8.9.14 (ts_138401v180600p): Mobile IAB-node authorization",
+    "8.9.11 (ts_138401v180600p): IAB-node OAM",
+    "8.9.17 (ts_138401v180600p): IAB-node authorization",
+    "8.9.8 (ts_138401v180600p): BH RLC channel establishment procedure",
+    "8.9.7 (ts_138401v180600p): Trace activation/deactivation over F1 and E1",
+    "8.9.1 (ts_138401v180600p): UE Initial Access",
+    "8.9.9 (ts_138401v180600p): Traffic Mapping",
+    "8.9.6 (ts_138401v180600p): RRC State transition",
+    "8.4.4.1 (ts_138401v180600p): SN Addition with SCG Activation or Deactivation",
+    "8.15.1.1 (ts_138401v180600p): Broadcast MBS Session Setup",
+    "6.4 (ts_138401v180600p): UE associations in NG-RAN Node",
+    "8.5 (ts_138401v180600p): F1 Startup and cells activation",
+    "8.4.1.1 (ts_138401v180600p): EN-DC",
+    "8.16.3 (ts_138401v180600p): SN initiated conditional inter-SN Change",
+    "8.2.1.6 (ts_138401v180600p): LTM with gNB-CU-UP change",
+    "8.19.4.3 (ts_138401v180600p): Inter-gNB-CU switch from direct to indirect path"
+  ]
+}

@@ -1,0 +1,36 @@
+{
+  "code_dir": "C:\\Users\\ChanduVangala\\Desktop\\RCA_Electron-main\\RCA_Electron-main\\Backend\\app\\services\\Error_fixing_pipelin\\openairinterface5g-develop",
+  "fix_suggestion": {
+    "code_dir": "C:\\Users\\ChanduVangala\\Desktop\\RCA_Electron-main\\RCA_Electron-main\\Backend\\app\\services\\Error_fixing_pipelin\\openairinterface5g-develop",
+    "code_patches": [
+      {
+        "function_name": "rrc_gNB_process_RRCSetupComplete",
+        "file_path": "openairinterface5g-develop/openair2/RRC/NR/rrc_gNB.c",
+        "patch_type": "remove_null_assignment",
+        "original_code": "  rrcSetupComplete=NULL;",
+        "patched_code": "  // REMOVED: rrcSetupComplete=NULL;",
+        "line_numbers": "1962",
+        "description": "Remove the rrcSetupComplete=NULL statement that was setting parameter to NULL before use"
+      },
+      {
+        "function_name": "rrc_gNB_process_RRCSetupComplete",
+        "file_path": "openairinterface5g-develop/openair2/RRC/NR/rrc_gNB.c",
+        "patch_type": "validation_before_call",
+        "original_code": "  rrc_gNB_send_NGAP_NAS_FIRST_REQ(rrc, UE, rrcSetupComplete);",
+        "patched_code": "  if (!rrcSetupComplete) {\n    LOG_E(RRC, \"Invalid param\\n\");\n    return;\n  }\n  rrc_gNB_send_NGAP_NAS_FIRST_REQ(rrc, UE, rrcSetupComplete);",
+        "line_numbers": "1965",
+        "description": "Validate parameter before calling crash function"
+      },
+      {
+        "function_name": "rrc_gNB_send_NGAP_NAS_FIRST_REQ",
+        "file_path": "openairinterface5g-develop/openair2/RRC/NR/rrc_gNB_NGAP.c",
+        "patch_type": "null_check_insertion",
+        "original_code": "  req->nas_pdu = create_byte_array(rrcSetupComplete->dedicatedNAS_Message.size, rrcSetupComplete->dedicatedNAS_Message.buf);",
+        "patched_code": "  if (!rrcSetupComplete->dedicatedNAS_Message.buf) {\n    LOG_E(NGAP, \"dedicatedNAS_Message buffer is NULL\\n\");\n    return;\n  }\n  req->nas_pdu = create_byte_array(rrcSetupComplete->dedicatedNAS_Message.size, rrcSetupComplete->dedicatedNAS_Message.buf);",
+        "line_numbers": "178",
+        "description": "Add NULL check for dedicatedNAS_Message.buf before using it"
+      }
+    ],
+    "config_patches": []
+  }
+}

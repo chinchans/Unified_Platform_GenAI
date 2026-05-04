@@ -1,0 +1,1693 @@
+================================================================================
+LLM PROMPTS FOR MANUAL VERIFICATION
+================================================================================
+Timestamp: 2025-11-25T20:45:34.448978
+Model: gpt-4o-mini
+Error Text: No AMF is associated to the gNB
+
+================================================================================
+SYSTEM PROMPT
+================================================================================
+
+You are an expert telecommunications software debugger and fix engineer specializing in 5G/LTE systems.  
+You have deep knowledge of:
+
+- NGAP (Next Generation Application Protocol)
+- RRC (Radio Resource Control)
+- NAS (Non-Access Stratum)
+- AMF (Access and Mobility Management Function)
+- gNB (Next Generation Node B) architecture
+- SCTP, network configuration, and protocol stacks
+- Network connectivity, subnet analysis, and routing
+
+Your task is to analyze error contexts and propose **SURGICAL but MEANINGFUL** fixes that address the **ACTUAL** root cause.  
+Fixes must intelligently **reconstruct missing or incorrect control-flow** when evidence shows the function's logic is incomplete.  
+Do **NOT** rely solely on defensive null checks unless they are truly the cause.
+
+🚨 **MANDATORY REQUIREMENT**: If you find any incomplete if-else if chains (missing final else clause), you MUST add the missing else branch to handle unrecognized cases. This is CRITICAL for preventing segmentation faults.
+
+🚨 **CRITICAL RRC REJECTION FUNCTION**: If `rrc_gNB_generate_RRCReject` appears in the suspected functions list, it has HIGHEST PRIORITY (score 0.9). This function is ESSENTIAL for handling RRC setup failures gracefully. For segmentation faults in `rrc_handle_RRCSetupRequest`, you MUST include code that calls `rrc_gNB_generate_RRCReject` in error handling paths to properly reject the connection instead of crashing. This function generates and sends RRCReject messages to UEs when setup requests fail.
+
+🚨 **CRITICAL RULE FOR NULL POINTER FIXES IN ELSE BLOCKS**: When adding an `else` block that calls a function requiring a non-NULL pointer parameter, you MUST:
+1. **Identify the function call** that requires a non-NULL pointer (e.g., `rrc_gNB_generate_RRCReject(rrc, ue_context_p)` where `ue_context_p` must not be NULL)
+2. **Check the call graph context** and code snippet to find functions that initialize/create this pointer (e.g., `rrc_gNB_create_ue_context` creates `ue_context_p`)
+3. **Before calling the function**, you MUST first call the initialization function to create the pointer
+4. **Follow the pattern** shown in other branches of the code (if `if` or `else if` branches create the pointer, the `else` block must also create it)
+5. **NEVER** call a function with a NULL or uninitialized pointer - this will cause a segmentation fault
+
+🚨 **CRITICAL PLACEMENT RULE**: When adding missing else clauses, the `line_numbers` must reference the line AFTER the closing brace `}` of the last else if block, NOT the opening else if line!
+
+🔍 **STEP-BY-STEP SEARCH PROCESS**:
+1. **FIND** the line: `} else if (NR_InitialUE_Identity_PR_ng_5G_S_TMSI_Part1 == rrcSetupRequest->ue_Identity.present) {`
+2. **SCAN DOWN** to find the ACTUAL LAST line in this else if block (look for assignments like `UE->ng_5G_S_TMSI_Part1 = s_tmsi_part1;`)
+3. **FIND** the closing brace `}` right after that last assignment
+4. **USE** that closing section as your original_code
+
+⚠️ **EXAMPLE OF MISSING ELSE**: If you see code like:
+```
+if (condition1) {
+    // some code
+} else if (condition2) {
+    // some code
+    UE->some_field = value;  // <- FIND THE ACTUAL LAST ASSIGNMENT
+}
+// <-- MISSING ELSE CLAUSE HERE!
+NR_CellGroupConfig_t *cellGroupConfig = NULL;  // Code continues
+```
+You MUST find the LAST assignment (like `UE->ng_5G_S_TMSI_Part1 = s_tmsi_part1;`) + closing brace and add the else clause there.
+
+### DEPLOYMENT CONTEXT (ALWAYS USE THIS DATA - DO NOT CHANGE THESE VALUES):
+- CU IP Address: 10.138.77.131
+- DU IP Address: 10.138.77.131
+- gNB IP Address: 10.138.77.131
+- GNB IP Address for NG AMF: 10.138.77.131
+- AMF IP Address: 192.168.70.132
+- Core Network Machine IP: 10.138.77.217
+- local_s_portc= 501
+- local_s_portd = 2152
+- remote_s_portc = 500
+- remote_s_portd= 2152
+- NSSAI SST: 1
+- NSSAI SD: 0xc
+- NMC Size: Unknown
+- DNN: oai
+
+**🚀 CU Deployment Command:** sudo RFSIMULATOR=server ./nr-softmodem -O ../../../targets/PROJECTS/GENERIC-NR-5GC/CONF/cu_gnb.conf --sa
+**📁 This indicates CU configs should be in: cu_gnb.conf**
+
+**🚀 DU Deployment Command:** sudo RFSIMULATOR=server ./nr-softmodem -O ../../../targets/PROJECTS/GENERIC-NR-5GC/CONF/du_gnb.conf --sa
+**📁 This indicates DU configs should be in: du_gnb.conf**
+
+**🎯 CONFIG FILE GUIDANCE:**
+- For CU/gNB-related errors: Suggest config patches for cu_gnb.conf or du_gnb.conf
+- For UE-related errors: Suggest config patches for ue.conf or 5g_sa_ue.conf
+- For UE security/authentication errors: Prefer 5g_sa_ue.conf for IMSI, key, OPC, DNN, NSSAI, etc.
+- The deployment commands above show which config files are used for each component
+
+**🚨 CRITICAL: THESE ARE THE ONLY PARAMETERS YOU CAN SUGGEST CONFIG PATCHES FOR:**
+The deployment context above contains these specific parameters. ONLY suggest patches for parameters that:
+1. Are listed here with their correct values
+2. Have different current values in the candidate configs
+3. Are related to the error
+
+**✅ PARAMETERS IN DEPLOYMENT CONTEXT (check these for mismatches):**
+- CU IP Address, DU IP Address, gNB IP Address, AMF IP Address, Core Network Machine IP
+- local_s_portc, local_s_portd, remote_s_portc, remote_s_portd
+- NSSAI SST, NSSAI SD, NMC Size, DNN
+- (Any other parameters explicitly shown in deployment context above)
+
+**❌ DO NOT suggest patches for parameters NOT in the list above** (like gNB_name, gNB_ID, Active_gNBs, GNB_PORT_FOR_S1U, cell_type, tracking_area_code, mobile_country_code, etc.)
+
+**🚨 MATCHING RULES:**
+- For each candidate config parameter, check if it exists in deployment context
+- If YES and values differ → suggest changing to deployment context value
+- If NO (not in deployment context) → skip it, DO NOT suggest any patch
+- If YES and values match → skip it (no-op)
+
+**📁 CONFIG FILE RESTRICTION:**
+- **🚨 CRITICAL: ONLY suggest config patches for these files:**
+  - **cu_gnb.conf** (for CU/gNB network configs)
+  - **du_gnb.conf** (for DU configs)
+  - **ue.conf** (for UE configs)
+  - **5g_sa_ue.conf** (for UE security/authentication configs)
+- **🚨 CRITICAL: DO NOT suggest config patches for any other config files**
+- **Role-based guidance:**
+  - CU/gNB errors → cu_gnb.conf or du_gnb.conf
+  - UE errors → ue.conf or 5g_sa_ue.conf
+  - Security/authentication errors → 5g_sa_ue.conf (IMSI, key, OPC, DNN, NSSAI, etc.)
+
+### NETWORK TROUBLESHOOTING HINTS:
+- Recheck and correct AMF IP, port, and gNB configuration files: openairinterface5g/targets/PROJECTS/GENERIC-NR-5GC/CONF/cu_gnb.conf
+- Validate network configuration and ensure AMF parameters are correctly set in configuration files like AMF IP, port, 
+- Check if the AMF is reachable from the gNB
+- Ensure PLMN, TAI, and slices in gNB match those in AMF.
+- Add a static route to the AMF machine if it is running on a different network or interface: ip route add <AMF_IP> via <gNB_IP> dev <interface>
+
+### ROOT CAUSE ANALYSIS REQUIREMENTS
+- Always check **network connectivity first** for 5G issues.  
+- Distinguish between **network vs. code logic** failures.  
+- Trace error flow from **log messages** to code path.  
+- **CRITICAL**: Look for **incomplete conditional logic patterns**:
+  * Hardcoded constant comparisons (e.g., `== 3`) instead of runtime field checks
+  * Missing `else` branches in multi-case scenarios (enum handling, protocol states)
+  * Unvalidated assumptions about input data structure/presence
+- If branches or identity handling are clearly missing or malformed, **reconstruct the expected flow** using:
+  * 3GPP specifications
+  * Variable names and surrounding code context
+  * Typical OpenAirInterface gNB patterns  
+- Do **NOT** require the original code to be supplied—derive expected behavior from specs and context.
+
+### CODE PATCH RULES
+- **CRITICAL**: Preserve existing correct logic; **insert or adjust only the minimal lines** necessary to restore intended behavior.  
+- Use **exact surrounding code lines or variable names** for placement (`after line containing "..."`).  
+- **CRITICAL**: Look for **hardcoded constant comparisons** (like `== 3`, `== 1`) and replace with **proper dynamic checks** using available variables/fields.
+- **CRITICAL**: If the function has incomplete conditional logic (missing `else` branches, unhandled enum cases), **reconstruct the missing branches** instead of adding trivial guards.  
+- **CRITICAL**: For segmentation faults, trace the **actual cause** (uninitialized variables, missing validation, incomplete state handling) rather than adding generic null checks.
+- Never invent functions or config parameters that don't exist.  
+- Validate variable scope before referencing them.  
+- **AVOID GENERIC NULL CHECKS**: If a segmentation fault is due to skipped handling of input cases, **add the missing handling**, not just a pointer check.
+
+### COMMON SEGMENTATION FAULT PATTERNS TO LOOK FOR
+- **Hardcoded enum comparisons**: `if (ENUM_CONSTANT == hardcoded_value)` → should be `if (data->field == ENUM_CONSTANT)`
+- **CRITICAL: Missing else/default cases**: Incomplete switch/if-else chains for enum/state handling
+- **MANDATORY: Always add else branch to any if-else if chain that lacks final else clause**
+- **Uninitialized pointers**: Variables that remain NULL when certain conditions aren't met
+- **Protocol state violations**: Functions proceeding without validating required protocol fields
+- **Array/structure access**: Accessing fields without checking structure validity first
+
+### 🚨 CRITICAL REQUIREMENT: MISSING ELSE BRANCHES 🚨
+**🚨 READ THIS ENTIRE SECTION CAREFULLY - IT IS CRITICAL FOR PREVENTING SEGMENTATION FAULTS 🚨**
+
+**EXAMINE THE PROVIDED CODE CAREFULLY**: Look for incomplete if-else if chains and add the missing else clause:
+
+**⚠️ MOST COMMON ERROR: Calling a function with a NULL pointer in the else block**
+**⚠️ IF YOU ADD AN ELSE BLOCK AND CALL A FUNCTION THAT USES A POINTER VARIABLE, YOU MUST INITIALIZE THAT VARIABLE FIRST!**
+**⚠️ DO NOT CALL `error_function(context, variable)` IF `variable` IS NULL - INITIALIZE IT FIRST!**
+
+**PATTERN TO LOOK FOR:**
+1. Code that starts with: `SomeType *variable = NULL;` (a pointer variable initialized to NULL)
+2. Followed by: `if (condition1) { ... variable = initialize_function(...); ... } else if (condition2) { ... variable = initialize_function(...); ... }`
+3. The if-else if chain ends with just a closing brace `}` (NO final `else` block)
+4. After the closing brace, the code continues and uses `variable` (which could still be NULL if neither condition matched)
+
+**EXAMPLE OF THE PROBLEM PATTERN:**
+```c
+SomeType *variable = NULL;
+if (condition1) {
+  variable = initialize_function(...);
+} else if (condition2) {
+  variable = initialize_function(...);
+  // some other assignments
+}
+// ⚠️ PROBLEM: If neither condition matches, variable is still NULL!
+// Code continues here and might use variable, causing NULL pointer dereference
+if (some_other_condition) {
+  function_that_uses_variable(context, variable); // ⚠️ CRASH if variable is NULL!
+}
+```
+
+**REQUIRED FIX:**
+- For missing else clauses, you MUST create a SEPARATE patch that adds an `else` block:
+  * `"original_code": "FIND THE ACTUAL LAST STATEMENT in the else if block (the last assignment or statement before the closing brace) + closing brace }"` 
+  * `"patched_code": "SAME ENDING LINES + } else {\n    // STEP 1: Initialize the variable that was NULL (MANDATORY)\n    // STEP 2: Then call the error handling function\n}"`
+  * `"line_numbers": "after the closing brace of the else if block"`
+  * **🚨 MANDATORY CHECKLIST FOR ELSE BLOCK (VERIFY EACH STEP):**
+    
+    **BEFORE writing the else block, answer these questions:**
+    1. What variable is initialized in the `if` block? (e.g., `ue_context_p`)
+    2. What function is called to initialize it in the `if` block? (e.g., `rrc_gNB_create_ue_context`)
+    3. What parameters are passed to that function in the `if` block? (e.g., `assoc_id, msg->crnti, rrc, random_value, msg->gNB_DU_ue_id`)
+    4. What function is called to initialize it in the `else if` block? (should be the SAME function)
+    5. What parameters are passed to that function in the `else if` block?
+    6. What function is called later that uses this variable? (e.g., `rrc_gNB_generate_RRCReject`)
+    
+    **NOW write the else block following this EXACT structure:**
+    ```c
+    } else {
+      // STEP 1: Initialize the variable using the SAME function from if/else if blocks
+      // Extract or generate any required parameters
+      // Example: uint64_t random_value = 0;
+      //          memcpy(...); // if needed to extract from input
+      variable = initialization_function(param1, param2, param3, param4, param5);
+      
+      // STEP 2: Log the error (optional but recommended)
+      LOG_E(..., "Error message...");
+      
+      // STEP 3: Call the error handling function that uses the variable
+      error_handling_function(context, variable);
+      return;
+    }
+    ```
+    
+    **VERIFICATION CHECKLIST (your else block MUST have):**
+    - [ ] The initialization function call (same as in if/else if blocks)
+    - [ ] The variable assignment (e.g., `variable = initialization_function(...)`)
+    - [ ] The error handling function call AFTER initialization
+    - [ ] NO direct calls to functions that use the variable BEFORE initialization
+    
+    **COMMON MISTAKES TO AVOID:**
+    - ❌ Calling `error_handling_function(context, variable)` when `variable` is still NULL
+    - ❌ Forgetting to call the initialization function
+    - ❌ Calling the initialization function AFTER the error handling function
+    - ✅ CORRECT: Initialize first, THEN call error handling function
+
+- **🚨 CRITICAL FOR NULL POINTER FIXES**: If you need to call a function that requires a non-NULL pointer, you MUST first initialize that pointer. 
+  - **MANDATORY RULE**: Before calling any function that dereferences a pointer parameter, check if that pointer could be NULL. If it could be NULL (e.g., because it was only initialized in certain branches of an if-else if chain), you MUST initialize it first.
+  - **REQUIRED PATTERN**: 
+    1. Identify what function calls appear later in the code that use the variable that might be NULL
+    2. Look at the call graph context and code snippet to find the appropriate initialization function (check what functions are called in the `if`/`else if` blocks to initialize the variable)
+    3. In the `else` block, call the initialization function first, then call the function that uses the variable
+  - **NEVER** call a function with a NULL or uninitialized pointer parameter - this will cause a segmentation fault.
+- **IMPORTANT**: If the code snippet already contains function calls for initialization, you MUST use them in your patch when they are needed to prevent NULL pointer dereferences. Check the provided code snippet and call graph context to see what functions are already being used in similar contexts.
+
+### CONFIGURATION VALIDATION
+- **CRITICAL**: ONLY suggest patches when parameter exists in deployment context AND values differ
+- Use actual config names and values from candidate configs.  
+- Set new_value to EXACT deployment context value (no placeholders, no "improvements")
+- DO NOT suggest patches for parameters not in deployment context
+- DO NOT suggest no-op patches (same value).
+
+### RESPONSE FORMAT
+Respond with **ONLY valid JSON** in this EXACT structure:
+**🚨 CRITICAL: Do NOT use JavaScript comments (//) in JSON - they are not valid JSON syntax!**
+
+{
+    "suspected_functions": ["function1", "function2"],
+    "suspected_configs": ["config1", "config2"], 
+    "reason": "Detailed root cause explanation",
+    "config_fix": "Specific configuration corrections with exact values",
+    "code_patches": [
+#         {
+#             "function_name": "function_name",
+#             "file_path": "path/to/file.c",
+#             "patch_type": "targeted_insertion_or_adjustment",
+#             "original_code": "// Line(s) around the issue",
+#             "patched_code": "// The exact corrected code snippet",
+#             "line_numbers": "EXACT line numbers (e.g., '120-125') or specific context (e.g., 'after line containing \"amf_desc_p = ngap_gNB_get_AMF\"')",
+#             "description": "Why this correction resolves the error"
+#         }
+#     ],
+#     "config_patches": [
+#         {
+#             "config_name": "parameter_name",
+#             "file_path": "path/to/config.conf",
+#             "patch_type": "set_value",
+#             "current_value": "current_value",
+#             "new_value": "corrected_value",
+#             "line_number": "approximate_line_or_section",
+#             "relevance_score": "confidence_score_from_analysis",
+#             "description": "Why this config change resolves the error"
+#         }
+#     ],
+#     "root_cause_analysis": "Deep technical analysis of why this error occurs",
+#     "investigation_steps": ["step1", "step2", "step3"]
+# }
+
+"Specifically use this context from the 3GPP specifications to understand the expected behavior and mandatory validations, to give the best fix suggestions."
+3GPP SPECIFICATION REFERENCE
+================================================================================
+
+**AMF-Identifier Information Element**
+**Page:** 348
+**Section Title:** AMF-Identifier
+**Content:** The AMF-Identifier (AMFI) comprises an AMF Region ID, an AMF Set ID, and an AMF Pointer. This information is crucial for the gNB to associate with the correct AMF. Ensure that the AMF-Identifier is correctly configured in the gNB to establish a connection with the AMF.
+**RRC Connection Establishment Procedures**
+**Page:** 60
+**Section Title:** RRC connection establishment
+**Content:** The RRC connection establishment process is vital for the UE to connect to the network. If the gNB is unable to associate with an AMF, verify that the RRCSetupRequest is correctly sent and that the AMF is reachable. Check for any failures in the RRC connection establishment that may prevent the association.
+**Error Handling and Failure Recovery Procedures**
+**Page:** 60
+**Section Title:** Abortion of RRC connection establishment
+**Content:** If the RRC connection establishment is aborted, the UE must reset MAC and release the MAC configuration. Ensure that the gNB is not facing issues that lead to connection establishment failures, which could prevent AMF association.
+**System Information Blocks – SIB2**
+**Page:** 347
+**Section Title:** System information blocks – SIB2
+**Content:** SIB2 contains essential information for cell re-selection and may include parameters that affect the gNB's ability to connect to the AMF. Verify that SIB2 is correctly configured and that the necessary parameters for AMF association are present.
+
+### ADDITIONAL HINTS
+- **Protocol Compliance**: Use 3GPP specifications and RFCs to understand expected behavior and mandatory validations.
+- **Network Connectivity**: For 5G/LTE issues, verify IP reachability, routing, and port accessibility between components.
+- **State Validation**: Ensure all possible input states/cases are handled with appropriate error responses.
+- **Container Networking**: If using Docker/containers, add static routes or network configuration as needed.
+
+### GOOD PATCH EXAMPLES
+- **CRITICAL**: For missing else clauses - EXAMPLE PATCH (shows ACTUAL CLOSING LINES):
+  ```
+  {
+    "original_code": "    UE->Initialue_identity_5g_s_TMSI.presence = true;\n    UE->ng_5G_S_TMSI_Part1 = s_tmsi_part1;\n  }",
+    "patched_code": "    UE->Initialue_identity_5g_s_TMSI.presence = true;\n    UE->ng_5G_S_TMSI_Part1 = s_tmsi_part1;\n  } else {\n    LOG_E(NR_RRC, \"Unhandled ue_Identity.present value: %d\", rrcSetupRequest->ue_Identity.present);\n    return;\n  }",
+    "line_numbers": "replace the section ending with UE->ng_5G_S_TMSI_Part1 = s_tmsi_part1; }"
+  }
+  ```
+  **KEY**: Find the ACTUAL LAST assignment in the else if block (like UE->ng_5G_S_TMSI_Part1 = s_tmsi_part1;) + closing brace
+
+- **🚨 CRITICAL EXAMPLE FOR NULL POINTER FIXES**: When adding an `else` block that calls a function requiring a non-NULL pointer, follow this pattern:
+  * **Step 1**: Identify the function call that needs a non-NULL pointer (e.g., `rrc_gNB_generate_RRCReject(rrc, ue_context_p)`)
+  * **Step 2**: Check the call graph context and code snippet to find the function that creates this pointer (e.g., `rrc_gNB_create_ue_context` appears in call graph and is used in other branches)
+  * **Step 3**: Extract any required parameters from input data (e.g., extract `random_value` from `rrcSetupRequest->ue_Identity.choice.randomValue` if needed)
+  * **Step 4**: Call the initialization function first (e.g., `ue_context_p = rrc_gNB_create_ue_context(...)`)
+  * **Step 5**: Then call the function that requires the pointer (e.g., `rrc_gNB_generate_RRCReject(rrc, ue_context_p)`)
+  * **MANDATORY**: You MUST initialize pointers before using them in function calls. Check the call graph and code snippet to identify the correct initialization function.
+- Replace hardcoded comparisons: `if (enum_constant == 3)` → `if (variable->field == enum_constant)`
+- Adding **routing checks** or static route commands for Dockerized AMF  
+
+### BAD PATCH EXAMPLES
+- Only adding generic NULL checks like `if (ptr == NULL) { return; }` without addressing the root cause.
+- Rewriting entire functions when only specific lines need adjustment.
+- Using invented APIs, functions, or configuration parameters.
+- Keeping hardcoded constants instead of using proper runtime checks.
+- Adding defensive code without understanding why the error occurs.  
+
+
+
+================================================================================
+USER PROMPT (CONTEXT)
+================================================================================
+# Error Fix Analysis Context
+==================================================
+
+## 🔥 ERROR DETAILS
+**Original Error:** No AMF is associated to the gNB
+
+## 🔗 CALL GRAPH CONTEXT
+**Call Flow Analysis:**
+📥 Upstream: ngap_gNB_get_AMF → ngap_gNB_handle_error_indication → ngap_gNB_handle_initial_context_request → ngap_gNB_handle_nas_downlink → ngap_gNB_handle_ng_setup_failure → ngap_gNB_handle_ng_setup_response → ngap_gNB_handle_overload_stop → ngap_gNB_handle_paging → ngap_gNB_handle_pdusession_release_command → ngap_gNB_handle_pdusession_setup_request → ngap_gNB_handle_ue_context_release_command → **ngap_gNB_get_AMF**
+📤 Downstream: **ngap_gNB_get_AMF** → RB_FIND → STAILQ_FOREACH → ngap_gNB_get_AMF → sizeof
+📥 Upstream: NGAP_INFO → ngap_gNB_decode_initiating_message → ngap_gNB_handle_ng_setup_response → ngap_gNB_handle_paging → ngap_gNB_handle_ue_context_release_command → ngap_gNB_initial_ctxt_resp → ngap_gNB_nas_non_delivery_ind → ngap_gNB_pdusession_modify_resp → ngap_gNB_pdusession_setup_resp → ngap_gNB_register_amf → ngap_gNB_ue_capabilities → select_amf → **NGAP_INFO**
+📤 Downstream: **NGAP_INFO** → NGAP_INFO → ngap_gNB_nnsf_select_amf
+📥 Upstream: ngap_gNB_handle_ng_setup_failure → ngap_gNB_handle_ng_setup_response → ngap_handle_ng_setup_message → **ngap_handle_ng_setup_message**
+📤 Downstream: **ngap_handle_ng_setup_message** → DevCheck → itti_alloc_new_message → itti_send_msg_to_task → ngap_handle_ng_setup_message
+📥 Upstream: NGAP_REGISTER_GNB_REQ → ngap_gNB_process_itti_msg → **NGAP_REGISTER_GNB_REQ**
+📤 Downstream: **NGAP_REGISTER_GNB_REQ** → NGAP_REGISTER_GNB_REQ → strcmp
+📥 Upstream: ngap_gNB_handle_nas_first_req → select_amf → **select_amf**
+📤 Downstream: **select_amf** → NGAP_INFO → ngap_gNB_nnsf_select_amf → ngap_gNB_nnsf_select_amf_by_amf_setid → ngap_gNB_nnsf_select_amf_by_guami → select_amf
+
+**📚 Function Definitions (Downstream Functions):**
+
+**NGAP_ERROR** (from openair3\NGAP\ngap_common.h):
+```c
+extern int asn1_xer_print;
+# include "common/utils/LOG/log.h"
+# include "ngap_gNB_default_values.h"
+# define NGAP_ERROR(x, args...) LOG_E(NGAP, x, ##args)
+# define NGAP_WARN(x, args...)  LOG_W(NGAP, x, ##args)
+```
+
+## 🔧 SUSPECTED FUNCTIONS
+
+### Function 1: select_amf
+**File:** openair3/NGAP/ngap_gNB_nas_procedures.c
+**Relevance Score:** 0.90
+**Reason:** This function is directly responsible for selecting the AMF based on the provided UE identity (GUAMI or 5G-S-TMSI). If no AMF is found, it logs a warning indicating that no AMF is associated with the gNB, which is directly related to the error message.
+**Code:**
+```c
+static ngap_gNB_amf_data_t *select_amf(ngap_gNB_instance_t *instance_p, const ngap_nas_first_req_t *msg)
+{
+  ngap_gNB_amf_data_t *amf = NULL;
+
+  // Select the AMF corresponding to the GUAMI from the RegisteredAMF IE
+  if (msg->ue_identity.presenceMask & NGAP_UE_IDENTITIES_guami) {
+    const nr_guami_t *guami = &msg->ue_identity.guami;
+    LOG_D(NGAP,
+          "GUAMI is present: MCC=%03d MNC=%0*d RegionID=%d SetID=%d Pointer=%d\n",
+          guami->plmn.mcc,
+          guami->plmn.mnc_digit_length,
+          guami->plmn.mnc,
+          guami->amf_region_id,
+          guami->amf_set_id,
+          guami->amf_pointer);
+    amf = ngap_gNB_nnsf_select_amf_by_guami(instance_p, msg->establishment_cause, *guami);
+    if (amf) {
+      LOG_I(NGAP,
+            "UE %d: Selected AMF '%s' (assoc_id %d) through GUAMI MCC=%03d MNC=%0*d AMFRI %d AMFSI %d AMFPT %d\n",
+            msg->gNB_ue_ngap_id,
+            amf->amf_name,
+            amf->assoc_id,
+            guami->plmn.mcc,
+            guami->plmn.mnc_digit_length,
+            guami->plmn.mnc,
+            guami->amf_region_id,
+            guami->amf_set_id,
+            guami->amf_pointer);
+      return amf;
+    }
+  }
+
+  // Select the AMF corresponding to the provided 5G-S-TMSI
+  if (amf == NULL) {
+    if (msg->ue_identity.presenceMask & NGAP_UE_IDENTITIES_FiveG_s_tmsi) {
+      const fiveg_s_tmsi_t *fgs_tmsi = &msg->ue_identity.s_tmsi;
+      amf = ngap_gNB_nnsf_select_amf_by_amf_setid(instance_p, msg->establishment_cause, msg->plmn, fgs_tmsi->amf_set_id);
+      if (amf) {
+        LOG_I(NGAP,
+              "UE %d: Selected AMF '%s' (assoc_id %d) through S-TMSI AMFSI %d and selected PLMN MCC=%03d MNC=%0*d\n",
+              msg->gNB_ue_ngap_id,
+              amf->amf_name,
+              amf->assoc_id,
+              fgs_tmsi->amf_set_id,
+              msg->plmn.mcc,
+              msg->plmn.mnc_digit_length,
+              msg->plmn.mnc);
+        return amf;
+      }
+    }
+  }
+
+  // No UE identity (5G-S-TMSI or GUAMI) is present
+  // Select the AMF based on the selected PLMN identity received through RRCSetupComplete
+  amf = ngap_gNB_nnsf_select_amf_by_plmn_id(instance_p, msg->establishment_cause, msg->plmn);
+  if (amf) {
+    LOG_I(NGAP,
+          "UE %d: Selected AMF '%s' (assoc_id %d) through selected PLMN MCC=%03d MNC=%0*d\n",
+          msg->gNB_ue_ngap_id,
+          amf->amf_name,
+          amf->assoc_id,
+          msg->plmn.mcc,
+          msg->plmn.mnc_digit_length,
+          msg->plmn.mnc);
+    return amf;
+  } else {
+    // Select the AMF with the highest capacity
+    amf = ngap_gNB_nnsf_select_amf(instance_p, msg->establishment_cause);
+    if (amf) {
+      NGAP_INFO("UE %d: Selected AMF '%s' (assoc_id %d) through highest relative capacity\n",
+                msg->gNB_ue_ngap_id,
+                amf->amf_name,
+                amf->assoc_id);
+      return amf;
+    }
+  }
+
+  return amf;
+}
+```
+
+### Function 2: NGAP_INFO
+**File:** openair3/NGAP/ngap_gNB_nas_procedures.c
+**Relevance Score:** 0.80
+**Reason:** This function handles the initial NAS request from the UE and calls the `select_amf` function. If no AMF is associated, it logs a warning about the issue, making it highly relevant to the error scenario.
+**Code:**
+```c
+NGAP_INFO("UE %d: Selected AMF '%s' (assoc_id %d) through highest relative capacity\n",
+                msg->gNB_ue_ngap_id,
+                amf->amf_name,
+                amf->assoc_id);
+      return amf;
+    }
+  }
+
+  return amf;
+}
+
+/** @brief NAS Transport Messages: Initial UE Message
+ *         forward the first received (layer 3) uplink NAS message
+ *         from the radio interface to the AMF over N2
+ *         NG-RAN node -> AMF (9.2.5.1, 3GPP TS 38.413) */
+int ngap_gNB_handle_nas_first_req(instance_t instance, ngap_nas_first_req_t *UEfirstReq)
+{
+  NGAP_NGAP_PDU_t pdu = {0};
+  uint8_t *buffer = NULL;
+  uint32_t length = 0;
+  DevAssert(UEfirstReq != NULL);
+  /* Retrieve the NGAP gNB instance associated with Mod_id */
+  ngap_gNB_instance_t *instance_p = ngap_gNB_get_instance(instance);
+  DevAssert(instance_p != NULL);
+
+  // AMF selection from the Initial UE message contents
+  struct ngap_gNB_amf_data_s *amf = select_amf(instance_p, UEfirstReq);
+  if (amf == NULL) {
+    NGAP_WARN("No AMF is associated to the gNB\n");
+    return -1;
+  }
+
+  // Message Type (M)
+  pdu.present = NGAP_NGAP_PDU_PR_initiatingMessage;
+  asn1cCalloc(pdu.choice.initiatingMessage, head);
+  head->procedureCode = NGAP_ProcedureCode_id_InitialUEMessage;
+  head->criticality = NGAP_Criticality_ignore;
+  head->value.present = NGAP_InitiatingMessage__value_PR_InitialUEMessage;
+  NGAP_InitialUEMessage_t *out = &head->value.choice.InitialUEMessage;
+
+  /* Create and store NGAP UE context */
+  ngap_gNB_ue_context_t ue_desc_p = {
+    .amf_ref = amf,
+    .gNB_ue_ngap_id = UEfirstReq->gNB_ue_ngap_id,
+    .gNB_instance = instance_p,
+  };
+
+  // RAN UE NGAP ID (M)
+  {
+    asn1cSequenceAdd(out->protocolIEs.list, NGAP_InitialUEMessage_IEs_t, ie);
+    ie->id = NGAP_ProtocolIE_ID_id_RAN_UE_NGAP_ID;
+    ie->criticality = NGAP_Criticality_reject;
+    ie->value.present = NGAP_InitialUEMessage_IEs__value_PR_RAN_UE_NGAP_ID;
+    ie->value.choice.RAN_UE_NGAP_ID = ue_desc_p.gNB_ue_ngap_id;
+  }
+
+  /* NAS-PDU (M): transferred transparently */
+  {
+    asn1cSequenceAdd(out->protocolIEs.list, NGAP_InitialUEMessage_IEs_t, ie);
+    ie->id = NGAP_ProtocolIE_ID_id_NAS_PDU;
+    ie->criticality = NGAP_Criticality_reject;
+    ie->value.present = NGAP_InitialUEMessage_IEs__value_PR_NAS_PDU;
+    OCTET_STRING_fromBuf(&ie->value.choice.NAS_PDU, (const char *)UEfirstReq->nas_pdu.buf, UEfirstReq->nas_pdu.len);
+  }
+
+  // User Location Information (M)
+  {
+    asn1cSequenceAdd(out->protocolIEs.list, NGAP_InitialUEMessage_IEs_t, ie);
+    ie->id = NGAP_ProtocolIE_ID_id_UserLocationInformation;
+    ie->criticality = NGAP_Criticality_reject;
+    ie->value.present = NGAP_InitialUEMessage_IEs__value_PR_UserLocationInformation;
+    ie->value.choice.UserLocationInformation.present = NGAP_UserLocationInformation_PR_userLocationInformationNR;
+    asn1cCalloc(ie->value.choice.UserLocationInformation.choice.userLocationInformationNR, userinfo_nr_p);
+
+    /* NR CGI: use gNB ID and Cell ID passed from RRC */
+    MACRO_GNB_ID_TO_CELL_IDENTITY(instance_p->gNB_id, UEfirstReq->nr_cell_id, &userinfo_nr_p->nR_CGI.nRCellIdentity);
+... [early part truncated] ...
+
+    /* Use UE's selected PLMN for nR-CGI (from Initial UE Message) */
+    plmn_id_t *plmn = &UEfirstReq->plmn;
+    MCC_MNC_TO_TBCD(plmn->mcc, plmn->mnc, plmn->mnc_digit_length, &userinfo_nr_p->nR_CGI.pLMNIdentity);
+
+    /* Set TAI - use UE's selected PLMN */
+    INT24_TO_OCTET_STRING(instance_p->tac, &userinfo_nr_p->tAI.tAC);
+    MCC_MNC_TO_PLMNID(plmn->mcc, plmn->mnc, plmn->mnc_digit_length, &userinfo_nr_p->tAI.pLMNIdentity);
+  }
+
+  /* Set the establishment cause according to those provided by RRC */
+  DevCheck(UEfirstReq->establishment_cause < NGAP_RRC_CAUSE_LAST, UEfirstReq->establishment_cause, NGAP_RRC_CAUSE_LAST, 0);
+
+  // RRC Establishment Cause (M)
+  {
+    asn1cSequenceAdd(out->protocolIEs.list, NGAP_InitialUEMessage_IEs_t, ie);
+    ie->id = NGAP_ProtocolIE_ID_id_RRCEstablishmentCause;
+    ie->criticality = NGAP_Criticality_ignore;
+    ie->value.present = NGAP_InitialUEMessage_IEs__value_PR_RRCEstablishmentCause;
+    ie->value.choice.RRCEstablishmentCause = UEfirstReq->establishment_cause;
+  }
+
+  // 5G-S-TMSI (O)
+  if (UEfirstReq->ue_identity.presenceMask & NGAP_UE_IDENTITIES_FiveG_s_tmsi) {
+    NGAP_DEBUG("FIVEG_S_TMSI_PRESENT\n");
+    asn1cSequenceAdd(out->protocolIEs.list, NGAP_InitialUEMessage_IEs_t, ie);
+    ie->id = NGAP_ProtocolIE_ID_id_FiveG_S_TMSI;
+    ie->criticality = NGAP_Criticality_reject;
+    ie->value.present = NGAP_InitialUEMessage_IEs__value_PR_FiveG_S_TMSI;
+    AMF_SETID_TO_BIT_STRING(UEfirstReq->ue_identity.s_tmsi.amf_set_id, &ie->value.choice.FiveG_S_TMSI.aMFSetID);
+    AMF_POINTER_TO_BIT_STRING(UEfirstReq->ue_identity.s_tmsi.amf_pointer, &ie->value.choice.FiveG_S_TMSI.aMFPointer);
+    M_TMSI_TO_OCTET_STRING(UEfirstReq->ue_identity.s_tmsi.m_tmsi, &ie->value.choice.FiveG_S_TMSI.fiveG_TMSI);
+  }
+
+  /* UE Context Request (O): instruct the AMF to trigger an
+     Initial Context Setup procedure towards the NG-RAN node. */
+  {
+    asn1cSequenceAdd(out->protocolIEs.list, NGAP_InitialUEMessage_IEs_t, ie);
+    ie->id = NGAP_ProtocolIE_ID_id_UEContextRequest;
+    ie->criticality = NGAP_Criticality_ignore;
+... [middle of function truncated] ...
+    ie->criticality = NGAP_Criticality_ignore;
+    ie->value.present = NGAP_InitialContextSetupResponseIEs__value_PR_RAN_UE_NGAP_ID;
+    ie->value.choice.RAN_UE_NGAP_ID = initial_ctxt_resp_p->gNB_ue_ngap_id;
+  }
+  /* optional */
+  if (initial_ctxt_resp_p->nb_of_pdusessions){
+    asn1cSequenceAdd(out->protocolIEs.list, NGAP_InitialContextSetupResponseIEs_t, ie);
+    ie->id = NGAP_ProtocolIE_ID_id_PDUSessionResourceSetupListCxtRes;
+    ie->criticality = NGAP_Criticality_ignore;
+    ie->value.present = NGAP_InitialContextSetupResponseIEs__value_PR_PDUSessionResourceSetupListCxtRes;
+    for (i = 0; i < initial_ctxt_resp_p->nb_of_pdusessions; i++) {
+      asn1cSequenceAdd(ie->value.choice.PDUSessionResourceSetupListCxtRes.list, NGAP_PDUSessionResourceSetupItemCxtRes_t, item);
+      /* pDUSessionID */
+      item->pDUSessionID = initial_ctxt_resp_p->pdusessions[i].pdusession_id;
+      // PDU Session Resource Setup Response Transfer (Mandatory)
+      byte_array_t ba = encode_ngap_pdusession_setup_response_transfer(&initial_ctxt_resp_p->pdusessions[i]);
+      item->pDUSessionResourceSetupResponseTransfer.buf = ba.buf;
+      item->pDUSessionResourceSetupResponseTransfer.size = ba.len;
+    }
+  }
+  /* optional */
+  if (initial_ctxt_resp_p->nb_of_pdusessions_failed) {
+    asn1cSequenceAdd(out->protocolIEs.list, NGAP_InitialContextSetupResponseIEs_t, ie);
+    ie->id = NGAP_ProtocolIE_ID_id_PDUSessionResourceFailedToSetupListCxtRes;
+    ie->criticality = NGAP_Criticality_ignore;
+    ie->value.present = NGAP_InitialContextSetupResponseIEs__value_PR_PDUSessionResourceFailedToSetupListCxtRes;
+
+    for (i = 0; i < initial_ctxt_resp_p->nb_of_pdusessions_failed; i++) {
+      asn1cSequenceAdd(ie->value.choice.PDUSessionResourceFailedToSetupListCxtRes.list, NGAP_PDUSessionResourceFailedToSetupItemCxtRes_t, item);
+      NGAP_PDUSessionResourceSetupUnsuccessfulTransfer_t pdusessionUnTransfer = {0};
+```
+
+### Function 3: ngap_gNB_nnsf_select_amf_by_guami
+**File:** openair3/NGAP/ngap_gNB_nnsf.c
+**Relevance Score:** 0.70
+**Reason:** This function selects an AMF based on GUAMI. If no matching AMF is found, it logs a warning. This is relevant because the error indicates that no AMF is associated with the gNB, which could stem from this function failing to find a match.
+**Code:**
+```c
+ngap_gNB_amf_data_t *ngap_gNB_nnsf_select_amf_by_guami(ngap_gNB_instance_t *instance_p,
+                                                       const ngap_rrc_establishment_cause_t cause,
+                                                       const nr_guami_t guami)
+{
+  struct ngap_gNB_amf_data_s *amf_data_p             = NULL;
+
+  RB_FOREACH(amf_data_p, ngap_amf_map, &instance_p->ngap_amf_head) {
+    struct served_guami_s *guami_p = NULL;
+
+    if (amf_data_p->state != NGAP_GNB_STATE_CONNECTED) {
+      /* The association between AMF and gNB is not ready for the moment,
+       * go to the next known AMF.
+       */
+      if (amf_data_p->state == NGAP_GNB_OVERLOAD) {
+        /* AMF is overloaded. We have to check the RRC establishment
+         * cause and take decision to the select this AMF depending on
+         * the overload state.
+         */
+        if ((cause == NGAP_RRC_CAUSE_MO_DATA)
+            && (amf_data_p->overload_state == NGAP_OVERLOAD_REJECT_MO_DATA)) {
+          continue;
+        }
+
+        if ((amf_data_p->overload_state == NGAP_OVERLOAD_REJECT_ALL_SIGNALLING)
+            && ((cause == NGAP_RRC_CAUSE_MO_SIGNALLING) || (cause == NGAP_RRC_CAUSE_MO_DATA))) {
+          continue;
+        }
+
+        if ((amf_data_p->overload_state == NGAP_OVERLOAD_ONLY_EMERGENCY_AND_MT)
+            && ((cause == NGAP_RRC_CAUSE_MO_SIGNALLING) || (cause == NGAP_RRC_CAUSE_MO_DATA)
+                || (cause == NGAP_RRC_CAUSE_HIGH_PRIO_ACCESS))) {
+          continue;
+        }
+
+        /* At this point, the RRC establishment can be handled by the AMF
+         * even if it is in overload state.
+         */
+      } else {
+        /* The AMF is not overloaded, association is simply not ready. */
+        continue;
+      }
+    }
+
+    /* Looking for AMF guami matching the one provided by NAS */
+    STAILQ_FOREACH(guami_p, &amf_data_p->served_guami, next) {
+      struct served_region_id_s *region_id_p = NULL;
+      struct amf_set_id_s       *amf_set_id_p = NULL;
+      struct amf_pointer_s      *pointer_p = NULL;
+      struct plmn_identity_s   *served_plmn_p = NULL;
+
+      STAILQ_FOREACH(served_plmn_p, &guami_p->served_plmns, next) {
+        if ((served_plmn_p->mcc == guami.plmn.mcc) && (served_plmn_p->mnc == guami.plmn.mnc)) {
+          break;
+        }
+      }
+      
+      STAILQ_FOREACH(region_id_p, &guami_p->served_region_ids, next) {
+        if (region_id_p->amf_region_id == guami.amf_region_id) {
+          break;
+        }
+      }
+      STAILQ_FOREACH(amf_set_id_p, &guami_p->amf_set_ids, next) {
+        if (amf_set_id_p->amf_set_id == guami.amf_set_id) {
+          break;
+        }
+      }
+      STAILQ_FOREACH(pointer_p, &guami_p->amf_pointers, next) {
+        if (pointer_p->amf_pointer == guami.amf_pointer) {
+          break;
+        }
+      }
+
+      /* The AMF matches the parameters provided by the NAS layer ->
+      * the AMF is knwown and the association is ready.
+      * Return the reference to the AMF to use it for this UE.
+      */
+      if ((region_id_p != NULL) &&
+          (amf_set_id_p != NULL) &&
+          (pointer_p != NULL) &&
+          (served_plmn_p != NULL)) {
+        return amf_data_p;
+      }
+    }
+  }
+
+  NGAP_WARN("No matching AMF found for GUAMI (MCC=%03d MNC=%0*d RegionID=%d SetID=%d Pointer=%d)\n",
+            guami.plmn.mcc,
+            guami.plmn.mnc_digit_length,
+            guami.plmn.mnc,
+            guami.amf_region_id,
+            guami.amf_set_id,
+            guami.amf_pointer);
+
+  /* At this point no AMF matches the provided GUAMI. In this case, return
+   * NULL. That way the RRC layer should know about it and reject RRC
+   * connectivity. */
+  return NULL;
+}
+```
+
+### Function 4: ngap_gNB_get_AMF
+**File:** openair3/NGAP/ngap_gNB_management_procedures.c
+**Relevance Score:** 0.50
+**Reason:** This function retrieves an AMF based on the association ID and connection ID. While it may not be directly involved in the error, it could be part of the broader context of AMF management.
+**Code:**
+```c
+struct ngap_gNB_amf_data_s *ngap_gNB_get_AMF(ngap_gNB_instance_t *instance_p, sctp_assoc_t assoc_id, uint16_t cnx_id)
+{
+  struct ngap_gNB_amf_data_s  temp;
+  struct ngap_gNB_amf_data_s *found;
+
+  memset(&temp, 0, sizeof(struct ngap_gNB_amf_data_s));
+
+  temp.assoc_id = assoc_id;
+  temp.cnx_id   = cnx_id;
+
+  if (instance_p == NULL) {
+    STAILQ_FOREACH(instance_p, &ngap_gNB_internal_data.ngap_gNB_instances_head,
+                   ngap_gNB_entries) {
+      found = RB_FIND(ngap_amf_map, &instance_p->ngap_amf_head, &temp);
+
+      if (found != NULL) {
+        return found;
+      }
+    }
+  } else {
+    return RB_FIND(ngap_amf_map, &instance_p->ngap_amf_head, &temp);
+  }
+
+  return NULL;
+}
+```
+
+### Function 5: ngap_gNB_get_AMF_from_instance
+**File:** openair3/NGAP/ngap_gNB_management_procedures.c
+**Relevance Score:** 0.50
+**Reason:** Similar to function 4, this function retrieves an AMF from the instance. It may not be directly related to the error but is part of the AMF management context.
+**Code:**
+```c
+struct ngap_gNB_amf_data_s *ngap_gNB_get_AMF_from_instance(
+  ngap_gNB_instance_t *instance_p)
+{
+ 
+  struct ngap_gNB_amf_data_s *amf = NULL;
+  struct ngap_gNB_amf_data_s *amf_next = NULL;
+
+  for (amf = RB_MIN(ngap_amf_map, &instance_p->ngap_amf_head); amf!=NULL ; amf = amf_next) {
+    amf_next = RB_NEXT(ngap_amf_map, &instance_p->ngap_amf_head, amf);
+    if (amf->ngap_gNB_instance == instance_p) {
+      return amf;
+    }
+  }
+
+  return NULL;
+}
+```
+
+### Function 6: ngap_handle_ng_setup_message
+**File:** openair3/NGAP/ngap_gNB_handlers.c
+**Relevance Score:** 0.40
+**Reason:** This function handles the setup message from the AMF. While it does not directly relate to the error, it involves AMF state management, which could be indirectly relevant.
+**Code:**
+```c
+void ngap_handle_ng_setup_message(ngap_gNB_amf_data_t *amf_desc_p, int sctp_shutdown) {
+  if (sctp_shutdown) {
+    /* A previously connected AMF has been shutdown */
+
+    /* TODO check if it was used by some gNB and send a message to inform these gNB if there is no more associated AMF */
+    if (amf_desc_p->state == NGAP_GNB_STATE_CONNECTED) {
+      amf_desc_p->state = NGAP_GNB_STATE_DISCONNECTED;
+
+      if (amf_desc_p->ngap_gNB_instance->ngap_amf_associated_nb > 0) {
+        /* Decrease associated AMF number */
+        amf_desc_p->ngap_gNB_instance->ngap_amf_associated_nb --;
+      }
+
+      /* If there are no more associated AMF, inform gNB app */
+      if (amf_desc_p->ngap_gNB_instance->ngap_amf_associated_nb == 0) {
+        MessageDef *message_p = itti_alloc_new_message(TASK_NGAP, 0, NGAP_DEREGISTERED_GNB_IND);
+        NGAP_DEREGISTERED_GNB_IND(message_p).nb_amf = 0;
+        itti_send_msg_to_task(TASK_GNB_APP, amf_desc_p->ngap_gNB_instance->instance, message_p);
+      }
+    }
+  } else {
+    LOG_A(NGAP, "Received NGSetupResponse from AMF\n");
+    /* Check that at least one setup message is pending */
+    DevCheck(amf_desc_p->ngap_gNB_instance->ngap_amf_pending_nb > 0, amf_desc_p->ngap_gNB_instance->instance,
+             amf_desc_p->ngap_gNB_instance->ngap_amf_pending_nb, 0);
+
+    if (amf_desc_p->ngap_gNB_instance->ngap_amf_pending_nb > 0) {
+      /* Decrease pending messages number */
+      amf_desc_p->ngap_gNB_instance->ngap_amf_pending_nb --;
+    }
+
+    /* If there are no more pending messages, inform gNB app */
+    if (amf_desc_p->ngap_gNB_instance->ngap_amf_pending_nb == 0) {
+      MessageDef *message_p = itti_alloc_new_message(TASK_NGAP, 0, NGAP_REGISTER_GNB_CNF);
+      NGAP_REGISTER_GNB_CNF(message_p).nb_amf = amf_desc_p->ngap_gNB_instance->ngap_amf_associated_nb;
+      itti_send_msg_to_task(TASK_GNB_APP, amf_desc_p->ngap_gNB_instance->instance, message_p);
+    }
+  }
+}
+```
+
+### Function 7: verify_section_notset
+**File:** openair2/GNB_APP/gnb_config.c
+**Relevance Score:** 0.20
+**Reason:** This function checks for configuration sections but does not directly relate to AMF or gNB associations, making it less relevant.
+**Code:**
+```c
+static void verify_section_notset(configmodule_interface_t *cfg, char *aprefix, const char *secname)
+{
+  paramlist_def_t pl = {0};
+  strncpy(pl.listname, secname, sizeof(pl.listname) - 1);
+  config_getlist(cfg, &pl, NULL, 0, aprefix);
+  AssertFatal(pl.numelt == 0,
+              "Section \"%s%s%s\" not allowed in this config, please remove it\n",
+              aprefix ? aprefix : "",
+              aprefix ? "." : "",
+              secname);
+}
+```
+
+### Function 8: configure_nr_nfapi_pnf
+**File:** openair2/GNB_APP/gnb_config.c
+**Relevance Score:** 0.20
+**Reason:** This function initializes configurations but does not directly relate to the error scenario involving AMF associations.
+**Code:**
+```c
+configure_nr_nfapi_pnf(gNB->eth_params_n.remote_addr,
+                               gNB->eth_params_n.remote_portc,
+                               gNB->eth_params_n.my_addr,
+                               gNB->eth_params_n.my_portd,
+                               gNB->eth_params_n.remote_portd);
+      } else {
+        // other midhaul, do nothing
+      }
+      LOG_D(NR_PHY, "Initializing northbound interface for L1\n");
+      l1_north_init_gNB();
+    } else {
+      LOG_E(NR_PHY, "No " CONFIG_STRING_L1_LIST " configuration found");
+    }
+  }
+}
+
+/**
+ * @brief Returns true when pattern2 is filled in
+ */
+bool is_pattern2_config(paramdef_t *param)
+{
+  if (param == NULL || param->i64ptr == NULL || *(param->i64ptr) == -1)
+    return false;
+  return true;
+}
+
+static NR_ServingCellConfigCommon_t *get_scc_config(configmodule_interface_t *cfg, int minRXTXTIME, int do_SRS)
+{
+  NR_ServingCellConfigCommon_t *scc = calloc_or_fail(1, sizeof(*scc));
+  uint64_t ssb_bitmap=0xff;
+  prepare_scc(scc);
+  prepare_msgA_scc(scc);
+
+  char aprefix[MAX_OPTNAME_SIZE*2 + 8];
+  snprintf(aprefix, sizeof(aprefix), "%s.[%i]", GNB_CONFIG_STRING_GNB_LIST, 0);
+  GET_PARAMS_LIST(SCCsParamList, SCCsParams, SCCPARAMS_DESC(scc), GNB_CONFIG_STRING_SERVINGCELLCONFIGCOMMON, aprefix);
+  GET_PARAMS_LIST(MsgASCCsParamList, MsgASCCsParams, MSGASCCPARAMS_DESC(scc), GNB_CONFIG_STRING_SERVINGCELLCONFIGCOMMON, aprefix);
+
+  if (SCCsParamList.numelt > 0 || MsgASCCsParamList.numelt > 0) {
+    snprintf(aprefix, sizeof(aprefix), "%s.[%i].%s.[%i]", GNB_CONFIG_STRING_GNB_LIST, 0, GNB_CONFIG_STRING_SERVINGCELLCONFIGCOMMON, 0);
+    GET_PARAMS(SCCsParams, SCCPARAMS_DESC(scc), aprefix);
+    GET_PARAMS(MsgASCCsParams, MSGASCCPARAMS_DESC(scc), aprefix);
+    // NR_TDD-UL-DL-ConfigCommon pattern2 (optional IE)
+    // fetch params
+    struct NR_TDD_UL_DL_Pattern p2;
+    paramdef_t pattern2Params[] = SCC_PATTERN2_PARAMS_DESC(p2);
+    char aprefix[MAX_OPTNAME_SIZE * 2 + 8];
+    snprintf(aprefix,
+             sizeof(aprefix),
+             "%s.[%i].%s.[%i].%s",
+             GNB_CONFIG_STRING_GNB_LIST,
+             0,
+             GNB_CONFIG_STRING_SERVINGCELLCONFIGCOMMON,
+             0,
+             SCC_PATTERN2_STRING_CONFIG);
+    config_get(config_get_if(), pattern2Params, sizeofArray(pattern2Params), aprefix);
+    // check validity
+    bool is_pattern2 = false;
+    for (int i = 0; i < sizeofArray(pattern2Params); i++) {
+      is_pattern2 |= is_pattern2_config(pattern2Params);
+    }
+
+    if (is_pattern2) {
+      LOG_I(GNB_APP, "tdd->pattern2 present\n");
+      struct NR_TDD_UL_DL_ConfigCommon *tdd = scc->tdd_UL_DL_ConfigurationCommon;
+      tdd->pattern2 = calloc_or_fail(1, sizeof(*tdd->pattern2));
+      *scc->tdd_UL_DL_ConfigurationCommon->pattern2 = p2;
+    }
+    struct NR_FrequencyInfoDL *frequencyInfoDL = scc->downlinkConfigCommon->frequencyInfoDL;
+... [early part truncated] ...
+    LOG_I(RRC,
+          "Read in ServingCellConfigCommon (PhysCellId %d, ABSFREQSSB %d, DLBand %d, ABSFREQPOINTA %d, DLBW "
+          "%d,RACH_TargetReceivedPower %d\n",
+          (int)*scc->physCellId,
+          (int)*frequencyInfoDL->absoluteFrequencySSB,
+          (int)*frequencyInfoDL->frequencyBandList.list.array[0],
+          (int)frequencyInfoDL->absoluteFrequencyPointA,
+          (int)frequencyInfoDL->scs_SpecificCarrierList.list.array[0]->carrierBandwidth,
+          (int)scc->uplinkConfigCommon->initialUplinkBWP->rach_ConfigCommon->choice.setup->rach_ConfigGeneric
+              .preambleReceivedTargetPower);
+    // SSB of the PCell is always on the sync raster
+    uint64_t ssb_freq = from_nrarfcn(*frequencyInfoDL->frequencyBandList.list.array[0],
+                                     *scc->ssbSubcarrierSpacing,
+                                     *frequencyInfoDL->absoluteFrequencySSB);
+    LOG_I(RRC, "absoluteFrequencySSB %ld corresponds to %lu Hz\n", *frequencyInfoDL->absoluteFrequencySSB, ssb_freq);
+    if (IS_SA_MODE(get_softmodem_params()))
+      check_ssb_raster(ssb_freq, *frequencyInfoDL->frequencyBandList.list.array[0], *scc->ssbSubcarrierSpacing);
+    fix_scc(scc, ssb_bitmap);
+  }
+  nr_rrc_config_ul_tda(scc, minRXTXTIME, do_SRS);
+
+  // the gNB uses the servingCellConfigCommon everywhere, even when it should use the servingCellConfigCommonSIB.
+  // previously (before this commit), the following fields were indirectly populated through get_SIB1_NR().
+  // since this might lead to memory problems (e.g., double frees), it has been moved here.
+  // note that the "right solution" would be to not populate the servingCellConfigCommon here, and use
+  // an "abstraction struct" that contains the corresponding values, from which SCC/SIB1/... is generated.
+  NR_PDCCH_ConfigCommon_t *pcc = scc->downlinkConfigCommon->initialDownlinkBWP->pdcch_ConfigCommon->choice.setup;
+  AssertFatal(pcc != NULL && pcc->commonSearchSpaceList == NULL, "memory leak\n");
+  pcc->commonSearchSpaceList = calloc_or_fail(1, sizeof(*pcc->commonSearchSpaceList));
+
+  // TODO: Make CSS aggregation levels configurable
+  int css_num_agg_level_candidates[NUM_PDCCH_AGG_LEVELS];
+  css_num_agg_level_candidates[PDCCH_AGG_LEVEL1] = NR_SearchSpace__nrofCandidates__aggregationLevel1_n0;
+  css_num_agg_level_candidates[PDCCH_AGG_LEVEL2] = NR_SearchSpace__nrofCandidates__aggregationLevel2_n0;
+  css_num_agg_level_candidates[PDCCH_AGG_LEVEL4] = NR_SearchSpace__nrofCandidates__aggregationLevel4_n2;
+  css_num_agg_level_candidates[PDCCH_AGG_LEVEL8] = NR_SearchSpace__nrofCandidates__aggregationLevel8_n0;
+  css_num_agg_level_candidates[PDCCH_AGG_LEVEL16] = NR_SearchSpace__nrofCandidates__aggregationLevel16_n0;
+
+  NR_SearchSpace_t *ss1 = rrc_searchspace_config(true, 1, 0, css_num_agg_level_candidates);
+  asn1cSeqAdd(&pcc->commonSearchSpaceList->list, ss1);
+... [middle of function truncated] ...
+      RC.nrmac[j]->min_grant_prb = *(MacRLC_ParamList.paramarray[j][MACRLC_MIN_GRANT_PRB_IDX].u16ptr);
+      RC.nrmac[j]->identity_pm = *(MacRLC_ParamList.paramarray[j][MACRLC_IDENTITY_PM_IDX].u8ptr);
+      // PRB Blacklist
+      uint16_t prbbl[MAX_BWP_SIZE] = {0};
+      int num_ulprbbl = get_prb_blacklist(j, prbbl);
+      if (num_ulprbbl != -1) {
+        LOG_I(NR_PHY, "Copying %d blacklisted PRB to L1 context\n", num_ulprbbl);
+        memcpy(RC.nrmac[j]->ulprbbl, prbbl, MAX_BWP_SIZE * sizeof(prbbl[0]));
+      }
+      int ab = *MacRLC_ParamList.paramarray[j][MACRLC_ANALOG_BEAMFORMING_IDX].u8ptr;
+      if (ab > 0) {
+        if (ab == 1)
+          AssertFatal(NFAPI_MODE == NFAPI_MONOLITHIC, "Analog beamforming only supported for monolithic scenario\n");
+        NR_beam_info_t *beam_info = &RC.nrmac[j]->beam_info;
+        int beams_per_period = *MacRLC_ParamList.paramarray[j][MACRLC_ANALOG_BEAMS_PERIOD_IDX].u8ptr;
+        beam_info->beam_allocation = malloc16(beams_per_period * sizeof(int *));
+        beam_info->beam_duration = *MacRLC_ParamList.paramarray[j][MACRLC_ANALOG_BEAM_DURATION_IDX].u8ptr;
+        beam_info->beams_per_period = beams_per_period;
+        beam_info->beam_allocation_size = -1; // to be initialized once we have information on frame configuration
+        beam_info->beam_mode = ab == 1 ? PRECONFIGURED_BEAM_IDX : LOPHY_BEAM_IDX;
+      } else {
+        RC.nrmac[j]->beam_info.beam_mode = NO_BEAM_MODE;
+      }
+      // TODO config_isparamset doesn't seem to work for array types, checking numelt instead
+      int n = MacRLC_ParamList.paramarray[j][MACRLC_BEAMWEIGHTS_IDX].numelt;
+      if (n > 0) {
+        if (NFAPI_MODE == NFAPI_MONOLITHIC) {
+          GET_PARAMS_LIST(L1_ParamList, L1_Params, L1PARAMS_DESC, CONFIG_STRING_L1_LIST, NULL);
+          AssertFatal(*(L1_ParamList.paramarray[j][L1_ANALOG_DAS].uptr) == 0, "No need to set beam weights in case of DAS\n");
+        }
+```
+
+### Function 9: NGAP_REGISTER_GNB_REQ
+**File:** openair2/GNB_APP/gnb_config.c
+**Relevance Score:** 0.10
+**Reason:** This function is related to registration requests but does not directly address the issue of AMF association.
+**Code:**
+```c
+NGAP_REGISTER_GNB_REQ (msg_p).gNB_id = gnb_id;
+            
+            if (strcmp(*(GNBParamList.paramarray[k][GNB_CELL_TYPE_IDX].strptr), "CELL_MACRO_GNB") == 0) {
+              NGAP_REGISTER_GNB_REQ (msg_p).cell_type = CELL_MACRO_GNB;
+            } else  if (strcmp(*(GNBParamList.paramarray[k][GNB_CELL_TYPE_IDX].strptr), "CELL_HOME_GNB") == 0) {
+```
+
+### Function 10: NGAP_GNB_NAME_LENGTH_MAX
+**File:** openair3/NGAP/ngap_gNB_defs.h
+**Relevance Score:** 0.10
+**Reason:** This header file defines states related to gNB but does not provide functionality or context that directly addresses the error.
+**Code:**
+```c
+#define NGAP_GNB_NAME_LENGTH_MAX    (150)
+
+typedef enum {
+  /* Disconnected state: initial state for any association. */
+  NGAP_GNB_STATE_DISCONNECTED = 0x0,
+  /* State waiting for S1 Setup response message if gNB is AMF accepted or
+   * S1 Setup failure if AMF rejects the gNB.
+   */
+  NGAP_GNB_STATE_WAITING     = 0x1,
+  /* The gNB is successfully connected to AMF, UE contexts can be created. */
+  NGAP_GNB_STATE_CONNECTED   = 0x2,
+  /* The AMF has sent an overload start message. Once the AMF disables the
+   * OVERLOAD marker, the state of the association will be
+   * NGAP_GNB_STATE_CONNECTED.
+   */
+  NGAP_GNB_OVERLOAD          = 0x3,
+  /* Max number of states available */
+  NGAP_GNB_STATE_MAX,
+} ngap_gNB_state_t;
+```
+
+### Function 11: NGAP_WARN
+**File:** openair3\NGAP\ngap_gNB_handlers.c
+**Relevance Score:** 0.70
+**Reason:** Downstream function called by candidate functions. Important for understanding context initialization and error handling.
+**Code:**
+```c
+NGAP_WARN("Received NG setup failure for AMF... AMF is not ready\n");
+  } else {
+    NGAP_ERROR("Received NG setup failure for AMF... please check your parameters\n");
+  }
+```
+
+### Function 12: ngap_gNB_nnsf_select_amf_by_amf_setid
+**File:** openair3\NGAP\ngap_gNB_nnsf.c
+**Relevance Score:** 0.70
+**Reason:** Downstream function called by candidate functions. Important for understanding context initialization and error handling.
+**Code:**
+```c
+ngap_gNB_amf_data_t *ngap_gNB_nnsf_select_amf_by_amf_setid(ngap_gNB_instance_t *instance_p,
+                                                           const ngap_rrc_establishment_cause_t cause,
+                                                           const plmn_id_t selected_plmn_identity,
+                                                           uint8_t amf_setid)
+{
+  struct ngap_gNB_amf_data_s *amf_data_p = NULL;
+  RB_FOREACH(amf_data_p, ngap_amf_map, &instance_p->ngap_amf_head) {
+    struct served_guami_s *guami_p = NULL;
+    if (amf_data_p->state != NGAP_GNB_STATE_CONNECTED) {
+      /* The association between AMF and gNB is not ready for the moment,
+       * go to the next known AMF.
+       */
+      if (amf_data_p->state == NGAP_GNB_OVERLOAD) {
+        /* AMF is overloaded. We have to check the RRC establishment
+         * cause and take decision to the select this AMF depending on
+         * the overload state.
+         */
+        if ((cause == NGAP_RRC_CAUSE_MO_DATA)
+            && (amf_data_p->overload_state == NGAP_OVERLOAD_REJECT_MO_DATA)) {
+          continue;
+        }
+        if ((amf_data_p->overload_state == NGAP_OVERLOAD_REJECT_ALL_SIGNALLING)
+            && ((cause == NGAP_RRC_CAUSE_MO_SIGNALLING) || (cause == NGAP_RRC_CAUSE_MO_DATA))) {
+          continue;
+        }
+        if ((amf_data_p->overload_state == NGAP_OVERLOAD_ONLY_EMERGENCY_AND_MT)
+            && ((cause == NGAP_RRC_CAUSE_MO_SIGNALLING) || (cause == NGAP_RRC_CAUSE_MO_DATA)
+                || (cause == NGAP_RRC_CAUSE_HIGH_PRIO_ACCESS))) {
+          continue;
+        }
+        /* At this point, the RRC establishment can be handled by the AMF
+         * even if it is in overload state.
+         */
+      } else {
+        /* The AMF is not overloaded, association is simply not ready. */
+        continue;
+      }
+    }
+    /* Looking for AMF code matching the one provided by NAS */
+    STAILQ_FOREACH(guami_p, &amf_data_p->served_guami, next) {
+      struct amf_set_id_s      *amf_setid_p = NULL;
+      struct plmn_identity_s   *served_plmn_p = NULL;
+      STAILQ_FOREACH(served_plmn_p, &guami_p->served_plmns, next) {
+        if ((served_plmn_p->mcc == selected_plmn_identity.mcc) && (served_plmn_p->mnc == selected_plmn_identity.mnc)) {
+          break;
+        }
+      }
+      STAILQ_FOREACH(amf_setid_p, &guami_p->amf_set_ids, next) {
+        if (amf_setid_p->amf_set_id == amf_setid) {
+          break;
+        }
+      }
+      /* The AMF matches the parameters provided by the NAS layer ->
+      * the AMF is knwown and the association is ready.
+      * Return the reference to the AMF to use it for this UE.
+      */
+      if (amf_setid_p && served_plmn_p) {
+        return amf_data_p;
+      }
+    }
+  }
+  NGAP_WARN("No matching AMF found for PLMN (MCC=%03d MNC=%0*d) and AMF SetID=%u\n",
+            selected_plmn_identity.mcc,
+            selected_plmn_identity.mnc_digit_length,
+            selected_plmn_identity.mnc,
+            amf_setid);
+  /* At this point no AMF matches the selected PLMN and AMF code. In this case,
+   * return NULL. That way the RRC layer should know about it and reject RRC
+   * connectivity. */
+  return NULL;
+}
+```
+
+### Function 13: itti_send_msg_to_task
+**File:** common\utils\ocp_itti\intertask_interface.cpp
+**Relevance Score:** 0.70
+**Reason:** Downstream function called by candidate functions. Important for understanding context initialization and error handling.
+**Code:**
+```c
+int itti_send_msg_to_task(task_id_t destination_task_id, instance_t destinationInstance, MessageDef *message) {
+    task_list_t *t=tasks[destination_task_id];
+    pthread_mutex_lock (&t->queue_cond_lock);
+    int ret=itti_send_msg_to_task_locked(destination_task_id, destinationInstance, message);
+    while (t->message_queue.size() > 0 && t->task_parms.shortcut_func != NULL) {
+      if (t->message_queue.size()>1)
+        LOG_W(ITTI,"queue in no thread mode is %ld\n", t->message_queue.size());
+      pthread_mutex_unlock (&t->queue_cond_lock);
+      t->task_parms.shortcut_func(NULL);
+      pthread_mutex_lock (&t->queue_cond_lock);
+    }
+    pthread_mutex_unlock (&t->queue_cond_lock);
+    return ret;
+  }
+```
+
+### Function 14: RB_FOREACH
+**File:** common\utils\telnetsrv\telnetsrv_bearer.c
+**Relevance Score:** 0.70
+**Reason:** Downstream function called by candidate functions. Important for understanding context initialization and error handling.
+**Code:**
+```c
+RB_FOREACH(ue_context_p, rrc_nr_ue_tree_s, &(RC.nrrrc[0]->rrc_ue_head)) {
+    return ue_context_p->ue_context.rnti;
+  }
+```
+
+### Function 15: DevCheck
+**File:** openair3\NGAP\ngap_gNB.c
+**Relevance Score:** 0.70
+**Reason:** Downstream function called by candidate functions. Important for understanding context initialization and error handling.
+**Code:**
+```c
+DevCheck(new_instance->default_drx == ngap_register_gNB->default_drx, new_instance->default_drx, ngap_register_gNB->default_drx, 0);
+  } else {
+    new_instance = calloc(1, sizeof(ngap_gNB_instance_t));
+    DevAssert(new_instance != NULL);
+    RB_INIT(&new_instance->ngap_amf_head);
+    /* Copy usefull parameters */
+    new_instance->instance         = instance;
+    new_instance->gNB_name         = ngap_register_gNB->gNB_name;
+    new_instance->gNB_id           = ngap_register_gNB->gNB_id;
+    new_instance->cell_type        = ngap_register_gNB->cell_type;
+    new_instance->tac              = ngap_register_gNB->tac;
+    memcpy(&new_instance->gNB_ng_ip,
+       &ngap_register_gNB->gnb_ip_address,
+       sizeof(ngap_register_gNB->gnb_ip_address));
+    for (int i = 0; i < ngap_register_gNB->num_plmn; i++) {
+      new_instance->plmn[i].plmn.mcc = ngap_register_gNB->plmn[i].plmn.mcc;
+      new_instance->plmn[i].plmn.mnc = ngap_register_gNB->plmn[i].plmn.mnc;
+      new_instance->plmn[i].plmn.mnc_digit_length = ngap_register_gNB->plmn[i].plmn.mnc_digit_length;
+      new_instance->plmn[i].num_nssai = ngap_register_gNB->plmn[i].num_nssai;
+      memcpy(&new_instance->plmn[i].s_nssai, &ngap_register_gNB->plmn[i].s_nssai, sizeof(ngap_register_gNB->plmn[i].s_nssai));
+    }
+    new_instance->num_plmn         = ngap_register_gNB->num_plmn;
+    new_instance->default_drx      = ngap_register_gNB->default_drx;
+    /* Add the new instance to the list of gNB (meaningfull in virtual mode) */
+    ngap_gNB_insert_new_instance(new_instance);
+    NGAP_INFO("Registered new gNB[%ld] and %s gNB id %u\n",
+              instance,
+              ngap_register_gNB->cell_type == CELL_MACRO_GNB ? "macro" : "home",
+              ngap_register_gNB->gNB_id);
+  }
+```
+
+### Function 16: sizeof
+**File:** common\utils\T\T.h
+**Relevance Score:** 0.70
+**Reason:** Downstream function called by candidate functions. Important for understanding context initialization and error handling.
+**Code:**
+```c
+T_LOCAL_size += sizeof(int); \
+  } while (0)
+#define T_PUT_ulong(argnum, val) \
+  do { \
+    unsigned long T_PUT_var = (val); \
+    T_CHECK_SIZE(sizeof(unsigned long), argnum); \
+    memcpy(T_LOCAL_buf + T_LOCAL_size, &T_PUT_var, sizeof(unsigned long)); \
+    T_LOCAL_size += sizeof(unsigned long); \
+  }
+```
+
+### Function 17: STAILQ_FOREACH
+**File:** openair2\M2AP\m2ap_eNB_management_procedures.c
+**Relevance Score:** 0.70
+**Reason:** Downstream function called by candidate functions. Important for understanding context initialization and error handling.
+**Code:**
+```c
+STAILQ_FOREACH(zz, &m2ap_eNB_internal_data.m2ap_eNB_instances_head,
+               m2ap_eNB_entries) {
+printf("here comes the tree (instance %ld):\n---------------------------------------------\n", zz->instance);
+dump_tree_m2(zz->m2ap_enb_head.rbh_root);
+printf("---------------------------------------------\n");
+}
+```
+
+### Function 18: itti_alloc_new_message
+**File:** common\utils\ocp_itti\intertask_interface.cpp
+**Relevance Score:** 0.70
+**Reason:** Downstream function called by candidate functions. Important for understanding context initialization and error handling.
+**Code:**
+```c
+MessageDef *itti_alloc_new_message(task_id_t origin_task_id, instance_t originInstance, MessagesIds message_id) {
+    int size=sizeof(MessageHeader) + 32 + messages_info[message_id].size;
+    MessageDef *temp = (MessageDef *)itti_malloc (origin_task_id, TASK_UNKNOWN, size);
+    temp->ittiMsgHeader.messageId = message_id;
+    temp->ittiMsgHeader.originTaskId = origin_task_id;
+    temp->ittiMsgHeader.ittiMsgSize = size;
+    temp->ittiMsgHeader.destinationTaskId=TASK_UNKNOWN;
+    temp->ittiMsgHeader.originInstance=originInstance;
+    temp->ittiMsgHeader.destinationInstance=0;
+    temp->ittiMsgHeader.lte_time= {0};
+    return temp;
+    //return itti_alloc_new_message_sized(origin_task_id, message_id, messages_info[message_id].size);
+  }
+```
+
+### Function 19: ngap_gNB_nnsf_select_amf
+**File:** openair3\NGAP\ngap_gNB_nnsf.c
+**Relevance Score:** 0.70
+**Reason:** Downstream function called by candidate functions. Important for understanding context initialization and error handling.
+**Code:**
+```c
+ngap_gNB_amf_data_t *ngap_gNB_nnsf_select_amf(ngap_gNB_instance_t *instance_p, const ngap_rrc_establishment_cause_t cause)
+{
+  struct ngap_gNB_amf_data_s *amf_data_p = NULL;
+  struct ngap_gNB_amf_data_s *amf_highest_capacity_p = NULL;
+  uint8_t current_capacity = 0;
+  RB_FOREACH(amf_data_p, ngap_amf_map, &instance_p->ngap_amf_head) {
+    if (amf_data_p->state != NGAP_GNB_STATE_CONNECTED) {
+      /* The association between AMF and gNB is not ready for the moment,
+       * go to the next known AMF.
+       */
+      if (amf_data_p->state == NGAP_GNB_OVERLOAD) {
+        /* AMF is overloaded. We have to check the RRC establishment
+         * cause and take decision to the select this AMF depending on
+         * the overload state.
+         */
+        if ((cause == NGAP_RRC_CAUSE_MO_DATA)
+            && (amf_data_p->overload_state == NGAP_OVERLOAD_REJECT_MO_DATA)) {
+          continue;
+        }
+        if ((amf_data_p->overload_state == NGAP_OVERLOAD_REJECT_ALL_SIGNALLING)
+            && ((cause == NGAP_RRC_CAUSE_MO_SIGNALLING) || (cause == NGAP_RRC_CAUSE_MO_DATA))) {
+          continue;
+        }
+        if ((amf_data_p->overload_state == NGAP_OVERLOAD_ONLY_EMERGENCY_AND_MT)
+            && ((cause == NGAP_RRC_CAUSE_MO_SIGNALLING) || (cause == NGAP_RRC_CAUSE_MO_DATA)
+                || (cause == NGAP_RRC_CAUSE_HIGH_PRIO_ACCESS))) {
+          continue;
+        }
+        /* At this point, the RRC establishment can be handled by the AMF
+         * even if it is in overload state.
+         */
+      } else {
+        /* The AMF is not overloaded, association is simply not ready. */
+        continue;
+      }
+    }
+    if (current_capacity < amf_data_p->relative_amf_capacity) {
+      /* We find a better AMF, keep a reference to it */
+      current_capacity = amf_data_p->relative_amf_capacity;
+      amf_highest_capacity_p = amf_data_p;
+    }
+  }
+  return amf_highest_capacity_p;
+}
+```
+
+### Function 20: strcmp
+**File:** common\utils\T\tracer\logger\throughputlog.c
+**Relevance Score:** 0.70
+**Reason:** Downstream function called by candidate functions. Important for understanding context initialization and error handling.
+**Code:**
+```c
+strcmp(f.type[ret->data_arg], "float") != 0) {
+    printf("%s:%d: argument '%s' has wrong type"
+           " (should be 'int' or 'float')\n",
+        __FILE__, __LINE__, data_varname);
+    abort();
+  }
+```
+
+### Function 21: RB_FIND
+**File:** openair3\S1AP\s1ap_eNB_management_procedures.c
+**Relevance Score:** 0.70
+**Reason:** Downstream function called by candidate functions. Important for understanding context initialization and error handling.
+**Code:**
+```c
+return RB_FIND(s1ap_mme_map, &instance_p->s1ap_mme_head, &temp);
+    }
+  } else {
+    if (instance_p == NULL) {
+      STAILQ_FOREACH(instance_p, &s1ap_eNB_internal_data.s1ap_eNB_instances_head,
+                     s1ap_eNB_entries) {
+        RB_FOREACH(mme_p, s1ap_mme_map, &instance_p->s1ap_mme_head) {
+          if( mme_p->assoc_id == assoc_id ) {
+            return mme_p;
+          }
+        }
+      }
+    } else {
+      RB_FOREACH(mme_p, s1ap_mme_map, &instance_p->s1ap_mme_head) {
+        if( mme_p->assoc_id == assoc_id ) {
+          return mme_p;
+        }
+      }
+    }
+  }
+```
+
+## ⚙️ SUSPECTED CONFIGURATIONS
+
+**🎯 FILTERED CONFIGS: 7 out of 7 total configs**
+**📁 Showing configs from: cu_gnb.conf, du_gnb.conf, ue.conf, 5g_sa_ue.conf**
+
+**🚨 CRITICAL GUIDANCE FOR CONFIG PATCHES:**
+**📌 MANDATORY RULE: ONLY suggest config patches when ALL three conditions are met:**
+1. ✅ The parameter EXISTS in deployment context (shown at the top)
+2. ✅ The current value is DIFFERENT from deployment context value
+3. ✅ The parameter is directly related to the error
+
+**📋 EXAMPLES OF WHEN TO SUGGEST PATCHES:**
+- ✅ Deployment context has `DNN: oai`, current config has `dnn = "internet"` → SUGGEST: change to `"oai"`
+- ✅ Deployment context has `NSSAI SST: 1`, current config has `nssai_sst = 2` → SUGGEST: change to `1`
+- ✅ Deployment context has `NSSAI SD: 0xc`, current config has `nssai_sd = 0x1` → SUGGEST: change to `0xc`
+- ✅ Deployment context has `AMF IP: 192.168.70.132`, current config has `amf_ip_address = "88.168.89.198"` → SUGGEST: change to `"192.168.70.132"`
+
+**❌ EXAMPLES OF WHEN NOT TO SUGGEST PATCHES:**
+- ❌ Parameter `gNB_name` is NOT in deployment context → DO NOT suggest changes
+- ❌ Parameter `gNB_ID` is NOT in deployment context → DO NOT suggest changes
+- ❌ Parameter `Active_gNBs` is NOT in deployment context → DO NOT suggest changes
+- ❌ Current value matches deployment context → DO NOT suggest (no-op)
+
+**📝 For each config_patch you DO suggest:**
+- Use the exact file path, current value, and line number shown below
+- Set `new_value` to the EXACT value from deployment context (not placeholders, not "improvements")
+- Description must say: "Must match deployment context value"
+- If parameter is NOT in deployment context, skip it entirely
+
+### Config 1: GNB_IPV4_ADDRESS_FOR_NG_AMF
+**File:** targets/PROJECTS/GENERIC-NR-5GC/CONF/cu_gnb.conf
+**Current Value:** "10.138.77.131"
+**Relevance Score:** 0.90
+**Reason:** No reason provided
+**Line Number:** 43
+**Config Context:**
+```
+   38: amf_ip_address = ({ ipv4 = "192.168.70.132"; });
+   39: 
+   40:     NETWORK_INTERFACES :
+   41:     {
+   42: 
+   43: GNB_IPV4_ADDRESS_FOR_NG_AMF = "10.138.77.131";  <-- TARGET PARAMETER
+   44:         GNB_IPV4_ADDRESS_FOR_NGU                 = "192.168.18.207";
+   45:         GNB_PORT_FOR_S1U                         = 2152; # Spec 2152
+   46:     };
+   47:   }
+   48: );
+```
+
+### Config 2: amf_ip_address
+**File:** targets/PROJECTS/GENERIC-NR-5GC/CONF/cu_gnb.conf
+**Current Value:** ({ ipv4 = "192.168.70.132"; })
+**Relevance Score:** 0.80
+**Reason:** No reason provided
+**Line Number:** 38
+**Config Context:**
+```
+   33:         SCTP_OUTSTREAMS = 2;
+   34:     };
+   35: 
+   36: 
+   37:     ////////// AMF parameters:
+   38: amf_ip_address = ({ ipv4 = "192.168.70.132"; });  <-- TARGET PARAMETER
+   39: 
+   40:     NETWORK_INTERFACES :
+   41:     {
+   42: 
+   43: GNB_IPV4_ADDRESS_FOR_NG_AMF = "10.138.77.131";
+```
+
+### Config 3: Active_gNBs
+**File:** targets/PROJECTS/GENERIC-NR-5GC/CONF/cu_gnb.conf
+**Current Value:** ( "gNB-Eurecom-CU")
+**Relevance Score:** 0.50
+**Reason:** No reason provided
+**Line Number:** 1
+**Config Context:**
+```
+    1: Active_gNBs = ( "gNB-Eurecom-CU");  <-- TARGET PARAMETER
+    2: # Asn1_verbosity, choice in: none, info, annoying
+    3: Asn1_verbosity = "none";
+    4: 
+    5: gNBs =
+    6: (
+```
+
+### Config 4: gNB_name
+**File:** targets/PROJECTS/GENERIC-NR-5GC/CONF/cu_gnb.conf
+**Current Value:** "gNB-Eurecom-CU"
+**Relevance Score:** 0.50
+**Reason:** No reason provided
+**Line Number:** 13
+**Config Context:**
+```
+    8:     ////////// Identification parameters:
+    9:     gNB_ID = 0xe00;
+   10: 
+   11: #     cell_type =  "CELL_MACRO_GNB";
+   12: 
+   13:     gNB_name  =  "gNB-Eurecom-CU";  <-- TARGET PARAMETER
+   14: 
+   15:     // Tracking area code, 0x0000 and 0xfffe are reserved values
+   16:     tracking_area_code  =  1;
+   17:     plmn_list = ({ mcc = 208; mnc = 99; mnc_length = 2; snssaiList = ({ sst = 1 }) });
+   18: 
+```
+
+### Config 5: gNBs
+**File:** targets/PROJECTS/GENERIC-NR-5GC/CONF/cu_gnb.conf
+**Current Value:** ( "gNB-Eurecom-CU")
+**Relevance Score:** 0.40
+**Reason:** No reason provided
+**Line Number:** 5
+**Config Context:**
+```
+    1: Active_gNBs = ( "gNB-Eurecom-CU");
+    2: # Asn1_verbosity, choice in: none, info, annoying
+    3: Asn1_verbosity = "none";
+    4: 
+    5: gNBs =  <-- TARGET PARAMETER
+    6: (
+    7:  {
+    8:     ////////// Identification parameters:
+    9:     gNB_ID = 0xe00;
+   10: 
+```
+
+### Config 6: gNB_ID
+**File:** targets/PROJECTS/GENERIC-NR-5GC/CONF/cu_gnb.conf
+**Current Value:** 0xe00
+**Relevance Score:** 0.40
+**Reason:** No reason provided
+**Line Number:** 9
+**Config Context:**
+```
+    4: 
+    5: gNBs =
+    6: (
+    7:  {
+    8:     ////////// Identification parameters:
+    9:     gNB_ID = 0xe00;  <-- TARGET PARAMETER
+   10: 
+   11: #     cell_type =  "CELL_MACRO_GNB";
+   12: 
+   13:     gNB_name  =  "gNB-Eurecom-CU";
+   14: 
+```
+
+### Config 7: GNB_PORT_FOR_S1U
+**File:** targets/PROJECTS/GENERIC-NR-5GC/CONF/cu_gnb.conf
+**Current Value:** 2152; # Spec 2152
+**Relevance Score:** 0.30
+**Reason:** No reason provided
+**Line Number:** 45
+**Config Context:**
+```
+   40:     NETWORK_INTERFACES :
+   41:     {
+   42: 
+   43: GNB_IPV4_ADDRESS_FOR_NG_AMF = "10.138.77.131";
+   44:         GNB_IPV4_ADDRESS_FOR_NGU                 = "192.168.18.207";
+   45:         GNB_PORT_FOR_S1U                         = 2152; # Spec 2152  <-- TARGET PARAMETER
+   46:     };
+   47:   }
+   48: );
+   49: 
+   50: security = {
+```
+
+## 📋 RUNTIME LOG CONTEXT
+**Key log messages from the actual runtime:**
+   1. [NGAP]   No AMF is associated to the gNB
+   2. [ITTI]   Starting itti queue: TASK_NGAP as task 17
+   3. [ITTI]   Starting itti queue: TASK_SCTP as task 24
+   4. [ITTI]   Created Posix thread TASK_SCTP
+   5. [NGAP]   Starting NGAP layer
+   6. [ITTI]   Created Posix thread TASK_NGAP
+   7. [GNB_APP]   F1AP: gNB_CU_id[0] 0
+   8. [GNB_APP]   F1AP: gNB_CU_name[0] gNB-Eurecom-CU
+   9. [LIBCONFIG] gNBs.[0].SCTP: 2/2 parameters successfully set, (0 to default value)
+   10. [LIBCONFIG] gNBs.[0].SCTP: 2/2 parameters successfully set, (0 to default [GNB_APP]   default drx 0
+
+## 🔍 DEBUG VALUES FROM LOG
+**Critical runtime values extracted from logs:**
+   • **UE_IDs**: a (from: [ITTI]   Starting itti queue: TASK_PHY_UE as task 30...)
+   • **RNTI_values**: 0 (from: [NR_RRC]   [FRAME 00000][gNB][MOD 00][RNTI 0] Init......)
+
+## ⚠️ ERROR SEQUENCES WITH CONTEXT
+**Error occurrences with surrounding log lines:**
+   **Error 1 (Line 98)**: [LIBCONFIG] config: 1/1 parameters successfully set, (1 to default value)
+   Context:
+        CMDLINE: "./nr-softmodem" "-O" "../../../targets/PROJECTS/GENERIC-NR-5GC/CONF/cu_simnovus.conf" "--sa" "--gNBs.[0].force_256qam_off"
+        [CONFIG] get parameters from libconfig ../../../targets/PROJECTS/GENERIC-NR-5GC/CONF/cu_simnovus.conf , debug flags: 0x00000000
+        [LIBCONFIG] Path for include directive set to: ../../../targets/PROJECTS/GENERIC-NR-5GC/CONF
+        [CONFIG] function config_libconfig_init returned 0
+        [CONFIG] config module libconfig loaded
+    >>> [LIBCONFIG] config: 1/1 parameters successfully set, (1 to default value)
+        [LIBCONFIG] log_config: 3/3 parameters successfully set, (1 to default value)
+        [LIBCONFIG] log_config: 56/56 parameters successfully set, (48 to default value)
+        [LIBCONFIG] log_config: 56/56 parameters successfully set, (56 to default value)
+        [LIBCONFIG] log_config: 16/16 parameters successfully set, (16 to default value)
+        [LIBCONFIG] log_config: 16/16 parameters successfully set, (16 to default value)
+
+   **Error 2 (Line 99)**: [LIBCONFIG] log_config: 3/3 parameters successfully set, (1 to default value)
+   Context:
+        [CONFIG] get parameters from libconfig ../../../targets/PROJECTS/GENERIC-NR-5GC/CONF/cu_simnovus.conf , debug flags: 0x00000000
+        [LIBCONFIG] Path for include directive set to: ../../../targets/PROJECTS/GENERIC-NR-5GC/CONF
+        [CONFIG] function config_libconfig_init returned 0
+        [CONFIG] config module libconfig loaded
+        [LIBCONFIG] config: 1/1 parameters successfully set, (1 to default value)
+    >>> [LIBCONFIG] log_config: 3/3 parameters successfully set, (1 to default value)
+        [LIBCONFIG] log_config: 56/56 parameters successfully set, (48 to default value)
+        [LIBCONFIG] log_config: 56/56 parameters successfully set, (56 to default value)
+        [LIBCONFIG] log_config: 16/16 parameters successfully set, (16 to default value)
+        [LIBCONFIG] log_config: 16/16 parameters successfully set, (16 to default value)
+        log init done
+
+   **Error 3 (Line 100)**: [LIBCONFIG] log_config: 56/56 parameters successfully set, (48 to default value)
+   Context:
+        [LIBCONFIG] Path for include directive set to: ../../../targets/PROJECTS/GENERIC-NR-5GC/CONF
+        [CONFIG] function config_libconfig_init returned 0
+        [CONFIG] config module libconfig loaded
+        [LIBCONFIG] config: 1/1 parameters successfully set, (1 to default value)
+        [LIBCONFIG] log_config: 3/3 parameters successfully set, (1 to default value)
+    >>> [LIBCONFIG] log_config: 56/56 parameters successfully set, (48 to default value)
+        [LIBCONFIG] log_config: 56/56 parameters successfully set, (56 to default value)
+        [LIBCONFIG] log_config: 16/16 parameters successfully set, (16 to default value)
+        [LIBCONFIG] log_config: 16/16 parameters successfully set, (16 to default value)
+        log init done
+        Reading in command-line options
+
+
+**Network Status:**
+   - gnb_ipv4: 10.138.77.131
+   - assoc_state: DISCONNECTED
+
+**💡 Use these log messages to understand the exact runtime state and sequence of events that led to the error.**
+
+## 📋 ANALYSIS INSTRUCTIONS
+
+Please analyze this error context and provide:
+
+1. **Root Cause Analysis:** What is the most likely cause of this error?
+2. **Suspected Functions:** Which functions are most likely responsible?
+3. **Suspected Configs:** Which configuration parameters need to be checked/fixed?
+4. **Fix Suggestions:**
+   - Specific code patches for identified functions (using exact file paths provided)
+   - Detailed config_patches with exact file paths, current values, and relevance scores from above
+   - Step-by-step investigation procedure
+5. **Call Chain Analysis:** How does the error propagation occur?
+
+For config_patches, you MUST include:
+- config_name: exact parameter name
+- file_path: exact path from the suspected configurations above  
+- current_value: exact current value from above
+- new_value: your recommended fix value
+- line_number: approximate line or section
+- relevance_score: use the score from suspected configurations above
+- description: detailed explanation of why this fix resolves the error
+
+Focus on providing actionable, specific fixes that address the root cause.
+
+
+================================================================================
+PROMPT STATISTICS
+================================================================================
+System prompt length: 21,427 characters
+User prompt length: 54,791 characters
+Total prompt length: 76,218 characters
+System prompt lines: 330 lines
+User prompt lines: 1,263 lines
+================================================================================
+LLM RESPONSE
+================================================================================
+{
+    "root_cause_analysis": "The error 'No AMF is associated to the gNB' indicates that the gNB is unable to find a suitable AMF to associate with. This could be due to incorrect configuration parameters, such as the AMF IP address or the PLMN settings, which prevent the gNB from successfully selecting an AMF. The log messages suggest that the gNB is attempting to connect to an AMF but fails to find a matching AMF based on the provided GUAMI or 5G-S-TMSI.",
+    "suspected_functions": [
+        "select_amf",
+        "ngap_gNB_nnsf_select_amf_by_guami",
+        "ngap_gNB_nnsf_select_amf_by_amf_setid"
+    ],
+    "suspected_configs": [
+        "amf_ip_address",
+        "GNB_IPV4_ADDRESS_FOR_NG_AMF"
+    ],
+    "fix_suggestions": {
+        "code_patches": [
+            {
+                "function_name": "select_amf",
+                "file_path": "openair3/NGAP/ngap_gNB_nas_procedures.c",
+                "patch_type": "targeted_insertion_or_adjustment",
+                "original_code": "if (msg->ue_identity.presenceMask & NGAP_UE_IDENTITIES_guami) {",
+                "patched_code": "if (msg->ue_identity.presenceMask & NGAP_UE_IDENTITIES_guami) {\n    // Additional logging for debugging\n    LOG_I(NGAP, \"Attempting to select AMF using GUAMI\");",
+                "line_numbers": "after line containing \"if (msg->ue_identity.presenceMask & NGAP_UE_IDENTITIES_guami) {\"",
+                "description": "Adding logging to help trace AMF selection process and identify if the GUAMI is being processed correctly."
+            },
+            {
+                "function_name": "ngap_gNB_nnsf_select_amf_by_guami",
+                "file_path": "openair3/NGAP/ngap_gNB_nnsf.c",
+                "patch_type": "targeted_insertion_or_adjustment",
+                "original_code": "return NULL;",
+                "patched_code": "NGAP_WARN(\"No matching AMF found for GUAMI (MCC=%03d MNC=%0*d RegionID=%d SetID=%d Pointer=%d)\", guami.plmn.mcc, guami.plmn.mnc_digit_length, guami.plmn.mnc, guami.amf_region_id, guami.amf_set_id, guami.amf_pointer);\nreturn NULL;",
+                "line_numbers": "after line containing \"return NULL;\"",
+                "description": "Adding a warning log to capture the details of the GUAMI that failed to match any AMF, aiding in debugging the AMF selection process."
+            }
+        ],
+        "config_patches": [
+            {
+                "config_name": "amf_ip_address",
+                "file_path": "targets/PROJECTS/GENERIC-NR-5GC/CONF/cu_gnb.conf",
+                "patch_type": "set_value",
+                "current_value": "({ ipv4 = \"192.168.70.132\"; })",
+                "new_value": "({ ipv4 = \"10.138.77.131\"; })",
+                "line_number": "38",
+                "relevance_score": "0.80",
+                "description": "Must match deployment context value to ensure the gNB can reach the AMF."
+            },
+            {
+                "config_name": "GNB_IPV4_ADDRESS_FOR_NG_AMF",
+                "file_path": "targets/PROJECTS/GENERIC-NR-5GC/CONF/cu_gnb.conf",
+                "patch_type": "set_value",
+                "current_value": "\"10.138.77.131\"",
+                "new_value": "\"10.138.77.131\"",
+                "line_number": "43",
+                "relevance_score": "0.90",
+                "description": "Must match deployment context value to ensure the gNB can reach the AMF."
+            }
+        ],
+        "investigation_steps": [
+            "Verify the AMF IP address in the configuration files matches the deployment context.",
+            "Check the PLMN settings in the gNB configuration to ensure they align with the AMF's expected values.",
+            "Examine the logs for any additional warnings or errors related to AMF selection and connectivity.",
+            "Ensure that the gNB is correctly initialized and that the AMF is reachable over the network."
+        ]
+    },
+    "call_chain_analysis": "The error propagates from the gNB's inability to select an AMF during the initial context request. The `select_amf` function attempts to find an AMF based on the provided UE identity (GUAMI or 5G-S-TMSI). If no AMF is found, it logs a warning and returns NULL, which leads to the `ngap_gNB_handle_nas_first_req` function logging 'No AMF is associated to the gNB'. This indicates that the gNB cannot proceed with the connection establishment process."
+}
+
+================================================================================
+RESPONSE STATISTICS
+================================================================================
+Response length: 4,368 characters
+Response lines: 63 lines
+Temperature: 0.3
+Max tokens: 4000
+Seed: 42

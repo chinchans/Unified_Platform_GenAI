@@ -1,0 +1,21 @@
+{
+  "code_dir": "C:\\Users\\ChanduVangala\\Desktop\\RCA_Electron-main\\RCA_Electron-main\\Backend\\app\\services\\Error_fixing_pipelin\\openairinterface5g-test",
+  "fix_suggestion": {
+    "code_dir": "C:\\Users\\ChanduVangala\\Desktop\\RCA_Electron-main\\RCA_Electron-main\\Backend\\app\\services\\Error_fixing_pipelin\\openairinterface5g-test",
+    "code_patches": [
+      {
+        "function_name": "rrc_handle_RRCSetupRequest",
+        "file_path": "Error_fixing_pipelin/openairinterface5g-test/openair2/RRC/NR/rrc_gNB.c",
+        "original_code": "    gNB_RRC_UE_t *UE = &ue_context_p->ue_context;\n    UE->Initialue_identity_5g_s_TMSI.presence = true;\n    UE->ng_5G_S_TMSI_Part1 = s_tmsi_part1;\n  }\n\n  // If the DU to CU RRC Container IE is not included in the INITIAL UL RRC MESSAGE TRANSFER,",
+        "patched_code": "    gNB_RRC_UE_t *UE = &ue_context_p->ue_context;\n    UE->Initialue_identity_5g_s_TMSI.presence = true;\n    UE->ng_5G_S_TMSI_Part1 = s_tmsi_part1;\n  } else {\n    LOG_E(NR_RRC, \"Unhandled ue_Identity.present value: %d\", rrcSetupRequest->ue_Identity.present);\n    ue_context_p = rrc_gNB_create_ue_context(assoc_id, msg->crnti, rrc, 0, msg->gNB_DU_ue_id);\n    rrc_gNB_generate_RRCReject(rrc, ue_context_p);\n    return;\n  }\n\n  // If the DU to CU RRC Container IE is not included in the INITIAL UL RRC MESSAGE TRANSFER,",
+        "suggested_code": "    gNB_RRC_UE_t *UE = &ue_context_p->ue_context;\n    UE->Initialue_identity_5g_s_TMSI.presence = true;\n    UE->ng_5G_S_TMSI_Part1 = s_tmsi_part1;\n  } else {\n    LOG_E(NR_RRC, \"Unhandled ue_Identity.present value: %d\", rrcSetupRequest->ue_Identity.present);\n    ue_context_p = rrc_gNB_create_ue_context(assoc_id, msg->crnti, rrc, 0, msg->gNB_DU_ue_id);\n    rrc_gNB_generate_RRCReject(rrc, ue_context_p);\n    return;\n  }\n\n  // If the DU to CU RRC Container IE is not included in the INITIAL UL RRC MESSAGE TRANSFER,",
+        "description": "From commit 90e73ac93515ff1d6f4830c2479de758d9f4f20d: Fix RRC setup procedure",
+        "patch_type": "targeted_insertion_or_adjustment",
+        "commit_hash": "90e73ac93515ff1d6f4830c2479de758d9f4f20d",
+        "confidence": "medium-high",
+        "similarity_score": 0.6942605018615723
+      }
+    ],
+    "config_patches": []
+  }
+}
