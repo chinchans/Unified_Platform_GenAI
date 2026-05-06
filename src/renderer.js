@@ -429,13 +429,71 @@ function updateMilestoneStatusLocal(milestoneId, status) {
   renderMilestones(nextMilestones);
 }
 
+function logLevelBadgeLabel(level) {
+  switch (level) {
+    case "warning":
+      return "WARN";
+    case "error":
+      return "ERR";
+    case "success":
+      return "OK";
+    default:
+      return "INFO";
+  }
+}
+
+/**
+ * Renders a single log row with a level badge, optional [stage] tag, and message (colored in CSS).
+ */
+function buildStructuredLogLine(text, level = "info") {
+  const row = document.createElement("div");
+  row.className = `log-line log-level-${level}`;
+
+  const raw = String(text ?? "");
+  const sysMatch = raw.match(/^SYS\s+(.*)$/);
+  const mainText = sysMatch ? sysMatch[1] : raw;
+
+  const badge = document.createElement("span");
+  if (sysMatch) {
+    badge.className = "log-line-badge log-line-badge-sys";
+    badge.textContent = "SYS";
+  } else {
+    badge.className = `log-line-badge log-line-badge-${level}`;
+    badge.textContent = logLevelBadgeLabel(level);
+  }
+
+  const content = document.createElement("span");
+  content.className = "log-line-content";
+
+  const stageMatch = mainText.match(/^\[([^\]]+)\]\s*(.*)$/s);
+  if (stageMatch) {
+    const stage = document.createElement("span");
+    stage.className = "log-line-stage";
+    stage.textContent = `[${stageMatch[1]}]`;
+    const msg = document.createElement("span");
+    msg.className = "log-line-msg";
+    const rest = stageMatch[2] ?? "";
+    msg.textContent = rest.length ? ` ${rest}` : "";
+    content.appendChild(stage);
+    content.appendChild(msg);
+  } else {
+    const msg = document.createElement("span");
+    msg.className = "log-line-msg";
+    msg.textContent = mainText;
+    content.appendChild(msg);
+  }
+
+  row.appendChild(badge);
+  row.appendChild(content);
+  return row;
+}
+
 function appendLog(text, type = "info") {
   const signature = `${type}::${String(text)}`;
   if (state.lastLogSignature === signature) return;
   state.lastLogSignature = signature;
-  const div = document.createElement("div");
-  div.className = `log-item ${type}`;
-  div.textContent = text;
+  const div = buildStructuredLogLine(String(text), type);
+  div.classList.add("log-item");
   logStream.appendChild(div);
   logStream.scrollTop = logStream.scrollHeight;
 }
@@ -447,9 +505,11 @@ function renderInitialLogView() {
   welcome.textContent = "WELCOME";
   logStream.appendChild(welcome);
 
-  const ready = document.createElement("div");
-  ready.className = "log-item welcome-line";
-  ready.textContent = "SYS  Platform ready. Enter your intent above and click Generate Prompt.";
+  const ready = buildStructuredLogLine(
+    "SYS  Platform ready. Enter your intent above and click Generate Prompt.",
+    "info"
+  );
+  ready.classList.add("log-item", "welcome-line");
   logStream.appendChild(ready);
 }
 
@@ -483,7 +543,7 @@ function appendBackendLogs(logs = []) {
       return;
     }
     const logType =
-      log.type === "warning" ? "warning" : log.type === "error" ? "warning" : "info";
+      log.type === "warning" ? "warning" : log.type === "error" ? "error" : "info";
     appendLog(`[${log.stage}] ${rawMessage}`, logType);
   });
 }
@@ -557,10 +617,6 @@ function isCursorCliTranscriptLog(text) {
     return true;
   }
   return (
-    normalized.startsWith("checking out branch:") ||
-    normalized.startsWith("target workspace:") ||
-    normalized.startsWith("resolved cli command:") ||
-    normalized.startsWith("running cursor cli headlessly.") ||
     normalized.startsWith("here is what was implemented") ||
     normalized.startsWith("### code changes") ||
     normalized.startsWith("### required reports") ||
@@ -1584,6 +1640,7 @@ acceptBtn.addEventListener("click", async () => {
     if (finalResult?.success) {
       appendLog("Generated changes accepted.", "info");
       state.codeReady = false;
+      generateCodeBtn.classList.add("hidden");
       setReviewActionsVisible(false);
       commitBtn.classList.remove("hidden");
       pushBtn.classList.add("hidden");
@@ -1618,6 +1675,7 @@ rejectBtn.addEventListener("click", async () => {
     if (finalResult?.success) {
       appendLog("Generated changes rejected and restored.", "warning");
       state.codeReady = false;
+      generateCodeBtn.classList.remove("hidden");
       setReviewActionsVisible(false);
       commitBtn.classList.add("hidden");
       pushBtn.classList.add("hidden");

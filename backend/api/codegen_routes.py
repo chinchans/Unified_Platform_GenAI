@@ -1055,9 +1055,8 @@ def _run_cursor_generation_core(
     assert proc.stdout is not None
     for line in proc.stdout:
         output_lines.append(line)
-        clean_line = line.rstrip()
-        if clean_line:
-            log(clean_line)
+        # Do not stream each stdout line over NDJSON: the full transcript is returned as
+        # chat_output and rendered under "Code generation chat output" (would duplicate).
     exit_code = proc.wait()
     chat_output = "".join(output_lines).strip()
 

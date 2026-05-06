@@ -817,12 +817,105 @@ button.secondary:hover {
   margin-bottom: 6px;
 }
 
-.log-item.warning {
-  color: var(--text-main);
+/* Structured live log lines (level badge + optional [stage] + message) */
+.log-item.log-line {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 3px 0 3px 10px;
+  margin-left: 0;
+  margin-bottom: 5px;
+  border-left: 3px solid transparent;
+  border-radius: 0 4px 4px 0;
 }
 
-.log-item.success {
-  color: var(--text-main);
+.log-line.log-level-info {
+  border-left-color: #0ea5e9;
+  background: linear-gradient(90deg, rgba(14, 165, 233, 0.06) 0%, transparent 72%);
+}
+
+.log-line.log-level-warning {
+  border-left-color: #d97706;
+  background: linear-gradient(90deg, rgba(217, 119, 6, 0.08) 0%, transparent 72%);
+}
+
+.log-line.log-level-error {
+  border-left-color: #dc2626;
+  background: linear-gradient(90deg, rgba(220, 38, 38, 0.08) 0%, transparent 72%);
+}
+
+.log-line.log-level-success {
+  border-left-color: #16a34a;
+  background: linear-gradient(90deg, rgba(22, 163, 74, 0.08) 0%, transparent 72%);
+}
+
+.log-line-badge {
+  flex: 0 0 auto;
+  min-width: 38px;
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-align: center;
+  line-height: 1.35;
+}
+
+.log-line-badge-info {
+  color: #0369a1;
+  background: #e0f2fe;
+  border: 1px solid #7dd3fc;
+}
+
+.log-line-badge-warning {
+  color: #9a3412;
+  background: #ffedd5;
+  border: 1px solid #fdba74;
+}
+
+.log-line-badge-error {
+  color: #991b1b;
+  background: #fee2e2;
+  border: 1px solid #fca5a5;
+}
+
+.log-line-badge-success {
+  color: #14532d;
+  background: #dcfce7;
+  border: 1px solid #86efac;
+}
+
+.log-line-badge-sys {
+  color: #1e40af;
+  background: #dbeafe;
+  border: 1px solid #93c5fd;
+}
+
+.log-line-content {
+  flex: 1;
+  min-width: 0;
+  word-break: break-word;
+}
+
+.log-line-stage {
+  color: #6d28d9;
+  font-weight: 600;
+}
+
+.log-line-msg {
+  color: #1e293b;
+}
+
+.log-line.log-level-warning .log-line-msg {
+  color: #78350f;
+}
+
+.log-line.log-level-error .log-line-msg {
+  color: #7f1d1d;
+}
+
+.log-line.log-level-success .log-line-msg {
+  color: #14532d;
 }
 
 .log-item.section-title {
@@ -1045,12 +1138,37 @@ button.prompt-cancel-btn:active {
   outline: none;
 }
 
+.git-history-breadcrumbs {
+  height: 32px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 12px;
+  border-bottom: 1px solid var(--base-2);
+  background: #ffffff;
+  font-size: 12px;
+}
+
+.git-breadcrumb-item {
+  color: #475569;
+}
+
+.git-breadcrumb-item.current {
+  color: #0f172a;
+  font-weight: 600;
+}
+
+.git-breadcrumb-separator {
+  color: #94a3b8;
+}
+
 .git-history-layout {
   display: grid;
   grid-template-columns: 36% 64%;
   gap: 12px;
   padding: 12px;
-  height: 100vh;
+  height: calc(100vh - 70px);
+  overflow: hidden;
 }
 
 .git-history-left,
@@ -1061,6 +1179,12 @@ button.prompt-cancel-btn:active {
 .git-history-left {
   display: flex;
   flex-direction: column;
+  background: transparent;
+  border: none;
+  border-right: 1px solid #dbe4f0;
+  border-radius: 0;
+  box-shadow: none;
+  padding: 8px 10px 8px 0;
 }
 
 .git-history-left-header {
@@ -1131,9 +1255,9 @@ button.prompt-cancel-btn:active {
   overflow: auto;
   overflow-x: hidden;
   border: 1px solid var(--base-2);
-  border-radius: 8px;
-  background: var(--base-0);
-  padding: 8px;
+  border-radius: 10px;
+  background: #ffffff;
+  padding: 8px 9px;
   position: relative;
 }
 
@@ -1153,7 +1277,7 @@ button.prompt-cancel-btn:active {
 
 .git-commit-node:hover,
 .git-commit-node.active {
-  background: #e2e8f0;
+  background: #eff6ff;
 }
 
 .git-commit-graph {
@@ -1241,6 +1365,7 @@ button.prompt-cancel-btn:active {
 .git-history-right {
   display: flex;
   flex-direction: column;
+  padding: 12px;
 }
 
 .git-commit-detail {
@@ -1249,7 +1374,7 @@ button.prompt-cancel-btn:active {
   overflow: auto;
   border: 1px solid var(--base-2);
   border-radius: 10px;
-  background: var(--base-0);
+  background: #ffffff;
   padding: 10px;
 }
 
