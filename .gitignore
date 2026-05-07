@@ -24,3 +24,5 @@ Code_Gen_with_ui
 backend/*.env
 backend/.cursor
 backend/.venv
+
+*.env
