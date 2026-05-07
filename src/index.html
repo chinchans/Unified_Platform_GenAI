@@ -190,84 +190,633 @@
         </nav>
         <div class="settings-content">
           <aside class="settings-sidebar" aria-label="Platform settings navigation">
+            <div class="settings-sidebar-heading">Configuration</div>
             <div class="settings-group active">
               <div class="settings-group-title">Code Generation</div>
-              <button class="settings-nav-item active" type="button">AI Coding Engine</button>
-              <button class="settings-nav-item" type="button">Prompt Templates</button>
+              <button class="settings-nav-item active" type="button" data-settings-pane="ai-engine" data-pane-title="AI Coding Engine">
+                <span class="settings-nav-label">AI Coding Engine</span>
+                <span class="settings-nav-badge settings-nav-badge-engine">Cursor</span>
+              </button>
+              <button class="settings-nav-item" type="button" data-settings-pane="prompt-templates" data-pane-title="Prompt Templates">
+                <span class="settings-nav-label">Prompt Templates</span>
+                <span class="settings-nav-badge settings-nav-badge-muted">3 active</span>
+              </button>
             </div>
 
             <div class="settings-group active">
               <div class="settings-group-title">Source Control</div>
-              <button class="settings-nav-item" type="button">Repository Config</button>
-              <button class="settings-nav-item" type="button">Branch Strategy</button>
+              <button class="settings-nav-item" type="button" data-settings-pane="repository-config" data-pane-title="Repository Config">
+                <span class="settings-nav-label">Repository Config</span>
+                <span class="settings-nav-badge settings-nav-badge-success">Connected</span>
+              </button>
+              <button class="settings-nav-item" type="button" data-settings-pane="branch-strategy" data-pane-title="Branch Strategy">
+                <span class="settings-nav-label">Branch Strategy</span>
+              </button>
             </div>
 
             <div class="settings-group active">
               <div class="settings-group-title">CI/CD &amp; Testing</div>
-              <button class="settings-nav-item" type="button">CI/CD Pipeline</button>
-              <button class="settings-nav-item" type="button">Test Runner</button>
+              <button class="settings-nav-item" type="button" data-settings-pane="ci-cd-pipeline" data-pane-title="CI/CD Pipeline">
+                <span class="settings-nav-label">CI/CD Pipeline</span>
+                <span class="settings-nav-badge settings-nav-badge-muted">Jenkins</span>
+              </button>
+              <button class="settings-nav-item" type="button" data-settings-pane="test-runner" data-pane-title="Test Runner">
+                <span class="settings-nav-label">Test Runner</span>
+                <span class="settings-nav-badge settings-nav-badge-muted">GTest</span>
+              </button>
             </div>
 
             <div class="settings-group active">
               <div class="settings-group-title">RCA &amp; Quality</div>
-              <button class="settings-nav-item" type="button">RCA Engine Config</button>
-              <button class="settings-nav-item" type="button">Quality Gates</button>
+              <button class="settings-nav-item" type="button" data-settings-pane="rca-engine" data-pane-title="RCA Engine Config">
+                <span class="settings-nav-label">RCA Engine Config</span>
+                <span class="settings-nav-badge settings-nav-badge-muted">Auto</span>
+              </button>
+              <button class="settings-nav-item" type="button" data-settings-pane="quality-gates" data-pane-title="Quality Gates">
+                <span class="settings-nav-label">Quality Gates</span>
+                <span class="settings-nav-badge settings-nav-badge-warn">2 warnings</span>
+              </button>
             </div>
 
             <div class="settings-group active">
               <div class="settings-group-title">Platform</div>
-              <button class="settings-nav-item" type="button">Notifications</button>
-              <button class="settings-nav-item" type="button">Workspace &amp; Paths</button>
-              <button class="settings-nav-item" type="button">Advanced</button>
+              <button class="settings-nav-item" type="button" data-settings-pane="notifications" data-pane-title="Notifications">
+                <span class="settings-nav-label">Notifications</span>
+              </button>
+              <button class="settings-nav-item" type="button" data-settings-pane="workspace-paths" data-pane-title="Workspace &amp; Paths">
+                <span class="settings-nav-label">Workspace &amp; Paths</span>
+              </button>
+              <button class="settings-nav-item" type="button" data-settings-pane="advanced" data-pane-title="Advanced">
+                <span class="settings-nav-label">Advanced</span>
+              </button>
             </div>
           </aside>
 
           <main class="settings-main">
-            <section class="settings-section">
-              <h3 class="settings-section-title">Active Coding Engine</h3>
-              <div class="settings-engine-list" role="radiogroup" aria-label="Coding agent selection">
-                <label class="settings-engine-option">
-                  <input type="radio" name="active-coding-engine" value="cursor-cli" checked />
-                  <span class="settings-engine-copy">
-                    <span class="settings-engine-name">Cursor CLI</span>
-                    <span class="settings-engine-desc">Default local coding flow optimized for this workspace.</span>
+            <div id="settings-pane-ai-engine" class="settings-pane">
+              <header class="settings-page-header">
+                <h2 class="settings-page-title">AI Coding Engine</h2>
+                <p class="settings-page-subtitle">
+                  Choose which AI coding agent generates code from the decomposed intent. The platform sends the generated prompt to this engine and receives code changes as a diff.
+                </p>
+              </header>
+
+              <section class="settings-panel settings-panel-engines" aria-labelledby="settings-active-engine-heading">
+                <div class="settings-panel-head">
+                  <div class="settings-panel-head-left">
+                    <span class="settings-panel-icon settings-panel-icon-robot" aria-hidden="true">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24">
+                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M12 8V4m-7 4h14a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2zm3 10v2m8-2v2M9 14h.01M15 14h.01"/>
+                      </svg>
+                    </span>
+                    <h3 id="settings-active-engine-heading" class="settings-panel-title">Active Coding Engine</h3>
+                  </div>
+                  <span class="settings-connection-pill" id="settings-engine-connection-pill" title="Engine endpoint status">
+                    <span class="settings-connection-dot" aria-hidden="true"></span>
+                    <span class="settings-connection-label">Connected</span>
                   </span>
-                  <span class="settings-engine-flag flag-active">Active</span>
-                </label>
-                <label class="settings-engine-option">
-                  <input type="radio" name="active-coding-engine" value="github-copilot-agent" />
-                  <span class="settings-engine-copy">
-                    <span class="settings-engine-name">Github Copilot Agent</span>
-                    <span class="settings-engine-desc">Use Copilot-assisted generation and iterative code suggestions.</span>
+                </div>
+                <div class="settings-engine-list" role="radiogroup" aria-label="Coding agent selection">
+                  <label class="settings-engine-option">
+                    <input type="radio" name="active-coding-engine" value="cursor-cli" checked data-engine-flag="active" />
+                    <span class="settings-engine-copy">
+                      <span class="settings-engine-name">Cursor CLI</span>
+                      <span class="settings-engine-desc">Runs Cursor headlessly on the local workspace. Best for C/C++, OAI, embedded.</span>
+                    </span>
+                    <span class="settings-engine-flag flag-active">Active</span>
+                  </label>
+                  <label class="settings-engine-option">
+                    <input type="radio" name="active-coding-engine" value="github-copilot-agent" data-engine-flag="available" />
+                    <span class="settings-engine-copy">
+                      <span class="settings-engine-name">GitHub Copilot Agent</span>
+                      <span class="settings-engine-desc">Uses Copilot CLI agent mode via GitHub Actions workflow trigger.</span>
+                    </span>
+                    <span class="settings-engine-flag flag-available">Available</span>
+                  </label>
+                  <label class="settings-engine-option">
+                    <input type="radio" name="active-coding-engine" value="amazon-q-developer" data-engine-flag="available" />
+                    <span class="settings-engine-copy">
+                      <span class="settings-engine-name">Amazon Q Developer</span>
+                      <span class="settings-engine-desc">AWS Q CLI for code generation. Requires AWS credentials.</span>
+                    </span>
+                    <span class="settings-engine-flag flag-available">Available</span>
+                  </label>
+                  <label class="settings-engine-option">
+                    <input type="radio" name="active-coding-engine" value="claude-code" data-engine-flag="available" />
+                    <span class="settings-engine-copy">
+                      <span class="settings-engine-name">Claude Code</span>
+                      <span class="settings-engine-desc">Use Claude-powered code generation with guided review flow.</span>
+                    </span>
+                    <span class="settings-engine-flag flag-available">Available</span>
+                  </label>
+                  <label class="settings-engine-option">
+                    <input type="radio" name="active-coding-engine" value="custom-llm-endpoint" data-engine-flag="configure" />
+                    <span class="settings-engine-copy">
+                      <span class="settings-engine-name">Custom LLM Endpoint</span>
+                      <span class="settings-engine-desc">Send prompt to any OpenAI-compatible API. Full control.</span>
+                    </span>
+                    <span class="settings-engine-flag flag-configure">Configure</span>
+                  </label>
+                </div>
+              </section>
+
+              <section class="settings-panel settings-panel-cursor" id="settings-cursor-panel" aria-labelledby="settings-cursor-heading">
+                <div class="settings-panel-head">
+                  <div class="settings-panel-head-left">
+                    <span id="settings-engine-runtime-icon" class="settings-panel-icon settings-panel-icon-gear" aria-hidden="true">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24">
+                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M12 15a3 3 0 100-6 3 3 0 000 6z"/>
+                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1-1.51H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06A1.65 1.65 0 009 4.68V4a2 2 0 114 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9c.14.31.22.65.22 1v.09a1.65 1.65 0 001 1.51H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/>
+                      </svg>
+                    </span>
+                    <h3 id="settings-cursor-heading" class="settings-panel-title">Engine Runtime Settings</h3>
+                  </div>
+                </div>
+                <div class="settings-field-grid">
+                  <label class="settings-field">
+                    <span class="settings-field-label" id="settings-engine-path-label">Executable Path</span>
+                    <input id="settings-cursor-executable-path" class="settings-input" type="text" spellcheck="false" autocomplete="off" placeholder="path\to\cursor-agent" value="C:\Users\Chandu\AppData\Local\cursor-agent\agent.CMD" />
+                    <span class="settings-field-hint" id="settings-engine-path-hint">Used to invoke the selected engine headlessly per intent run.</span>
+                  </label>
+                  <label class="settings-field">
+                    <span class="settings-field-label">Output Format</span>
+                    <select id="settings-cursor-output-format" class="settings-select">
+                      <option value="text" selected>text (plain diff)</option>
+                      <option value="json">json (structured)</option>
+                      <option value="patch">patch (unified diff)</option>
+                    </select>
+                  </label>
+                  <label class="settings-field">
+                    <span class="settings-field-label">Trust Mode</span>
+                    <select id="settings-cursor-trust-mode" class="settings-select">
+                      <option value="trust" selected>--trust (auto-accept changes)</option>
+                      <option value="review">--review (pause for human)</option>
+                    </select>
+                  </label>
+                  <div class="settings-field settings-field-inline">
+                    <div class="settings-toggle-wrap">
+                      <label class="settings-toggle">
+                        <input id="settings-cursor-force-overwrite" type="checkbox" role="switch" checked />
+                        <span class="settings-toggle-slider" aria-hidden="true"></span>
+                      </label>
+                      <div class="settings-toggle-copy">
+                        <span class="settings-field-label">Force Overwrite</span>
+                        <span class="settings-field-hint settings-field-hint-inline"><code class="settings-code-snippet">--force</code> flag: overwrite existing workspace files</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <p class="settings-inline-status" id="settings-cursor-status" role="status" aria-live="polite" hidden></p>
+                <div class="settings-panel-actions">
+                  <button id="settings-cursor-test-connection" class="settings-btn settings-btn-secondary" type="button">Test Connection</button>
+                  <button id="settings-cursor-save" class="settings-btn settings-btn-primary" type="button">Save Changes</button>
+                </div>
+              </section>
+            </div>
+
+            <div id="settings-pane-prompt-templates" class="settings-pane" hidden>
+              <header class="settings-page-header">
+                <h2 class="settings-page-title">Prompt Templates</h2>
+                <p class="settings-page-subtitle">
+                  Manage the library of prompt templates. Each template is loaded based on the detected intent type
+                  (protocol feature, bug fix, refactor, test generation).
+                </p>
+              </header>
+
+              <section class="settings-panel settings-panel-templates" aria-labelledby="settings-templates-heading">
+                <div class="settings-panel-head">
+                  <div class="settings-panel-head-left">
+                    <span class="settings-panel-icon settings-panel-icon-gear" aria-hidden="true">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24">
+                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M12 15a3 3 0 100-6 3 3 0 000 6z"/>
+                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1-1.51H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06A1.65 1.65 0 009 4.68V4a2 2 0 114 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9c.14.31.22.65.22 1v.09a1.65 1.65 0 001 1.51H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/>
+                      </svg>
+                    </span>
+                    <h3 id="settings-templates-heading" class="settings-panel-title">Active Templates</h3>
+                  </div>
+                </div>
+
+                <div class="settings-template-grid">
+                  <div class="settings-template-row">
+                    <div class="settings-template-label">
+                      <div class="settings-template-label-main">Default template</div>
+                      <div class="settings-template-label-sub">Used when no match found</div>
+                    </div>
+                    <select id="settings-templates-default" class="settings-select settings-template-control">
+                      <option value="code_prompt_generic_3gpp.txt">code_prompt_generic_3gpp.txt</option>
+                      <option value="code_prompt_f1ap.txt">code_prompt_f1ap.txt</option>
+                      <option value="code_prompt_rrc.txt">code_prompt_rrc.txt</option>
+                    </select>
+                  </div>
+
+                  <div class="settings-template-row">
+                    <div class="settings-template-label">
+                      <div class="settings-template-label-main">Template directory</div>
+                    </div>
+                    <input
+                      id="settings-templates-directory"
+                      class="settings-input settings-template-control"
+                      type="text"
+                      spellcheck="false"
+                      autocomplete="off"
+                      placeholder="C:\\path\\to\\prompts\\"
+                      value="C:\\Users\\Chandu\\Desktop\\prompts\\"
+                    />
+                  </div>
+                </div>
+
+                <div class="settings-template-routing">
+                  <div class="settings-template-routing-title">TEMPLATE ROUTING RULES</div>
+                  <div id="settings-templates-routes" class="settings-template-route-list" aria-label="Template routing rules"></div>
+                </div>
+
+                <p class="settings-inline-status" id="settings-templates-status" role="status" aria-live="polite" hidden></p>
+                <div class="settings-panel-actions">
+                  <button id="settings-templates-add" class="settings-btn settings-btn-secondary" type="button">+ Add Template</button>
+                  <button id="settings-templates-save" class="settings-btn settings-btn-primary" type="button">Save Changes</button>
+                </div>
+              </section>
+            </div>
+
+            <div id="settings-pane-repository-config" class="settings-pane" hidden>
+              <header class="settings-page-header">
+                <h2 class="settings-page-title">Repository Configuration</h2>
+                <p class="settings-page-subtitle">
+                  Define which Git repository the platform clones, modifies, and commits to. This is independent of which AI coding engine is used.
+                </p>
+              </header>
+
+              <section class="settings-panel settings-panel-repo" aria-labelledby="settings-repo-heading">
+                <div class="settings-panel-head">
+                  <div class="settings-panel-head-left">
+                    <span class="settings-panel-icon settings-panel-icon-gear" aria-hidden="true">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24">
+                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M9 18V6m6 12V6"/>
+                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M7 9a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm10 14a2 2 0 1 0 0-4 2 2 0 0 0 0 4ZM7 19a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm10-10a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z"/>
+                      </svg>
+                    </span>
+                    <h3 id="settings-repo-heading" class="settings-panel-title">Git Repository</h3>
+                  </div>
+                  <span class="settings-connection-pill is-disconnected" id="settings-repo-reachable-pill" title="Repository reachability">
+                    <span class="settings-connection-dot" aria-hidden="true"></span>
+                    <span class="settings-connection-label">Unverified</span>
                   </span>
-                  <span class="settings-engine-flag flag-available">Available</span>
-                </label>
-                <label class="settings-engine-option">
-                  <input type="radio" name="active-coding-engine" value="claude-code" />
-                  <span class="settings-engine-copy">
-                    <span class="settings-engine-name">Claude Code</span>
-                    <span class="settings-engine-desc">Run coding tasks with Claude-powered reasoning and edits.</span>
+                </div>
+
+                <div class="settings-field-grid">
+                  <label class="settings-field">
+                    <span class="settings-field-label">Repository URL</span>
+                    <input
+                      id="settings-repo-url"
+                      class="settings-input"
+                      type="text"
+                      spellcheck="false"
+                      autocomplete="off"
+                      placeholder="https://git.example.com/org/repo.git"
+                      value="https://gitlab.eurecom.fr/oai/openairinterface5g.git"
+                    />
+                    <span class="settings-field-hint">HTTPS or SSH clone URL.</span>
+                  </label>
+
+                  <label class="settings-field">
+                    <span class="settings-field-label">Local Workspace Path</span>
+                    <input
+                      id="settings-repo-workspace"
+                      class="settings-input"
+                      type="text"
+                      spellcheck="false"
+                      autocomplete="off"
+                      placeholder="C:\\path\\to\\workspace"
+                      value="C:\\Users\\Chandu\\Desktop\\Unified_Platform_UI\\OAI-CU"
+                    />
+                    <span class="settings-field-hint">Where the repo is cloned and code changes are applied.</span>
+                  </label>
+
+                  <label class="settings-field">
+                    <span class="settings-field-label">Language / Stack</span>
+                    <select id="settings-repo-stack" class="settings-select">
+                      <option value="c-cpp-embedded" selected>C / C++ (embedded / telecom)</option>
+                      <option value="python">Python</option>
+                      <option value="node">Node.js / TypeScript</option>
+                    </select>
+                    <span class="settings-field-hint">Used to select build/test presets and linters.</span>
+                  </label>
+
+                  <label class="settings-field">
+                    <span class="settings-field-label">Auth Method</span>
+                    <select id="settings-repo-auth" class="settings-select">
+                      <option value="ssh" selected>SSH key (configured in OS)</option>
+                      <option value="https-token">HTTPS token</option>
+                      <option value="none">None</option>
+                    </select>
+                  </label>
+                </div>
+
+                <p class="settings-inline-status" id="settings-repo-status" role="status" aria-live="polite" hidden></p>
+                <div class="settings-panel-actions">
+                  <button id="settings-repo-test" class="settings-btn settings-btn-secondary" type="button">Test Connectivity</button>
+                  <button id="settings-repo-save" class="settings-btn settings-btn-primary" type="button">Save Changes</button>
+                </div>
+              </section>
+            </div>
+
+            <div id="settings-pane-branch-strategy" class="settings-pane" hidden>
+              <header class="settings-page-header">
+                <h2 class="settings-page-title">Branch Strategy</h2>
+                <p class="settings-page-subtitle">
+                  Define how branches are named and managed per intent run. The platform creates, commits, and pushes to branches automatically.
+                </p>
+              </header>
+
+              <section class="settings-panel settings-panel-branch" aria-labelledby="settings-branch-heading">
+                <div class="settings-panel-head">
+                  <div class="settings-panel-head-left">
+                    <span class="settings-panel-icon settings-panel-icon-gear" aria-hidden="true">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24">
+                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M8 7h8M8 12h6M8 17h10"/>
+                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M6 7h.01M6 12h.01M6 17h.01"/>
+                      </svg>
+                    </span>
+                    <h3 id="settings-branch-heading" class="settings-panel-title">Branch Naming</h3>
+                  </div>
+                </div>
+
+                <div class="settings-field-grid">
+                  <label class="settings-field">
+                    <span class="settings-field-label">Base Branch</span>
+                    <input
+                      id="settings-branch-base"
+                      class="settings-input"
+                      type="text"
+                      spellcheck="false"
+                      autocomplete="off"
+                      placeholder="main"
+                      value="develop"
+                    />
+                    <span class="settings-field-hint">Branch to branch off from (default target).</span>
+                  </label>
+
+                  <label class="settings-field">
+                    <span class="settings-field-label">Feature Branch Pattern</span>
+                    <input
+                      id="settings-branch-pattern"
+                      class="settings-input"
+                      type="text"
+                      spellcheck="false"
+                      autocomplete="off"
+                      placeholder="feature/{intent_id}_{date}"
+                      value="feature/{intent_id}_{date}"
+                    />
+                    <span class="settings-field-hint">Example: <code class="settings-code-snippet">feature/1234_20260507</code>.</span>
+                  </label>
+
+                  <div class="settings-field settings-field-inline">
+                    <div class="settings-toggle-wrap">
+                      <label class="settings-toggle">
+                        <input id="settings-branch-auto-push" type="checkbox" role="switch" checked />
+                        <span class="settings-toggle-slider" aria-hidden="true"></span>
+                      </label>
+                      <div class="settings-toggle-copy">
+                        <span class="settings-field-label">Auto-push to Remote</span>
+                        <span class="settings-field-hint settings-field-hint-inline">Push after generated commit.</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <label class="settings-field">
+                    <span class="settings-field-label">Commit Message Template</span>
+                    <input
+                      id="settings-branch-commit-template"
+                      class="settings-input"
+                      type="text"
+                      spellcheck="false"
+                      autocomplete="off"
+                      placeholder="feat: {intent_summary}"
+                      value="feat: {intent_summary}"
+                    />
+                    <span class="settings-field-hint">
+                      Tokens: <code class="settings-code-snippet">{intent_summary}</code>, <code class="settings-code-snippet">{intent_id}</code>, <code class="settings-code-snippet">{engine}</code>.
+                    </span>
+                  </label>
+                </div>
+
+                <p class="settings-inline-status" id="settings-branch-status" role="status" aria-live="polite" hidden></p>
+                <div class="settings-panel-actions">
+                  <button id="settings-branch-save" class="settings-btn settings-btn-primary" type="button">Save Changes</button>
+                </div>
+              </section>
+            </div>
+
+            <div id="settings-pane-ci-cd-pipeline" class="settings-pane" hidden>
+              <header class="settings-page-header">
+                <h2 class="settings-page-title">CI/CD Pipeline</h2>
+                <p class="settings-page-subtitle">
+                  Configure which CI/CD system is triggered after a successful commit and push. The platform monitors the pipeline and advances state automatically.
+                </p>
+              </header>
+
+              <section class="settings-panel settings-panel-cicd" aria-labelledby="settings-cicd-heading">
+                <div class="settings-panel-head">
+                  <div class="settings-panel-head-left">
+                    <span class="settings-panel-icon settings-panel-icon-gear" aria-hidden="true">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24">
+                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M6 8h12M6 12h10M6 16h8"/>
+                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M4 8h.01M4 12h.01M4 16h.01"/>
+                      </svg>
+                    </span>
+                    <h3 id="settings-cicd-heading" class="settings-panel-title">CI/CD System</h3>
+                  </div>
+                  <span class="settings-connection-pill" id="settings-cicd-pill">
+                    <span class="settings-connection-dot" aria-hidden="true"></span>
+                    <span class="settings-connection-label" id="settings-cicd-pill-label">Jenkins Connected</span>
                   </span>
-                  <span class="settings-engine-flag flag-available">Available</span>
-                </label>
-                <label class="settings-engine-option">
-                  <input type="radio" name="active-coding-engine" value="amazon-q-developer" />
-                  <span class="settings-engine-copy">
-                    <span class="settings-engine-name">Amazon Q Developer</span>
-                    <span class="settings-engine-desc">Leverage Amazon Q for enterprise-focused development support.</span>
-                  </span>
-                  <span class="settings-engine-flag flag-available">Available</span>
-                </label>
-                <label class="settings-engine-option">
-                  <input type="radio" name="active-coding-engine" value="custom-llm-endpoint" />
-                  <span class="settings-engine-copy">
-                    <span class="settings-engine-name">Custom LLM EndPoint</span>
-                    <span class="settings-engine-desc">Connect your own hosted model endpoint for code generation.</span>
-                  </span>
-                  <span class="settings-engine-flag flag-configure">Configure</span>
-                </label>
-              </div>
-            </section>
+                </div>
+
+                <div class="settings-engine-list" role="radiogroup" aria-label="CI/CD system selection">
+                  <label class="settings-engine-option">
+                    <input type="radio" name="cicd-system" value="jenkins" checked />
+                    <span class="settings-engine-copy">
+                      <span class="settings-engine-name">Jenkins</span>
+                      <span class="settings-engine-desc">Trigger via Jenkins Remote API. Requires job URL and API token.</span>
+                    </span>
+                    <span class="settings-engine-flag flag-active">Active</span>
+                  </label>
+                  <label class="settings-engine-option">
+                    <input type="radio" name="cicd-system" value="github-actions" />
+                    <span class="settings-engine-copy">
+                      <span class="settings-engine-name">GitHub Actions</span>
+                      <span class="settings-engine-desc">Triggered automatically on push via workflow YAML.</span>
+                    </span>
+                    <span class="settings-engine-flag flag-available">Available</span>
+                  </label>
+                  <label class="settings-engine-option">
+                    <input type="radio" name="cicd-system" value="gitlab-ci" />
+                    <span class="settings-engine-copy">
+                      <span class="settings-engine-name">GitLab CI</span>
+                      <span class="settings-engine-desc">Trigger CI pipelines API on branch push.</span>
+                    </span>
+                    <span class="settings-engine-flag flag-available">Available</span>
+                  </label>
+                  <label class="settings-engine-option">
+                    <input type="radio" name="cicd-system" value="azure-devops" />
+                    <span class="settings-engine-copy">
+                      <span class="settings-engine-name">Azure DevOps Pipelines</span>
+                      <span class="settings-engine-desc">Trigger via Azure REST API with PAT.</span>
+                    </span>
+                    <span class="settings-engine-flag flag-available">Available</span>
+                  </label>
+                  <label class="settings-engine-option">
+                    <input type="radio" name="cicd-system" value="custom-webhook" />
+                    <span class="settings-engine-copy">
+                      <span class="settings-engine-name">Custom Script / Webhook</span>
+                      <span class="settings-engine-desc">Call any URL or shell script on push event.</span>
+                    </span>
+                    <span class="settings-engine-flag flag-available">Available</span>
+                  </label>
+                </div>
+
+                <div class="settings-field-grid" style="margin-top:14px;">
+                  <label class="settings-field">
+                    <span class="settings-field-label">Jenkins URL</span>
+                    <input id="settings-cicd-url" class="settings-input" type="text" value="http://jenkins.internal.tcs.com:8080" />
+                  </label>
+                  <label class="settings-field">
+                    <span class="settings-field-label">Job Name</span>
+                    <input id="settings-cicd-job" class="settings-input" type="text" value="oai-cu-ltm-build" />
+                  </label>
+                  <label class="settings-field">
+                    <span class="settings-field-label">API Token</span>
+                    <input id="settings-cicd-token" class="settings-input" type="password" value="****************" />
+                  </label>
+                  <div class="settings-field settings-field-inline">
+                    <div class="settings-toggle-wrap">
+                      <label class="settings-toggle">
+                        <input id="settings-cicd-trigger-on-push" type="checkbox" role="switch" checked />
+                        <span class="settings-toggle-slider" aria-hidden="true"></span>
+                      </label>
+                      <div class="settings-toggle-copy">
+                        <span class="settings-field-label">Trigger on Push</span>
+                        <span class="settings-field-hint settings-field-hint-inline">Auto-trigger Jenkins in commit/push flow.</span>
+                      </div>
+                    </div>
+                  </div>
+                  <label class="settings-field">
+                    <span class="settings-field-label">Poll Interval</span>
+                    <div style="display:flex;gap:8px;align-items:center;max-width:360px;">
+                      <input id="settings-cicd-poll" class="settings-input" type="number" min="1" value="15" style="max-width:120px;" />
+                      <span class="settings-field-hint">seconds</span>
+                    </div>
+                  </label>
+                </div>
+
+                <p class="settings-inline-status" id="settings-cicd-status" role="status" aria-live="polite" hidden></p>
+                <div class="settings-panel-actions">
+                  <button id="settings-cicd-test" class="settings-btn settings-btn-secondary" type="button">Test Connection</button>
+                  <button id="settings-cicd-save" class="settings-btn settings-btn-primary" type="button">Save Changes</button>
+                </div>
+              </section>
+            </div>
+
+            <div id="settings-pane-test-runner" class="settings-pane" hidden>
+              <header class="settings-page-header">
+                <h2 class="settings-page-title">Test Runner</h2>
+                <p class="settings-page-subtitle">
+                  Define how tests are executed after a successful build. The platform parses results to determine pass/fail and trigger RCA on failures.
+                </p>
+              </header>
+
+              <section class="settings-panel settings-panel-test-runner" aria-labelledby="settings-test-runner-heading">
+                <div class="settings-panel-head">
+                  <div class="settings-panel-head-left">
+                    <span class="settings-panel-icon settings-panel-icon-gear" aria-hidden="true">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24">
+                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M8 8h8M8 12h6M8 16h10"/>
+                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M5 8h.01M5 12h.01M5 16h.01"/>
+                      </svg>
+                    </span>
+                    <h3 id="settings-test-runner-heading" class="settings-panel-title">Test Framework</h3>
+                  </div>
+                </div>
+
+                <div class="settings-engine-list" role="radiogroup" aria-label="Test framework selection">
+                  <label class="settings-engine-option">
+                    <input type="radio" name="test-runner-framework" value="ctest" checked />
+                    <span class="settings-engine-copy">
+                      <span class="settings-engine-name">CTest (CMake)</span>
+                      <span class="settings-engine-desc">For C/C++ projects using CMake test system.</span>
+                    </span>
+                    <span class="settings-engine-flag flag-active">Active</span>
+                  </label>
+                  <label class="settings-engine-option">
+                    <input type="radio" name="test-runner-framework" value="pytest" />
+                    <span class="settings-engine-copy">
+                      <span class="settings-engine-name">Pytest</span>
+                      <span class="settings-engine-desc">For Python modules and unit/integration tests.</span>
+                    </span>
+                    <span class="settings-engine-flag flag-available">Available</span>
+                  </label>
+                  <label class="settings-engine-option">
+                    <input type="radio" name="test-runner-framework" value="junit" />
+                    <span class="settings-engine-copy">
+                      <span class="settings-engine-name">JUnit / Maven / Gradle</span>
+                      <span class="settings-engine-desc">Java/Kotlin projects. Parses surefire XML reports.</span>
+                    </span>
+                    <span class="settings-engine-flag flag-available">Available</span>
+                  </label>
+                  <label class="settings-engine-option">
+                    <input type="radio" name="test-runner-framework" value="custom-shell" />
+                    <span class="settings-engine-copy">
+                      <span class="settings-engine-name">Custom Shell Script</span>
+                      <span class="settings-engine-desc">Run any test script. Platform parses stdout for PASS/FAIL.</span>
+                    </span>
+                    <span class="settings-engine-flag flag-available">Available</span>
+                  </label>
+                </div>
+
+                <div class="settings-field-grid" style="margin-top:14px;">
+                  <label class="settings-field">
+                    <span class="settings-field-label">Test Command</span>
+                    <input id="settings-test-runner-command" class="settings-input" type="text" value="ctest --output-on-failure -R TC_F1AP" />
+                    <span class="settings-field-hint">Run from workspace root.</span>
+                  </label>
+                  <label class="settings-field">
+                    <span class="settings-field-label">Result Format</span>
+                    <select id="settings-test-runner-result-format" class="settings-select">
+                      <option value="junit-xml" selected>JUnit XML (ctest --output-junit)</option>
+                      <option value="pytest-junit">Pytest JUnit XML</option>
+                      <option value="console">Console output parse</option>
+                    </select>
+                  </label>
+                  <label class="settings-field">
+                    <span class="settings-field-label">Test Timeout</span>
+                    <div style="display:flex;gap:8px;align-items:center;max-width:360px;">
+                      <input id="settings-test-runner-timeout" class="settings-input" type="number" min="10" value="300" style="max-width:120px;" />
+                      <span class="settings-field-hint">seconds per test</span>
+                    </div>
+                  </label>
+                </div>
+
+                <p class="settings-inline-status" id="settings-test-runner-status" role="status" aria-live="polite" hidden></p>
+                <div class="settings-panel-actions">
+                  <button id="settings-test-runner-save" class="settings-btn settings-btn-primary" type="button">Save Changes</button>
+                </div>
+              </section>
+            </div>
+
+            <div id="settings-pane-generic" class="settings-pane" hidden>
+              <header class="settings-page-header">
+                <h2 class="settings-page-title" id="settings-generic-title">Settings</h2>
+                <p class="settings-page-subtitle" id="settings-generic-subtitle">This section is not configured in the UI yet.</p>
+              </header>
+              <section class="settings-panel" aria-labelledby="settings-generic-title">
+                <div class="settings-field-grid" id="settings-generic-fields"></div>
+                <p class="settings-inline-status" id="settings-generic-status" role="status" aria-live="polite" hidden></p>
+                <div class="settings-panel-actions">
+                  <button id="settings-generic-reset" class="settings-btn settings-btn-secondary" type="button">Reset Defaults</button>
+                  <button id="settings-generic-save" class="settings-btn settings-btn-primary" type="button">Save Changes</button>
+                </div>
+              </section>
+            </div>
           </main>
         </div>
       </section>

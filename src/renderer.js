@@ -1041,6 +1041,1158 @@ function showSettingsScreen() {
   settingsScreen.classList.add("active");
 }
 
+const SETTINGS_STORAGE_KEY = "unifiedPlatform.settings.v1";
+
+function readPlatformSettings() {
+  try {
+    const raw = localStorage.getItem(SETTINGS_STORAGE_KEY);
+    return raw ? JSON.parse(raw) : {};
+  } catch {
+    return {};
+  }
+}
+
+function writePlatformSettings(data) {
+  localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(data));
+}
+
+function initSettingsUi() {
+  const paneAi = document.getElementById("settings-pane-ai-engine");
+  const panePromptTemplates = document.getElementById("settings-pane-prompt-templates");
+  const paneRepositoryConfig = document.getElementById("settings-pane-repository-config");
+  const paneBranchStrategy = document.getElementById("settings-pane-branch-strategy");
+  const paneCicdPipeline = document.getElementById("settings-pane-ci-cd-pipeline");
+  const paneTestRunner = document.getElementById("settings-pane-test-runner");
+  const paneGeneric = document.getElementById("settings-pane-generic");
+  const genericTitle = document.getElementById("settings-generic-title");
+  const genericSubtitle = document.getElementById("settings-generic-subtitle");
+  const genericFields = document.getElementById("settings-generic-fields");
+  const genericStatus = document.getElementById("settings-generic-status");
+  const genericSaveBtn = document.getElementById("settings-generic-save");
+  const genericResetBtn = document.getElementById("settings-generic-reset");
+  const navButtons = document.querySelectorAll(".settings-sidebar .settings-nav-item[data-settings-pane]");
+  const engineInputs = document.querySelectorAll('input[name="active-coding-engine"]');
+  const cursorPanel = document.getElementById("settings-cursor-panel");
+  const connPill = document.getElementById("settings-engine-connection-pill");
+  const connLabel = connPill?.querySelector(".settings-connection-label");
+  const engineRuntimeIcon = document.getElementById("settings-engine-runtime-icon");
+  const engineSettingsTitle = document.getElementById("settings-cursor-heading");
+  const enginePathLabel = document.getElementById("settings-engine-path-label");
+  const enginePathHint = document.getElementById("settings-engine-path-hint");
+  const pathInput = document.getElementById("settings-cursor-executable-path");
+  const outSel = document.getElementById("settings-cursor-output-format");
+  const trustSel = document.getElementById("settings-cursor-trust-mode");
+  const forceChk = document.getElementById("settings-cursor-force-overwrite");
+  const testBtn = document.getElementById("settings-cursor-test-connection");
+  const saveBtn = document.getElementById("settings-cursor-save");
+  const statusEl = document.getElementById("settings-cursor-status");
+
+  const templatesDefaultSel = document.getElementById("settings-templates-default");
+  const templatesDirInput = document.getElementById("settings-templates-directory");
+  const templatesRoutes = document.getElementById("settings-templates-routes");
+  const templatesAddBtn = document.getElementById("settings-templates-add");
+  const templatesSaveBtn = document.getElementById("settings-templates-save");
+  const templatesStatus = document.getElementById("settings-templates-status");
+
+  const repoUrlInput = document.getElementById("settings-repo-url");
+  const repoWorkspaceInput = document.getElementById("settings-repo-workspace");
+  const repoStackSel = document.getElementById("settings-repo-stack");
+  const repoAuthSel = document.getElementById("settings-repo-auth");
+  const repoTestBtn = document.getElementById("settings-repo-test");
+  const repoSaveBtn = document.getElementById("settings-repo-save");
+  const repoReachablePill = document.getElementById("settings-repo-reachable-pill");
+  const repoReachableLabel = repoReachablePill?.querySelector(".settings-connection-label");
+  const repoStatus = document.getElementById("settings-repo-status");
+
+  const branchBaseInput = document.getElementById("settings-branch-base");
+  const branchPatternInput = document.getElementById("settings-branch-pattern");
+  const branchAutoPush = document.getElementById("settings-branch-auto-push");
+  const branchCommitTemplate = document.getElementById("settings-branch-commit-template");
+  const branchSaveBtn = document.getElementById("settings-branch-save");
+  const branchStatus = document.getElementById("settings-branch-status");
+  const cicdInputs = document.querySelectorAll('input[name="cicd-system"]');
+  const cicdPill = document.getElementById("settings-cicd-pill");
+  const cicdPillLabel = document.getElementById("settings-cicd-pill-label");
+  const cicdUrl = document.getElementById("settings-cicd-url");
+  const cicdJob = document.getElementById("settings-cicd-job");
+  const cicdToken = document.getElementById("settings-cicd-token");
+  const cicdTrigger = document.getElementById("settings-cicd-trigger-on-push");
+  const cicdPoll = document.getElementById("settings-cicd-poll");
+  const cicdTestBtn = document.getElementById("settings-cicd-test");
+  const cicdSaveBtn = document.getElementById("settings-cicd-save");
+  const cicdStatus = document.getElementById("settings-cicd-status");
+  const testRunnerInputs = document.querySelectorAll('input[name="test-runner-framework"]');
+  const testRunnerCommand = document.getElementById("settings-test-runner-command");
+  const testRunnerResultFormat = document.getElementById("settings-test-runner-result-format");
+  const testRunnerTimeout = document.getElementById("settings-test-runner-timeout");
+  const testRunnerSaveBtn = document.getElementById("settings-test-runner-save");
+  const testRunnerStatus = document.getElementById("settings-test-runner-status");
+
+  if (
+    !paneAi ||
+    !panePromptTemplates ||
+    !paneRepositoryConfig ||
+    !paneBranchStrategy ||
+    !paneCicdPipeline ||
+    !paneTestRunner ||
+    !paneGeneric ||
+    !genericTitle ||
+    !genericSubtitle ||
+    !genericFields ||
+    !genericSaveBtn ||
+    !genericResetBtn ||
+    navButtons.length === 0 ||
+    engineInputs.length === 0 ||
+    !cursorPanel ||
+    !connPill ||
+    !engineRuntimeIcon ||
+    !engineSettingsTitle ||
+    !enginePathLabel ||
+    !enginePathHint ||
+    !pathInput ||
+    !outSel ||
+    !trustSel ||
+    !forceChk ||
+    !testBtn ||
+    !saveBtn
+  ) {
+    return;
+  }
+
+  let statusTimerId = null;
+  let genericStatusTimerId = null;
+  let templatesStatusTimerId = null;
+  let repoStatusTimerId = null;
+  let branchStatusTimerId = null;
+  let cicdStatusTimerId = null;
+  let testRunnerStatusTimerId = null;
+  let activeGenericPaneKey = "";
+  let activeGenericFieldIds = [];
+  const genericFieldRefs = {};
+
+  const GENERIC_PANE_CONFIG = {
+    "prompt-templates": {
+      subtitle: "Configure prompt behavior for intent decomposition and code generation.",
+      fields: [
+        {
+          id: "defaultTemplate",
+          label: "Default Template",
+          type: "select",
+          options: [
+            { value: "5g-ltm", label: "5G LTM Standard" },
+            { value: "feature-first", label: "Feature First" },
+            { value: "safe-refactor", label: "Safe Refactor" }
+          ],
+          defaultValue: "5g-ltm"
+        },
+        { id: "maxContextChunks", label: "Max Context Chunks", type: "number", defaultValue: 14, min: 1, max: 100 },
+        { id: "includeAcceptanceCriteria", label: "Include Acceptance Criteria", type: "toggle", defaultValue: true }
+      ]
+    },
+    "repository-config": {
+      subtitle: "Source-control defaults used during generated commit/push operations.",
+      fields: [
+        { id: "remoteName", label: "Remote Name", type: "text", defaultValue: "origin", placeholder: "origin" },
+        { id: "defaultBranch", label: "Default Branch", type: "text", defaultValue: "main", placeholder: "main" },
+        { id: "autoFetchBeforeRuns", label: "Auto Fetch Before Runs", type: "toggle", defaultValue: true }
+      ]
+    },
+    "branch-strategy": {
+      subtitle: "Decide branch naming and merge behavior for generated changes.",
+      fields: [
+        { id: "branchPrefix", label: "Branch Prefix", type: "text", defaultValue: "feature/", placeholder: "feature/" },
+        {
+          id: "mergeMode",
+          label: "Merge Mode",
+          type: "select",
+          options: [
+            { value: "rebase", label: "Rebase" },
+            { value: "squash", label: "Squash" },
+            { value: "merge-commit", label: "Merge Commit" }
+          ],
+          defaultValue: "rebase"
+        },
+        { id: "deleteMergedBranches", label: "Delete Merged Branches", type: "toggle", defaultValue: true }
+      ]
+    },
+    "ci-cd-pipeline": {
+      subtitle: "Configure CI pipeline trigger and timeout policy.",
+      fields: [
+        { id: "provider", label: "Pipeline Provider", type: "select", options: [{ value: "jenkins", label: "Jenkins" }, { value: "github-actions", label: "GitHub Actions" }], defaultValue: "jenkins" },
+        { id: "jobName", label: "Job Name", type: "text", defaultValue: "unified-platform-build", placeholder: "pipeline job name" },
+        { id: "timeoutMinutes", label: "Timeout (minutes)", type: "number", defaultValue: 40, min: 1, max: 240 }
+      ]
+    },
+    "test-runner": {
+      subtitle: "Set test framework and retry behavior for generated validation runs.",
+      fields: [
+        { id: "framework", label: "Framework", type: "select", options: [{ value: "gtest", label: "GTest" }, { value: "pytest", label: "Pytest" }, { value: "jest", label: "Jest" }], defaultValue: "gtest" },
+        { id: "parallelWorkers", label: "Parallel Workers", type: "number", defaultValue: 4, min: 1, max: 32 },
+        { id: "rerunFailedTests", label: "Re-run Failed Tests", type: "toggle", defaultValue: true }
+      ]
+    },
+    "rca-engine": {
+      subtitle: "RCA engine controls for bug triage and fix-loop heuristics.",
+      fields: [
+        { id: "mode", label: "RCA Mode", type: "select", options: [{ value: "auto", label: "Auto" }, { value: "guided", label: "Guided" }, { value: "manual", label: "Manual" }], defaultValue: "auto" },
+        { id: "maxFixAttempts", label: "Max Fix Attempts", type: "number", defaultValue: 3, min: 1, max: 10 },
+        { id: "captureCrashDumps", label: "Capture Crash Dumps", type: "toggle", defaultValue: true }
+      ]
+    },
+    "quality-gates": {
+      subtitle: "Define minimum thresholds required before push approval.",
+      fields: [
+        { id: "minCoverage", label: "Min Coverage (%)", type: "number", defaultValue: 80, min: 1, max: 100 },
+        { id: "maxCriticalIssues", label: "Max Critical Issues", type: "number", defaultValue: 0, min: 0, max: 20 },
+        { id: "blockOnLintErrors", label: "Block On Lint Errors", type: "toggle", defaultValue: true }
+      ]
+    },
+    notifications: {
+      subtitle: "Notification channels for run status, failures, and approvals.",
+      fields: [
+        { id: "emailEnabled", label: "Email Notifications", type: "toggle", defaultValue: true },
+        { id: "slackWebhook", label: "Slack Webhook URL", type: "text", defaultValue: "", placeholder: "https://hooks.slack.com/services/..." },
+        { id: "notifyOn", label: "Notify On", type: "select", options: [{ value: "all", label: "All events" }, { value: "failures", label: "Failures only" }, { value: "none", label: "None" }], defaultValue: "failures" }
+      ]
+    },
+    "workspace-paths": {
+      subtitle: "Workspace and output directory paths for codegen and reports.",
+      fields: [
+        { id: "workspaceRoot", label: "Workspace Root", type: "text", defaultValue: "/home/tcs/Downloads/Unified_Platform_UI", placeholder: "/path/to/workspace" },
+        { id: "artifactsPath", label: "Artifacts Path", type: "text", defaultValue: "backend/services/codegen/outputs", placeholder: "relative/path" },
+        { id: "tempPath", label: "Temp Path", type: "text", defaultValue: "/tmp/unified-platform", placeholder: "/tmp/unified-platform" }
+      ]
+    },
+    advanced: {
+      subtitle: "Advanced behavior for logging and debug flow control.",
+      fields: [
+        { id: "debugLogs", label: "Enable Debug Logs", type: "toggle", defaultValue: false },
+        { id: "safeMode", label: "Safe Mode", type: "toggle", defaultValue: true },
+        { id: "maxConcurrentRuns", label: "Max Concurrent Runs", type: "number", defaultValue: 1, min: 1, max: 8 }
+      ]
+    }
+  };
+
+  function flashCursorStatus(message, isWarning = false) {
+    if (!statusEl) return;
+    statusEl.textContent = message;
+    statusEl.hidden = !message;
+    statusEl.classList.toggle("is-warning", isWarning);
+    if (statusTimerId) window.clearTimeout(statusTimerId);
+    statusTimerId = window.setTimeout(() => {
+      statusEl.hidden = true;
+      statusEl.textContent = "";
+    }, 4500);
+  }
+
+  function flashGenericStatus(message, isWarning = false) {
+    if (!genericStatus) return;
+    genericStatus.textContent = message;
+    genericStatus.hidden = !message;
+    genericStatus.classList.toggle("is-warning", isWarning);
+    if (genericStatusTimerId) window.clearTimeout(genericStatusTimerId);
+    genericStatusTimerId = window.setTimeout(() => {
+      genericStatus.hidden = true;
+      genericStatus.textContent = "";
+    }, 4500);
+  }
+
+  function showAiPane() {
+    paneAi.removeAttribute("hidden");
+    panePromptTemplates.setAttribute("hidden", "");
+    paneRepositoryConfig.setAttribute("hidden", "");
+    paneBranchStrategy.setAttribute("hidden", "");
+    paneCicdPipeline.setAttribute("hidden", "");
+    paneTestRunner.setAttribute("hidden", "");
+    paneGeneric.setAttribute("hidden", "");
+  }
+
+  function flashTemplatesStatus(message, isWarning = false) {
+    if (!templatesStatus) return;
+    templatesStatus.textContent = message;
+    templatesStatus.hidden = !message;
+    templatesStatus.classList.toggle("is-warning", isWarning);
+    if (templatesStatusTimerId) window.clearTimeout(templatesStatusTimerId);
+    templatesStatusTimerId = window.setTimeout(() => {
+      templatesStatus.hidden = true;
+      templatesStatus.textContent = "";
+    }, 4500);
+  }
+
+  function showPromptTemplatesPane() {
+    panePromptTemplates.removeAttribute("hidden");
+    paneAi.setAttribute("hidden", "");
+    paneRepositoryConfig.setAttribute("hidden", "");
+    paneBranchStrategy.setAttribute("hidden", "");
+    paneCicdPipeline.setAttribute("hidden", "");
+    paneTestRunner.setAttribute("hidden", "");
+    paneGeneric.setAttribute("hidden", "");
+  }
+
+  function showRepositoryConfigPane() {
+    paneRepositoryConfig.removeAttribute("hidden");
+    paneAi.setAttribute("hidden", "");
+    panePromptTemplates.setAttribute("hidden", "");
+    paneBranchStrategy.setAttribute("hidden", "");
+    paneCicdPipeline.setAttribute("hidden", "");
+    paneTestRunner.setAttribute("hidden", "");
+    paneGeneric.setAttribute("hidden", "");
+  }
+
+  function showBranchStrategyPane() {
+    paneBranchStrategy.removeAttribute("hidden");
+    paneAi.setAttribute("hidden", "");
+    panePromptTemplates.setAttribute("hidden", "");
+    paneRepositoryConfig.setAttribute("hidden", "");
+    paneCicdPipeline.setAttribute("hidden", "");
+    paneTestRunner.setAttribute("hidden", "");
+    paneGeneric.setAttribute("hidden", "");
+  }
+
+  function showCicdPipelinePane() {
+    paneCicdPipeline.removeAttribute("hidden");
+    paneAi.setAttribute("hidden", "");
+    panePromptTemplates.setAttribute("hidden", "");
+    paneRepositoryConfig.setAttribute("hidden", "");
+    paneBranchStrategy.setAttribute("hidden", "");
+    paneTestRunner.setAttribute("hidden", "");
+    paneGeneric.setAttribute("hidden", "");
+  }
+
+  function showTestRunnerPane() {
+    paneTestRunner.removeAttribute("hidden");
+    paneAi.setAttribute("hidden", "");
+    panePromptTemplates.setAttribute("hidden", "");
+    paneRepositoryConfig.setAttribute("hidden", "");
+    paneBranchStrategy.setAttribute("hidden", "");
+    paneCicdPipeline.setAttribute("hidden", "");
+    paneGeneric.setAttribute("hidden", "");
+  }
+
+  function readGenericInputs() {
+    const values = {};
+    activeGenericFieldIds.forEach((fieldId) => {
+      const field = genericFieldRefs[fieldId];
+      if (!field) return;
+      if (field.type === "checkbox") {
+        values[fieldId] = Boolean(field.checked);
+      } else if (field.type === "number") {
+        const parsed = Number(field.value);
+        values[fieldId] = Number.isFinite(parsed) ? parsed : 0;
+      } else {
+        values[fieldId] = String(field.value ?? "").trim();
+      }
+    });
+    return values;
+  }
+
+  function renderGenericFields(paneKey, config, storedValues = {}) {
+    genericFields.innerHTML = "";
+    activeGenericFieldIds = [];
+    Object.keys(genericFieldRefs).forEach((k) => delete genericFieldRefs[k]);
+    (config.fields || []).forEach((fieldDef) => {
+      const fieldId = `settings-generic-${paneKey}-${fieldDef.id}`;
+      const wrap = document.createElement("label");
+      wrap.className = "settings-field";
+      const label = document.createElement("span");
+      label.className = "settings-field-label";
+      label.textContent = fieldDef.label;
+      wrap.appendChild(label);
+      let input;
+      const storedValue = Object.prototype.hasOwnProperty.call(storedValues, fieldDef.id)
+        ? storedValues[fieldDef.id]
+        : fieldDef.defaultValue;
+      if (fieldDef.type === "select") {
+        input = document.createElement("select");
+        input.className = "settings-select";
+        (fieldDef.options || []).forEach((opt) => {
+          const option = document.createElement("option");
+          option.value = opt.value;
+          option.textContent = opt.label;
+          input.appendChild(option);
+        });
+        input.value = String(storedValue ?? fieldDef.defaultValue ?? "");
+      } else if (fieldDef.type === "toggle") {
+        wrap.classList.add("settings-field-inline");
+        const toggleWrap = document.createElement("div");
+        toggleWrap.className = "settings-toggle-wrap";
+        const toggle = document.createElement("label");
+        toggle.className = "settings-toggle";
+        input = document.createElement("input");
+        input.type = "checkbox";
+        input.role = "switch";
+        input.checked = Boolean(storedValue);
+        const slider = document.createElement("span");
+        slider.className = "settings-toggle-slider";
+        slider.setAttribute("aria-hidden", "true");
+        toggle.appendChild(input);
+        toggle.appendChild(slider);
+        const copy = document.createElement("div");
+        copy.className = "settings-toggle-copy";
+        const copyTitle = document.createElement("span");
+        copyTitle.className = "settings-field-label";
+        copyTitle.textContent = fieldDef.label;
+        copy.appendChild(copyTitle);
+        if (fieldDef.hint) {
+          const hint = document.createElement("span");
+          hint.className = "settings-field-hint settings-field-hint-inline";
+          hint.textContent = fieldDef.hint;
+          copy.appendChild(hint);
+        }
+        toggleWrap.appendChild(toggle);
+        toggleWrap.appendChild(copy);
+        wrap.innerHTML = "";
+        wrap.appendChild(toggleWrap);
+      } else {
+        input = document.createElement("input");
+        input.className = "settings-input";
+        input.type = fieldDef.type === "number" ? "number" : "text";
+        if (fieldDef.type === "number") {
+          if (typeof fieldDef.min === "number") input.min = String(fieldDef.min);
+          if (typeof fieldDef.max === "number") input.max = String(fieldDef.max);
+          input.value = String(storedValue ?? fieldDef.defaultValue ?? 0);
+        } else {
+          input.value = String(storedValue ?? fieldDef.defaultValue ?? "");
+          if (fieldDef.placeholder) input.placeholder = fieldDef.placeholder;
+        }
+      }
+      input.id = fieldId;
+      wrap.appendChild(input);
+      if (fieldDef.hint && fieldDef.type !== "toggle") {
+        const hint = document.createElement("span");
+        hint.className = "settings-field-hint";
+        hint.textContent = fieldDef.hint;
+        wrap.appendChild(hint);
+      }
+      genericFields.appendChild(wrap);
+      genericFieldRefs[fieldDef.id] = input;
+      activeGenericFieldIds.push(fieldDef.id);
+    });
+  }
+
+  function showGenericPane(title, paneKey) {
+    const config = GENERIC_PANE_CONFIG[paneKey];
+    if (!config) return;
+    const stored = readPlatformSettings();
+    const storedValues = stored[paneKey] && typeof stored[paneKey] === "object" ? stored[paneKey] : {};
+    genericTitle.textContent = title;
+    genericSubtitle.textContent = config.subtitle;
+    renderGenericFields(paneKey, config, storedValues);
+    activeGenericPaneKey = paneKey;
+    if (genericStatus) {
+      genericStatus.hidden = true;
+      genericStatus.textContent = "";
+    }
+    paneGeneric.removeAttribute("hidden");
+    paneAi.setAttribute("hidden", "");
+    panePromptTemplates.setAttribute("hidden", "");
+    paneRepositoryConfig.setAttribute("hidden", "");
+    paneBranchStrategy.setAttribute("hidden", "");
+    paneCicdPipeline.setAttribute("hidden", "");
+    paneTestRunner.setAttribute("hidden", "");
+  }
+
+  function syncNavActive(activeBtn) {
+    navButtons.forEach((b) => {
+      if (activeBtn instanceof HTMLElement && b instanceof HTMLElement) {
+        b.classList.toggle("active", b === activeBtn);
+      }
+    });
+  }
+
+  function updateEngineRowFlags(selectedValue) {
+    engineInputs.forEach((input) => {
+      const flag = input.closest(".settings-engine-option")?.querySelector(".settings-engine-flag");
+      if (!flag || !(flag instanceof HTMLElement)) return;
+      flag.classList.remove("flag-active", "flag-available", "flag-configure");
+      if (input.value === selectedValue) {
+        flag.classList.add("flag-active");
+        flag.textContent = "Active";
+      } else if (input.value === "custom-llm-endpoint") {
+        flag.classList.add("flag-configure");
+        flag.textContent = "Configure";
+      } else {
+        flag.classList.add("flag-available");
+        flag.textContent = "Available";
+      }
+    });
+  }
+
+  const ENGINE_META = {
+    "cursor-cli": {
+      title: "Cursor CLI Settings",
+      pathLabel: "Cursor Executable Path",
+      pathHint: "Used to invoke Cursor CLI headlessly per intent run.",
+      pathPlaceholder: "path\\to\\cursor-agent",
+      status: "Connected",
+      icon: { kind: "img", alt: "Cursor", src: "./assets/engine-icons/cursor.svg", className: "engine-cursor" }
+    },
+    "github-copilot-agent": {
+      title: "GitHub Copilot Settings",
+      pathLabel: "Copilot Agent Path",
+      pathHint: "Path or command used to invoke Copilot agent mode.",
+      pathPlaceholder: "path\\to\\copilot-agent",
+      status: "Available",
+      icon: { kind: "img", alt: "GitHub Copilot", src: "./assets/engine-icons/githubcopilot.svg", className: "engine-github" }
+    },
+    "amazon-q-developer": {
+      title: "Amazon Q Settings",
+      pathLabel: "Q Developer CLI Path",
+      pathHint: "Path used to invoke Amazon Q Developer CLI.",
+      pathPlaceholder: "path\\to\\q",
+      status: "Available",
+      icon: { kind: "img", alt: "AWS", src: "./assets/engine-icons/aws.svg", className: "engine-awsq" }
+    },
+    "claude-code": {
+      title: "Claude Code Settings",
+      pathLabel: "Claude CLI Path",
+      pathHint: "Path or command used to invoke Claude Code CLI.",
+      pathPlaceholder: "path\\to\\claude",
+      status: "Available",
+      icon: { kind: "img", alt: "Anthropic", src: "./assets/engine-icons/anthropic.svg", className: "engine-claude" }
+    },
+    "custom-llm-endpoint": {
+      title: "Custom Endpoint Settings",
+      pathLabel: "Endpoint / Runner Path",
+      pathHint: "Use an executable or endpoint runner for custom model invocation.",
+      pathPlaceholder: "https://api.example.com/v1",
+      status: "Configure",
+      icon: { kind: "text", value: "API", className: "engine-custom" }
+    }
+  };
+
+  function getCurrentEngine() {
+    const checked = document.querySelector('input[name="active-coding-engine"]:checked');
+    return checked && "value" in checked ? checked.value : "cursor-cli";
+  }
+
+  function applyEngineConfigToForm(engine, config) {
+    const merged = {
+      path: "",
+      outputFormat: "text",
+      trustMode: "trust",
+      forceOverwrite: true,
+      ...(config || {})
+    };
+    pathInput.value = String(merged.path ?? "");
+    if (["text", "json", "patch"].includes(String(merged.outputFormat))) {
+      outSel.value = String(merged.outputFormat);
+    } else {
+      outSel.value = "text";
+    }
+    if (["trust", "review"].includes(String(merged.trustMode))) {
+      trustSel.value = String(merged.trustMode);
+    } else {
+      trustSel.value = "trust";
+    }
+    forceChk.checked = Boolean(merged.forceOverwrite);
+    const meta = ENGINE_META[engine] || ENGINE_META["cursor-cli"];
+    engineSettingsTitle.textContent = meta.title;
+    enginePathLabel.textContent = meta.pathLabel;
+    enginePathHint.textContent = meta.pathHint;
+    pathInput.placeholder = meta.pathPlaceholder;
+
+    engineRuntimeIcon.classList.remove(
+      "settings-panel-icon-gear",
+      "engine-cursor",
+      "engine-github",
+      "engine-awsq",
+      "engine-claude",
+      "engine-custom"
+    );
+    const icon = meta.icon || { kind: "text", value: "?", className: "engine-custom" };
+    engineRuntimeIcon.classList.add(icon.className);
+    if (icon.kind === "img") {
+      engineRuntimeIcon.innerHTML = `<img class="settings-panel-icon-img" src="${icon.src}" alt="${icon.alt}" />`;
+    } else if (icon.kind === "text") {
+      engineRuntimeIcon.innerHTML = `<span class="settings-panel-icon-text">${icon.value}</span>`;
+    }
+  }
+
+  function getSavedEngineConfig(stored, engine) {
+    const engineConfigs =
+      stored.engineConfigs && typeof stored.engineConfigs === "object" ? stored.engineConfigs : {};
+    if (engineConfigs[engine] && typeof engineConfigs[engine] === "object") {
+      return engineConfigs[engine];
+    }
+    if (engine === "cursor-cli" && stored.cursorCli && typeof stored.cursorCli === "object") {
+      return stored.cursorCli;
+    }
+    return null;
+  }
+
+  function syncCursorSection() {
+    const value = getCurrentEngine();
+    cursorPanel.removeAttribute("hidden");
+    if (connLabel) {
+      const meta = ENGINE_META[value] || ENGINE_META["cursor-cli"];
+      connLabel.textContent = meta.status;
+      if (meta.status === "Connected") {
+        connPill.classList.remove("is-disconnected");
+      } else {
+        connPill.classList.add("is-disconnected");
+      }
+    }
+    const stored = readPlatformSettings();
+    const cfg = getSavedEngineConfig(stored, value);
+    if (cfg) {
+      const normalized = { ...cfg };
+      if (normalized.outputFormat === "unified") normalized.outputFormat = "patch";
+      if (normalized.trustMode === "no-trust") normalized.trustMode = "review";
+      applyEngineConfigToForm(value, normalized);
+    } else {
+      applyEngineConfigToForm(value, {});
+    }
+    updateEngineRowFlags(value);
+  }
+
+  const stored = readPlatformSettings();
+  const allowedEngines = new Set([
+    "cursor-cli",
+    "github-copilot-agent",
+    "amazon-q-developer",
+    "claude-code",
+    "custom-llm-endpoint"
+  ]);
+  if (typeof stored.activeEngine === "string" && allowedEngines.has(stored.activeEngine)) {
+    const match = document.querySelector(`input[name="active-coding-engine"][value="${stored.activeEngine}"]`);
+    if (match && "checked" in match) {
+      match.checked = true;
+    }
+  }
+  if (stored.cursorCli && typeof stored.cursorCli === "object") {
+    const c = stored.cursorCli;
+    if (typeof c.path === "string") pathInput.value = c.path;
+    if (typeof c.outputFormat === "string") {
+      const normalizedOutput = c.outputFormat === "unified" ? "patch" : c.outputFormat;
+      if (["text", "json", "patch"].includes(normalizedOutput)) {
+        outSel.value = normalizedOutput;
+      }
+    }
+    if (typeof c.trustMode === "string") {
+      const normalizedTrust = c.trustMode === "no-trust" ? "review" : c.trustMode;
+      if (["trust", "review"].includes(normalizedTrust)) {
+        trustSel.value = normalizedTrust;
+      }
+    }
+    if (typeof c.forceOverwrite === "boolean") forceChk.checked = c.forceOverwrite;
+  }
+
+  syncCursorSection();
+
+  navButtons.forEach((btn) => {
+    btn.addEventListener("click", () => {
+      if (!(btn instanceof HTMLElement)) return;
+      const pane = btn.dataset.settingsPane;
+      const title = btn.dataset.paneTitle || "Settings";
+      syncNavActive(btn);
+      if (pane === "ai-engine") {
+        showAiPane();
+      } else if (pane === "prompt-templates") {
+        showPromptTemplatesPane();
+      } else if (pane === "repository-config") {
+        showRepositoryConfigPane();
+      } else if (pane === "branch-strategy") {
+        showBranchStrategyPane();
+      } else if (pane === "ci-cd-pipeline") {
+        showCicdPipelinePane();
+      } else if (pane === "test-runner") {
+        showTestRunnerPane();
+      } else {
+        showGenericPane(title, pane);
+      }
+    });
+  });
+
+  engineInputs.forEach((input) => {
+    input.addEventListener("change", () => {
+      syncCursorSection();
+    });
+  });
+
+  saveBtn.addEventListener("click", () => {
+    const activeEngine = getCurrentEngine();
+    const next = readPlatformSettings();
+    next.activeEngine = activeEngine;
+    const cfg = {
+      path: pathInput.value.trim(),
+      outputFormat: outSel.value,
+      trustMode: trustSel.value,
+      forceOverwrite: forceChk.checked
+    };
+    next.engineConfigs =
+      next.engineConfigs && typeof next.engineConfigs === "object" ? next.engineConfigs : {};
+    next.engineConfigs[activeEngine] = cfg;
+    if (activeEngine === "cursor-cli") {
+      next.cursorCli = cfg;
+    }
+    writePlatformSettings(next);
+    flashCursorStatus(`${(ENGINE_META[activeEngine] || ENGINE_META["cursor-cli"]).title} saved locally.`);
+  });
+
+  testBtn.addEventListener("click", () => {
+    const activeEngine = getCurrentEngine();
+    const p = pathInput.value.trim();
+    if (!p) {
+      flashCursorStatus("Set executable path before testing.", true);
+      return;
+    }
+    flashCursorStatus(
+      `${(ENGINE_META[activeEngine] || ENGINE_META["cursor-cli"]).title}: path looks valid (no shell execution in this build). Save to persist.`
+    );
+  });
+
+  function readPromptTemplatesSettings() {
+    const stored = readPlatformSettings();
+    const pt = stored.promptTemplates && typeof stored.promptTemplates === "object" ? stored.promptTemplates : {};
+    const routes = Array.isArray(pt.routes) ? pt.routes : null;
+    return {
+      defaultTemplate: typeof pt.defaultTemplate === "string" ? pt.defaultTemplate : "code_prompt_generic_3gpp.txt",
+      directory: typeof pt.directory === "string" ? pt.directory : "C:\\Users\\Chandu\\Desktop\\prompts\\",
+      routes:
+        routes ||
+        [
+          { tag: "F1AP", file: "code_prompt_f1ap.txt" },
+          { tag: "RRC", file: "code_prompt_rrc.txt" },
+          { tag: "default", file: "code_prompt_generic_3gpp.txt" }
+        ]
+    };
+  }
+
+  function writePromptTemplatesSettings(nextSettings) {
+    const next = readPlatformSettings();
+    next.promptTemplates = nextSettings;
+    writePlatformSettings(next);
+  }
+
+  function renderPromptTemplateRoutes(routes) {
+    if (!templatesRoutes) return;
+    templatesRoutes.innerHTML = "";
+    routes.forEach((route, idx) => {
+      const row = document.createElement("div");
+      row.className = "settings-template-route";
+      const tag = document.createElement("span");
+      tag.className = "settings-template-tag";
+      tag.textContent = String(route.tag || "").trim() || "TAG";
+      const arrow = document.createElement("span");
+      arrow.className = "settings-template-arrow";
+      arrow.textContent = "→";
+      const file = document.createElement("div");
+      file.className = "settings-template-file";
+      file.textContent = String(route.file || "").trim() || "(select template)";
+      const remove = document.createElement("button");
+      remove.type = "button";
+      remove.className = "settings-template-remove";
+      remove.textContent = "Remove";
+      remove.addEventListener("click", () => {
+        const cur = readPromptTemplatesSettings();
+        cur.routes.splice(idx, 1);
+        writePromptTemplatesSettings(cur);
+        renderPromptTemplateRoutes(cur.routes);
+        flashTemplatesStatus("Route removed. Click Save Changes to persist UI state.");
+      });
+      row.append(tag, arrow, file, remove);
+      templatesRoutes.appendChild(row);
+    });
+  }
+
+  function loadPromptTemplatesUi() {
+    if (!templatesDefaultSel || !templatesDirInput || !templatesRoutes) return;
+    const pt = readPromptTemplatesSettings();
+    templatesDefaultSel.value = pt.defaultTemplate;
+    templatesDirInput.value = pt.directory;
+    renderPromptTemplateRoutes(pt.routes);
+  }
+
+  if (templatesAddBtn) {
+    templatesAddBtn.addEventListener("click", () => {
+      const pt = readPromptTemplatesSettings();
+      pt.routes.push({ tag: "NEW", file: pt.defaultTemplate });
+      renderPromptTemplateRoutes(pt.routes);
+      writePromptTemplatesSettings(pt);
+      flashTemplatesStatus("Added a route (NEW). Update it in storage in next iteration.");
+    });
+  }
+
+  if (templatesSaveBtn) {
+    templatesSaveBtn.addEventListener("click", () => {
+      if (!templatesDefaultSel || !templatesDirInput) return;
+      const pt = readPromptTemplatesSettings();
+      pt.defaultTemplate = templatesDefaultSel.value;
+      pt.directory = templatesDirInput.value.trim();
+      writePromptTemplatesSettings(pt);
+      flashTemplatesStatus("Prompt template settings saved locally.");
+    });
+  }
+
+  if (templatesDefaultSel) {
+    templatesDefaultSel.addEventListener("change", () => {
+      const pt = readPromptTemplatesSettings();
+      pt.defaultTemplate = templatesDefaultSel.value;
+      writePromptTemplatesSettings(pt);
+      flashTemplatesStatus("Default template updated (saved locally).");
+    });
+  }
+
+  if (templatesDirInput) {
+    templatesDirInput.addEventListener("change", () => {
+      const pt = readPromptTemplatesSettings();
+      pt.directory = templatesDirInput.value.trim();
+      writePromptTemplatesSettings(pt);
+      flashTemplatesStatus("Template directory updated (saved locally).");
+    });
+  }
+
+  loadPromptTemplatesUi();
+
+  function flashRepoStatus(message, isWarning = false) {
+    if (!repoStatus) return;
+    repoStatus.textContent = message;
+    repoStatus.hidden = !message;
+    repoStatus.classList.toggle("is-warning", isWarning);
+    if (repoStatusTimerId) window.clearTimeout(repoStatusTimerId);
+    repoStatusTimerId = window.setTimeout(() => {
+      repoStatus.hidden = true;
+      repoStatus.textContent = "";
+    }, 4500);
+  }
+
+  function setRepoReachable(reachable, labelText) {
+    if (!repoReachablePill || !repoReachableLabel) return;
+    repoReachablePill.classList.toggle("is-disconnected", !reachable);
+    repoReachableLabel.textContent = labelText;
+  }
+
+  function readRepoSettings() {
+    const stored = readPlatformSettings();
+    const rc = stored.repositoryConfig && typeof stored.repositoryConfig === "object" ? stored.repositoryConfig : {};
+    return {
+      url: typeof rc.url === "string" ? rc.url : (repoUrlInput?.value || ""),
+      workspace: typeof rc.workspace === "string" ? rc.workspace : (repoWorkspaceInput?.value || ""),
+      stack: typeof rc.stack === "string" ? rc.stack : "c-cpp-embedded",
+      auth: typeof rc.auth === "string" ? rc.auth : "ssh",
+      reachable: typeof rc.reachable === "boolean" ? rc.reachable : false
+    };
+  }
+
+  function writeRepoSettings(nextSettings) {
+    const next = readPlatformSettings();
+    next.repositoryConfig = nextSettings;
+    writePlatformSettings(next);
+  }
+
+  function loadRepoUi() {
+    if (!repoUrlInput || !repoWorkspaceInput || !repoStackSel || !repoAuthSel) return;
+    const rc = readRepoSettings();
+    repoUrlInput.value = rc.url;
+    repoWorkspaceInput.value = rc.workspace;
+    repoStackSel.value = rc.stack;
+    repoAuthSel.value = rc.auth;
+    setRepoReachable(Boolean(rc.reachable), rc.reachable ? "Reachable" : "Unverified");
+  }
+
+  if (repoTestBtn) {
+    repoTestBtn.addEventListener("click", () => {
+      if (!repoUrlInput) return;
+      const url = repoUrlInput.value.trim();
+      if (!url) {
+        setRepoReachable(false, "Unverified");
+        flashRepoStatus("Repository URL is required to test connectivity.", true);
+        return;
+      }
+      const looksLikeGit =
+        url.startsWith("http://") ||
+        url.startsWith("https://") ||
+        url.startsWith("ssh://") ||
+        url.includes("@") ||
+        url.endsWith(".git");
+      if (!looksLikeGit) {
+        setRepoReachable(false, "Unverified");
+        flashRepoStatus("URL does not look like a valid git clone URL.", true);
+        return;
+      }
+      setRepoReachable(true, "Reachable");
+      const rc = readRepoSettings();
+      rc.url = url;
+      rc.reachable = true;
+      writeRepoSettings(rc);
+      flashRepoStatus("Connectivity looks good (UI-only check). Save to persist.");
+    });
+  }
+
+  if (repoSaveBtn) {
+    repoSaveBtn.addEventListener("click", () => {
+      if (!repoUrlInput || !repoWorkspaceInput || !repoStackSel || !repoAuthSel) return;
+      const rc = readRepoSettings();
+      rc.url = repoUrlInput.value.trim();
+      rc.workspace = repoWorkspaceInput.value.trim();
+      rc.stack = repoStackSel.value;
+      rc.auth = repoAuthSel.value;
+      writeRepoSettings(rc);
+      flashRepoStatus("Repository configuration saved locally.");
+    });
+  }
+
+  loadRepoUi();
+
+  function flashBranchStatus(message, isWarning = false) {
+    if (!branchStatus) return;
+    branchStatus.textContent = message;
+    branchStatus.hidden = !message;
+    branchStatus.classList.toggle("is-warning", isWarning);
+    if (branchStatusTimerId) window.clearTimeout(branchStatusTimerId);
+    branchStatusTimerId = window.setTimeout(() => {
+      branchStatus.hidden = true;
+      branchStatus.textContent = "";
+    }, 4500);
+  }
+
+  function readBranchSettings() {
+    const stored = readPlatformSettings();
+    const bs = stored.branchStrategy && typeof stored.branchStrategy === "object" ? stored.branchStrategy : {};
+    return {
+      baseBranch: typeof bs.baseBranch === "string" ? bs.baseBranch : "develop",
+      branchPattern: typeof bs.branchPattern === "string" ? bs.branchPattern : "feature/{intent_id}_{date}",
+      autoPush: typeof bs.autoPush === "boolean" ? bs.autoPush : true,
+      commitTemplate: typeof bs.commitTemplate === "string" ? bs.commitTemplate : "feat: {intent_summary}"
+    };
+  }
+
+  function writeBranchSettings(nextSettings) {
+    const next = readPlatformSettings();
+    next.branchStrategy = nextSettings;
+    writePlatformSettings(next);
+  }
+
+  function loadBranchUi() {
+    if (!branchBaseInput || !branchPatternInput || !branchAutoPush || !branchCommitTemplate) return;
+    const bs = readBranchSettings();
+    branchBaseInput.value = bs.baseBranch;
+    branchPatternInput.value = bs.branchPattern;
+    branchAutoPush.checked = Boolean(bs.autoPush);
+    branchCommitTemplate.value = bs.commitTemplate;
+  }
+
+  if (branchSaveBtn) {
+    branchSaveBtn.addEventListener("click", () => {
+      if (!branchBaseInput || !branchPatternInput || !branchAutoPush || !branchCommitTemplate) return;
+      const base = branchBaseInput.value.trim();
+      const pattern = branchPatternInput.value.trim();
+      if (!base) {
+        flashBranchStatus("Base Branch is required.", true);
+        return;
+      }
+      if (!pattern || !pattern.includes("{intent_id}")) {
+        flashBranchStatus("Feature Branch Pattern must include {intent_id}.", true);
+        return;
+      }
+      writeBranchSettings({
+        baseBranch: base,
+        branchPattern: pattern,
+        autoPush: branchAutoPush.checked,
+        commitTemplate: branchCommitTemplate.value.trim()
+      });
+      flashBranchStatus("Branch strategy saved locally.");
+    });
+  }
+
+  loadBranchUi();
+
+  function flashCicdStatus(message, isWarning = false) {
+    if (!cicdStatus) return;
+    cicdStatus.textContent = message;
+    cicdStatus.hidden = !message;
+    cicdStatus.classList.toggle("is-warning", isWarning);
+    if (cicdStatusTimerId) window.clearTimeout(cicdStatusTimerId);
+    cicdStatusTimerId = window.setTimeout(() => {
+      cicdStatus.hidden = true;
+      cicdStatus.textContent = "";
+    }, 4500);
+  }
+
+  function readCicdSettings() {
+    const stored = readPlatformSettings();
+    const c = stored.cicdPipeline && typeof stored.cicdPipeline === "object" ? stored.cicdPipeline : {};
+    return {
+      system: typeof c.system === "string" ? c.system : "jenkins",
+      url: typeof c.url === "string" ? c.url : "http://jenkins.internal.tcs.com:8080",
+      job: typeof c.job === "string" ? c.job : "oai-cu-ltm-build",
+      token: typeof c.token === "string" ? c.token : "****************",
+      triggerOnPush: typeof c.triggerOnPush === "boolean" ? c.triggerOnPush : true,
+      pollSeconds: typeof c.pollSeconds === "number" ? c.pollSeconds : 15
+    };
+  }
+
+  function writeCicdSettings(nextSettings) {
+    const next = readPlatformSettings();
+    next.cicdPipeline = nextSettings;
+    writePlatformSettings(next);
+  }
+
+  function syncCicdPill(system) {
+    if (!cicdPill || !cicdPillLabel) return;
+    if (system === "jenkins") {
+      cicdPill.classList.remove("is-disconnected");
+      cicdPillLabel.textContent = "Jenkins Connected";
+    } else {
+      cicdPill.classList.add("is-disconnected");
+      cicdPillLabel.textContent = "Available";
+    }
+  }
+
+  function loadCicdUi() {
+    const c = readCicdSettings();
+    cicdInputs.forEach((i) => {
+      if (i.value === c.system) i.checked = true;
+    });
+    if (cicdUrl) cicdUrl.value = c.url;
+    if (cicdJob) cicdJob.value = c.job;
+    if (cicdToken) cicdToken.value = c.token;
+    if (cicdTrigger) cicdTrigger.checked = c.triggerOnPush;
+    if (cicdPoll) cicdPoll.value = String(c.pollSeconds);
+    syncCicdPill(c.system);
+  }
+
+  cicdInputs.forEach((input) => {
+    input.addEventListener("change", () => {
+      const checked = Array.from(cicdInputs).find((i) => i.checked);
+      syncCicdPill(checked ? checked.value : "jenkins");
+    });
+  });
+
+  if (cicdTestBtn) {
+    cicdTestBtn.addEventListener("click", () => {
+      const url = (cicdUrl?.value || "").trim();
+      const job = (cicdJob?.value || "").trim();
+      if (!url || !job) {
+        flashCicdStatus("Jenkins URL and Job Name are required for connectivity test.", true);
+        return;
+      }
+      flashCicdStatus("Connection looks valid (UI-only check).");
+    });
+  }
+
+  if (cicdSaveBtn) {
+    cicdSaveBtn.addEventListener("click", () => {
+      const checked = Array.from(cicdInputs).find((i) => i.checked);
+      const pollVal = Number(cicdPoll?.value || "15");
+      writeCicdSettings({
+        system: checked ? checked.value : "jenkins",
+        url: (cicdUrl?.value || "").trim(),
+        job: (cicdJob?.value || "").trim(),
+        token: String(cicdToken?.value || ""),
+        triggerOnPush: Boolean(cicdTrigger?.checked),
+        pollSeconds: Number.isFinite(pollVal) && pollVal > 0 ? pollVal : 15
+      });
+      flashCicdStatus("CI/CD pipeline settings saved locally.");
+    });
+  }
+
+  loadCicdUi();
+
+  function flashTestRunnerStatus(message, isWarning = false) {
+    if (!testRunnerStatus) return;
+    testRunnerStatus.textContent = message;
+    testRunnerStatus.hidden = !message;
+    testRunnerStatus.classList.toggle("is-warning", isWarning);
+    if (testRunnerStatusTimerId) window.clearTimeout(testRunnerStatusTimerId);
+    testRunnerStatusTimerId = window.setTimeout(() => {
+      testRunnerStatus.hidden = true;
+      testRunnerStatus.textContent = "";
+    }, 4500);
+  }
+
+  function syncTestRunnerFlags(activeValue) {
+    testRunnerInputs.forEach((input) => {
+      const flag = input.closest(".settings-engine-option")?.querySelector(".settings-engine-flag");
+      if (!flag || !(flag instanceof HTMLElement)) return;
+      flag.classList.remove("flag-active", "flag-available");
+      if (input.value === activeValue) {
+        flag.classList.add("flag-active");
+        flag.textContent = "Active";
+      } else {
+        flag.classList.add("flag-available");
+        flag.textContent = "Available";
+      }
+    });
+  }
+
+  function readTestRunnerSettings() {
+    const stored = readPlatformSettings();
+    const t = stored.testRunner && typeof stored.testRunner === "object" ? stored.testRunner : {};
+    return {
+      framework: typeof t.framework === "string" ? t.framework : "ctest",
+      command: typeof t.command === "string" ? t.command : "ctest --output-on-failure -R TC_F1AP",
+      resultFormat: typeof t.resultFormat === "string" ? t.resultFormat : "junit-xml",
+      timeoutSeconds: typeof t.timeoutSeconds === "number" ? t.timeoutSeconds : 300
+    };
+  }
+
+  function writeTestRunnerSettings(nextSettings) {
+    const next = readPlatformSettings();
+    next.testRunner = nextSettings;
+    writePlatformSettings(next);
+  }
+
+  function loadTestRunnerUi() {
+    const t = readTestRunnerSettings();
+    testRunnerInputs.forEach((i) => {
+      if (i.value === t.framework) i.checked = true;
+    });
+    if (testRunnerCommand) testRunnerCommand.value = t.command;
+    if (testRunnerResultFormat) testRunnerResultFormat.value = t.resultFormat;
+    if (testRunnerTimeout) testRunnerTimeout.value = String(t.timeoutSeconds);
+    syncTestRunnerFlags(t.framework);
+  }
+
+  testRunnerInputs.forEach((input) => {
+    input.addEventListener("change", () => {
+      const checked = Array.from(testRunnerInputs).find((i) => i.checked);
+      syncTestRunnerFlags(checked ? checked.value : "ctest");
+    });
+  });
+
+  if (testRunnerSaveBtn) {
+    testRunnerSaveBtn.addEventListener("click", () => {
+      const checked = Array.from(testRunnerInputs).find((i) => i.checked);
+      const timeoutVal = Number(testRunnerTimeout?.value || "300");
+      const command = String(testRunnerCommand?.value || "").trim();
+      if (!command) {
+        flashTestRunnerStatus("Test Command is required.", true);
+        return;
+      }
+      writeTestRunnerSettings({
+        framework: checked ? checked.value : "ctest",
+        command,
+        resultFormat: String(testRunnerResultFormat?.value || "junit-xml"),
+        timeoutSeconds: Number.isFinite(timeoutVal) && timeoutVal >= 10 ? timeoutVal : 300
+      });
+      flashTestRunnerStatus("Test runner settings saved locally.");
+    });
+  }
+
+  loadTestRunnerUi();
+
+  genericSaveBtn.addEventListener("click", () => {
+    if (!activeGenericPaneKey) return;
+    const next = readPlatformSettings();
+    next[activeGenericPaneKey] = readGenericInputs();
+    writePlatformSettings(next);
+    flashGenericStatus("Settings saved locally in this browser.");
+  });
+
+  genericResetBtn.addEventListener("click", () => {
+    if (!activeGenericPaneKey) return;
+    const config = GENERIC_PANE_CONFIG[activeGenericPaneKey];
+    const defaults = {};
+    (config.fields || []).forEach((field) => {
+      defaults[field.id] = field.defaultValue;
+    });
+    renderGenericFields(activeGenericPaneKey, config, defaults);
+    flashGenericStatus("Default values restored. Click Save Changes to persist.");
+  });
+}
+
 function buildLaneLayout(commits = []) {
   const hashToIndex = new Map();
   commits.forEach((c, i) => hashToIndex.set(c.hash, i));
@@ -1494,6 +2646,8 @@ settingsOpenButtons.forEach((button) => {
 settingsBackBtn.addEventListener("click", () => {
   showMainScreen();
 });
+
+initSettingsUi();
 
 gitBranchSelect.addEventListener("change", async (event) => {
   const selectedBranch = event.target.value;
