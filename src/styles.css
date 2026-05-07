@@ -1455,3 +1455,220 @@ button.prompt-cancel-btn:active {
   opacity: 0;
   overflow: hidden;
 }
+
+.settings-menu-bar {
+  height: 32px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 12px;
+  border-bottom: 1px solid var(--base-2);
+  background: #ffffff;
+  font-size: 12px;
+}
+
+.settings-back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: none;
+  background: transparent;
+  color: #475569;
+  font-size: 12px;
+  font-weight: 500;
+  padding: 0;
+}
+
+.settings-back-icon {
+  font-size: 13px;
+  line-height: 1;
+}
+
+.settings-back-btn:hover {
+  color: #0f172a;
+  text-decoration: underline;
+  filter: none;
+}
+
+.settings-menu-separator {
+  color: #94a3b8;
+}
+
+.settings-menu-title.current {
+  color: #0f172a;
+  font-weight: 700;
+}
+
+.settings-content {
+  display: grid;
+  grid-template-columns: minmax(260px, 300px) 1fr;
+  gap: 12px;
+  padding: 12px;
+  height: calc(100vh - 70px);
+  overflow: hidden;
+}
+
+.settings-sidebar {
+  border: 1px solid var(--base-2);
+  border-radius: 10px;
+  background: #ffffff;
+  padding: 10px;
+  overflow: auto;
+}
+
+.settings-group {
+  margin-bottom: 10px;
+  padding: 2px 0 10px 0;
+  border-bottom: 1px solid var(--base-2);
+}
+
+.settings-group:last-child {
+  margin-bottom: 0;
+  padding-bottom: 0;
+  border-bottom: none;
+}
+
+.settings-group-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: #0f2f7a;
+  padding: 4px 8px;
+  margin-bottom: 8px;
+}
+
+.settings-nav-item {
+  width: 100%;
+  text-align: left;
+  border: 1px solid transparent;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--text-main);
+  font-size: 12px;
+  font-weight: 500;
+  padding: 7px 8px;
+}
+
+.settings-nav-item:hover {
+  background: #eef5ff;
+  border-color: #d4e3ff;
+  filter: none;
+}
+
+.settings-nav-item.active {
+  background: #dbeafe;
+  border-color: #93c5fd;
+  color: #0f2f7a;
+  font-weight: 600;
+}
+
+.settings-main {
+  border: 1px solid var(--base-2);
+  border-radius: 10px;
+  background: #ffffff;
+  padding: 12px;
+  overflow: auto;
+}
+
+.settings-empty-state {
+  border: 1px dashed var(--base-3);
+  border-radius: 10px;
+  padding: 14px;
+  color: var(--text-muted);
+  background: #ffffff;
+  font-size: 13px;
+}
+
+.settings-section {
+  border: 1px solid var(--base-2);
+  border-radius: 10px;
+  padding: 12px;
+  background: #f8fafc;
+}
+
+.settings-section-title {
+  margin: 0 0 10px 0;
+  font-size: 14px;
+  color: var(--text-strong);
+}
+
+.settings-engine-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.settings-engine-option {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--text-main);
+  border: 1px solid var(--base-2);
+  border-radius: 8px;
+  background: #ffffff;
+  padding: 8px 10px;
+}
+
+.settings-engine-option input[type="radio"] {
+  margin: 0;
+  margin-top: 2px;
+}
+
+.settings-engine-option:has(input[type="radio"]:checked) {
+  background: #eaf2ff;
+  border-color: #0f2f7a;
+}
+
+.settings-engine-option:has(input[type="radio"]:checked) .settings-engine-name,
+.settings-engine-option:has(input[type="radio"]:checked) .settings-engine-desc {
+  color: #0f2f7a;
+}
+
+.settings-engine-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+
+.settings-engine-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-strong);
+}
+
+.settings-engine-desc {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.settings-engine-flag {
+  align-self: center;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1;
+  border-radius: 999px;
+  padding: 4px 8px;
+  border: 1px solid transparent;
+  white-space: nowrap;
+}
+
+.settings-engine-flag.flag-active {
+  color: #0f2f7a;
+  background: #dbeafe;
+  border-color: #93c5fd;
+}
+
+.settings-engine-flag.flag-available {
+  color: #166534;
+  background: #dcfce7;
+  border-color: #86efac;
+}
+
+.settings-engine-flag.flag-configure {
+  color: #92400e;
+  background: #fef3c7;
+  border-color: #fcd34d;
+}

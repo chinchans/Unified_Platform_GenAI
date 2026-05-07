@@ -125,10 +125,10 @@ CODEGEN_WORKSPACE = Path(r"C:\Users\ChanduVangala\Desktop\Unified_Platform_UI\OA
 CODEGEN_PROMPT_FILENAME = ".unified_codegen_prompt.txt"
 DEFAULT_CURSOR_CLI_COMMAND = "agent"
 FALLBACK_CURSOR_COMMANDS = ("agent",)
-SKIP_PROMPT_GENERATION_FOR_TEST = str(
-    os.getenv("SKIP_PROMPT_GENERATION_FOR_TEST", "true")
-).strip().lower() in {"1", "true", "yes", "on"}
-# SKIP_PROMPT_GENERATION_FOR_TEST = False
+# SKIP_PROMPT_GENERATION_FOR_TEST = str(
+#     os.getenv("SKIP_PROMPT_GENERATION_FOR_TEST", "true")
+# ).strip().lower() in {"1", "true", "yes", "on"}
+SKIP_PROMPT_GENERATION_FOR_TEST = False
 STRICT_FILE_EDIT_INSTRUCTIONS = (
     "You are operating in a real git workspace. Apply code changes directly to files in this workspace.\n"
     "Do not respond with explanation-only output.\n"

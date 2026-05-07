@@ -37,6 +37,8 @@ const state = {
 
 const splashScreen = document.getElementById("splash-screen");
 const mainScreen = document.getElementById("main-screen");
+const settingsScreen = document.getElementById("settings-screen");
+const settingsBackBtn = document.getElementById("settings-back-btn");
 const enterPlatformBtn = document.getElementById("enter-platform-btn");
 
 const intentInput = document.getElementById("intent-input");
@@ -62,6 +64,7 @@ const gitBranchSelect = document.getElementById("git-branch-select");
 const gitRefreshBtn = document.getElementById("git-refresh-btn");
 const gitCommitTree = document.getElementById("git-commit-tree");
 const gitCommitDetail = document.getElementById("git-commit-detail");
+const settingsOpenButtons = document.querySelectorAll(".titlebar-settings-btn");
 const pipelineTrack = document.getElementById("pipeline-track");
 const pipelineEmptyState = document.getElementById("pipeline-empty-state");
 const streamUtils = window.StreamUtils || {};
@@ -1019,6 +1022,7 @@ async function getJson(path) {
 
 function showMainScreen() {
   gitHistoryScreen.classList.remove("active");
+  settingsScreen.classList.remove("active");
   splashScreen.classList.remove("active");
   mainScreen.classList.add("active");
 }
@@ -1026,7 +1030,15 @@ function showMainScreen() {
 function showGitHistoryScreen() {
   splashScreen.classList.remove("active");
   mainScreen.classList.remove("active");
+  settingsScreen.classList.remove("active");
   gitHistoryScreen.classList.add("active");
+}
+
+function showSettingsScreen() {
+  splashScreen.classList.remove("active");
+  mainScreen.classList.remove("active");
+  gitHistoryScreen.classList.remove("active");
+  settingsScreen.classList.add("active");
 }
 
 function buildLaneLayout(commits = []) {
@@ -1470,6 +1482,16 @@ gitRefreshBtn.addEventListener("click", async () => {
 });
 
 closeGitHistoryBtn.addEventListener("click", () => {
+  showMainScreen();
+});
+
+settingsOpenButtons.forEach((button) => {
+  button.addEventListener("click", () => {
+    showSettingsScreen();
+  });
+});
+
+settingsBackBtn.addEventListener("click", () => {
   showMainScreen();
 });
 

@@ -172,6 +172,105 @@
           </main>
         </div>
       </section>
+
+      <section id="settings-screen" class="screen">
+        <div class="app-shell-header">
+          <div class="app-shell-header-left">
+            <div class="app-shell-title">Unified Platform UI</div>
+            <div class="app-shell-context">Platform Configuration</div>
+          </div>
+        </div>
+        <nav class="settings-menu-bar" aria-label="Settings menu">
+          <button id="settings-back-btn" class="settings-back-btn" type="button">
+            <span class="settings-back-icon" aria-hidden="true">←</span>
+            <span>Intent/Pipeline</span>
+          </button>
+          <span class="settings-menu-separator" aria-hidden="true">&gt;</span>
+          <span class="settings-menu-title current">Platform settings</span>
+        </nav>
+        <div class="settings-content">
+          <aside class="settings-sidebar" aria-label="Platform settings navigation">
+            <div class="settings-group active">
+              <div class="settings-group-title">Code Generation</div>
+              <button class="settings-nav-item active" type="button">AI Coding Engine</button>
+              <button class="settings-nav-item" type="button">Prompt Templates</button>
+            </div>
+
+            <div class="settings-group active">
+              <div class="settings-group-title">Source Control</div>
+              <button class="settings-nav-item" type="button">Repository Config</button>
+              <button class="settings-nav-item" type="button">Branch Strategy</button>
+            </div>
+
+            <div class="settings-group active">
+              <div class="settings-group-title">CI/CD &amp; Testing</div>
+              <button class="settings-nav-item" type="button">CI/CD Pipeline</button>
+              <button class="settings-nav-item" type="button">Test Runner</button>
+            </div>
+
+            <div class="settings-group active">
+              <div class="settings-group-title">RCA &amp; Quality</div>
+              <button class="settings-nav-item" type="button">RCA Engine Config</button>
+              <button class="settings-nav-item" type="button">Quality Gates</button>
+            </div>
+
+            <div class="settings-group active">
+              <div class="settings-group-title">Platform</div>
+              <button class="settings-nav-item" type="button">Notifications</button>
+              <button class="settings-nav-item" type="button">Workspace &amp; Paths</button>
+              <button class="settings-nav-item" type="button">Advanced</button>
+            </div>
+          </aside>
+
+          <main class="settings-main">
+            <section class="settings-section">
+              <h3 class="settings-section-title">Active Coding Engine</h3>
+              <div class="settings-engine-list" role="radiogroup" aria-label="Coding agent selection">
+                <label class="settings-engine-option">
+                  <input type="radio" name="active-coding-engine" value="cursor-cli" checked />
+                  <span class="settings-engine-copy">
+                    <span class="settings-engine-name">Cursor CLI</span>
+                    <span class="settings-engine-desc">Default local coding flow optimized for this workspace.</span>
+                  </span>
+                  <span class="settings-engine-flag flag-active">Active</span>
+                </label>
+                <label class="settings-engine-option">
+                  <input type="radio" name="active-coding-engine" value="github-copilot-agent" />
+                  <span class="settings-engine-copy">
+                    <span class="settings-engine-name">Github Copilot Agent</span>
+                    <span class="settings-engine-desc">Use Copilot-assisted generation and iterative code suggestions.</span>
+                  </span>
+                  <span class="settings-engine-flag flag-available">Available</span>
+                </label>
+                <label class="settings-engine-option">
+                  <input type="radio" name="active-coding-engine" value="claude-code" />
+                  <span class="settings-engine-copy">
+                    <span class="settings-engine-name">Claude Code</span>
+                    <span class="settings-engine-desc">Run coding tasks with Claude-powered reasoning and edits.</span>
+                  </span>
+                  <span class="settings-engine-flag flag-available">Available</span>
+                </label>
+                <label class="settings-engine-option">
+                  <input type="radio" name="active-coding-engine" value="amazon-q-developer" />
+                  <span class="settings-engine-copy">
+                    <span class="settings-engine-name">Amazon Q Developer</span>
+                    <span class="settings-engine-desc">Leverage Amazon Q for enterprise-focused development support.</span>
+                  </span>
+                  <span class="settings-engine-flag flag-available">Available</span>
+                </label>
+                <label class="settings-engine-option">
+                  <input type="radio" name="active-coding-engine" value="custom-llm-endpoint" />
+                  <span class="settings-engine-copy">
+                    <span class="settings-engine-name">Custom LLM EndPoint</span>
+                    <span class="settings-engine-desc">Connect your own hosted model endpoint for code generation.</span>
+                  </span>
+                  <span class="settings-engine-flag flag-configure">Configure</span>
+                </label>
+              </div>
+            </section>
+          </main>
+        </div>
+      </section>
     </div>
 
     <script src="./stream-utils.js"></script>
