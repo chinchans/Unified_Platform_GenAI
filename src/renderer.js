@@ -53,10 +53,21 @@ const rejectBtn = document.getElementById("reject-btn");
 const reviewActions = document.getElementById("review-actions");
 const milestoneList = document.getElementById("milestone-list");
 const logStream = document.getElementById("log-stream");
+const intentStatusPill = document.getElementById("intent-status-pill");
 const ambiguityCallout = document.getElementById("self-learning-ambiguity-callout");
 const ambiguityItemList = document.getElementById("ambiguity-item-list");
 const runningIndicator = document.getElementById("running-indicator");
 const runningIndicatorText = document.getElementById("running-indicator-text");
+const centerTabs = document.querySelectorAll(".header-tab[data-center-pane]");
+const centerPanes = {
+  "logs-outputs": document.getElementById("pane-logs-outputs"),
+  "audit-trail": document.getElementById("pane-audit-trail"),
+  "eval-learning": document.getElementById("pane-eval-learning"),
+  "validation-compilation": document.getElementById("pane-validation-compilation")
+};
+const headerStatusBadge = document.querySelector(".header-tab-status");
+const panelHeadingTitle = document.querySelector(".right-panel-heading h3");
+const panelHeadingBadge = document.querySelector(".pipeline-badge");
 const gitHistoryScreen = document.getElementById("git-history-screen");
 const openGitHistoryBtn = document.getElementById("open-git-history-btn");
 const closeGitHistoryBtn = document.getElementById("close-git-history-btn");
@@ -67,6 +78,7 @@ const gitCommitDetail = document.getElementById("git-commit-detail");
 const settingsOpenButtons = document.querySelectorAll(".titlebar-settings-btn");
 const pipelineTrack = document.getElementById("pipeline-track");
 const pipelineEmptyState = document.getElementById("pipeline-empty-state");
+const pipelineRunMeta = document.getElementById("pipeline-run-meta");
 const streamUtils = window.StreamUtils || {};
 const CHEVRON_DOWN_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-chevron-down" viewBox="0 0 16 16">
   <path fill-rule="evenodd" d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708"/>
@@ -74,6 +86,30 @@ const CHEVRON_DOWN_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="16" hei
 const CHEVRON_UP_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-chevron-up" viewBox="0 0 16 16">
   <path fill-rule="evenodd" d="M7.646 4.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1-.708.708L8 5.707l-5.646 5.647a.5.5 0 0 1-.708-.708z"/>
 </svg>`;
+
+const CENTER_PANE_HEADER = {
+  "logs-outputs": { title: "Live Output", badge: "SYS" },
+  "audit-trail": { title: "Audit Trail", badge: "AUDIT" },
+  "eval-learning": { title: "Eval & Learning", badge: "EVAL" },
+  "validation-compilation": { title: "Validation & Compilation", badge: "VALIDATE" }
+};
+
+function setActiveCenterPane(paneId) {
+  centerTabs.forEach((tab) => {
+    const isActive = tab.dataset.centerPane === paneId;
+    tab.classList.toggle("active", isActive);
+    tab.setAttribute("aria-selected", isActive ? "true" : "false");
+  });
+
+  Object.entries(centerPanes).forEach(([id, node]) => {
+    if (!node) return;
+    node.classList.toggle("hidden", id !== paneId);
+  });
+
+  const meta = CENTER_PANE_HEADER[paneId] || CENTER_PANE_HEADER["logs-outputs"];
+  if (panelHeadingTitle) panelHeadingTitle.textContent = meta.title;
+  if (panelHeadingBadge) panelHeadingBadge.textContent = meta.badge;
+}
 
 function setReviewActionsVisible(visible) {
   reviewActions.classList.toggle("hidden", !visible);
@@ -204,6 +240,7 @@ function setPipelineVisibility(visible) {
   state.pipelineStarted = visible;
   if (pipelineTrack) pipelineTrack.classList.toggle("hidden", !visible);
   if (pipelineEmptyState) pipelineEmptyState.classList.toggle("hidden", visible);
+  if (pipelineRunMeta) pipelineRunMeta.classList.toggle("hidden", !visible);
 }
 
 function renderPipelinePhases(milestones) {
@@ -240,6 +277,13 @@ function renderPipelinePhases(milestones) {
   const notCompletedIndex = phases.findIndex((phase) => phase.status === "not_completed");
   const activeIndex = inProgressIndex >= 0 ? inProgressIndex : notCompletedIndex >= 0 ? notCompletedIndex : phases.length - 1;
 
+  const phaseStatusText = (status) => {
+    if (status === "in_progress") return "in progress";
+    if (status === "completed") return "completed";
+    if (status === "failed") return "failed";
+    return "pending";
+  };
+
   pipelineTrack.innerHTML = "";
   phases.forEach((phase, index) => {
     const item = document.createElement("div");
@@ -248,10 +292,13 @@ function renderPipelinePhases(milestones) {
       item.classList.add("active");
     }
     if (phase.status === "completed") item.classList.add("completed");
+    if (phase.status === "in_progress") item.classList.add("in-progress");
+    if (phase.status === "failed") item.classList.add("failed");
+    const statusLabel = phaseStatusText(phase.status);
     if (phase.subtitle) {
-      item.innerHTML = `<div class="pipeline-title">${phase.title}</div><div class="pipeline-subtitle">${phase.subtitle}</div>`;
+      item.innerHTML = `<div class="pipeline-item-head"><div class="pipeline-title">${phase.title}</div><div class="pipeline-phase-status">${statusLabel}</div></div><div class="pipeline-subtitle">${phase.subtitle}</div>`;
     } else {
-      item.textContent = phase.title;
+      item.innerHTML = `<div class="pipeline-item-head"><div class="pipeline-title">${phase.title}</div><div class="pipeline-phase-status">${statusLabel}</div></div>`;
     }
     pipelineTrack.appendChild(item);
   });
@@ -737,13 +784,32 @@ function updateRunningIndicator() {
   if (!runningIndicatorText) return;
   if (state.generationInProgress) {
     runningIndicatorText.textContent = "Code generation in progress...";
+    refreshTopStatusBadges();
     return;
   }
   if (state.reviewInProgress) {
     runningIndicatorText.textContent = "Applying review action...";
+    refreshTopStatusBadges();
     return;
   }
   runningIndicatorText.textContent = getRunningStageMessage();
+  refreshTopStatusBadges();
+}
+
+function refreshTopStatusBadges() {
+  const isRunning =
+    isMilestoneRunning() || state.generationInProgress || state.reviewInProgress;
+  const statusText = isRunning ? "Running" : state.promptReady ? "Prompt Ready" : "Idle";
+  if (intentStatusPill) {
+    intentStatusPill.textContent = statusText;
+    intentStatusPill.classList.toggle("is-running", isRunning);
+    intentStatusPill.classList.toggle("is-ready", !isRunning && state.promptReady);
+  }
+  if (headerStatusBadge) {
+    headerStatusBadge.textContent = statusText;
+    headerStatusBadge.classList.toggle("is-running", isRunning);
+    headerStatusBadge.classList.toggle("is-ready", !isRunning && state.promptReady);
+  }
 }
 
 async function readNdjsonStream(response, onEvent) {
@@ -1063,6 +1129,11 @@ function initSettingsUi() {
   const paneBranchStrategy = document.getElementById("settings-pane-branch-strategy");
   const paneCicdPipeline = document.getElementById("settings-pane-ci-cd-pipeline");
   const paneTestRunner = document.getElementById("settings-pane-test-runner");
+  const paneRcaEngine = document.getElementById("settings-pane-rca-engine");
+  const paneQualityGates = document.getElementById("settings-pane-quality-gates");
+  const paneNotifications = document.getElementById("settings-pane-notifications");
+  const paneWorkspacePaths = document.getElementById("settings-pane-workspace-paths");
+  const paneAdvanced = document.getElementById("settings-pane-advanced");
   const paneGeneric = document.getElementById("settings-pane-generic");
   const genericTitle = document.getElementById("settings-generic-title");
   const genericSubtitle = document.getElementById("settings-generic-subtitle");
@@ -1127,6 +1198,41 @@ function initSettingsUi() {
   const testRunnerTimeout = document.getElementById("settings-test-runner-timeout");
   const testRunnerSaveBtn = document.getElementById("settings-test-runner-save");
   const testRunnerStatus = document.getElementById("settings-test-runner-status");
+  const rcaAutoTrigger = document.getElementById("settings-rca-auto-trigger");
+  const rcaAutoApply = document.getElementById("settings-rca-auto-apply");
+  const rcaReviewBelowThreshold = document.getElementById("settings-rca-review-below-threshold");
+  const rcaSearchHistory = document.getElementById("settings-rca-search-history");
+  const rcaAutoApplyThreshold = document.getElementById("settings-rca-auto-apply-threshold");
+  const rcaMaxIterations = document.getElementById("settings-rca-max-iterations");
+  const rcaMaxIterationAction = document.getElementById("settings-rca-max-iteration-action");
+  const rcaSaveBtn = document.getElementById("settings-rca-save");
+  const rcaStatus = document.getElementById("settings-rca-status");
+  const qualityMinPassRate = document.getElementById("settings-quality-min-pass-rate");
+  const qualityMinCoverage = document.getElementById("settings-quality-min-coverage");
+  const qualityMaxWarnings = document.getElementById("settings-quality-max-warnings");
+  const qualityBlockOnFail = document.getElementById("settings-quality-block-on-fail");
+  const qualitySaveBtn = document.getElementById("settings-quality-save");
+  const qualityStatus = document.getElementById("settings-quality-status");
+  const notifyEmailCompletion = document.getElementById("settings-notify-email-completion");
+  const notifyEmailFailure = document.getElementById("settings-notify-email-failure");
+  const notifyTeamsEnabled = document.getElementById("settings-notify-teams-enabled");
+  const notifySlackEnabled = document.getElementById("settings-notify-slack-enabled");
+  const notifyEmailAddress = document.getElementById("settings-notify-email-address");
+  const notificationsSaveBtn = document.getElementById("settings-notifications-save");
+  const notificationsStatus = document.getElementById("settings-notifications-status");
+  const pathPlatformRoot = document.getElementById("settings-path-platform-root");
+  const pathPromptOutput = document.getElementById("settings-path-prompt-output");
+  const pathLogOutput = document.getElementById("settings-path-log-output");
+  const pathTestResults = document.getElementById("settings-path-test-results");
+  const pathsSaveBtn = document.getElementById("settings-paths-save");
+  const pathsStatus = document.getElementById("settings-paths-status");
+  const advancedDryRun = document.getElementById("settings-advanced-dry-run");
+  const advancedVerboseLogging = document.getElementById("settings-advanced-verbose-logging");
+  const advancedPersistSession = document.getElementById("settings-advanced-persist-session");
+  const advancedVersion = document.getElementById("settings-advanced-version");
+  const advancedSaveBtn = document.getElementById("settings-advanced-save");
+  const advancedResetBtn = document.getElementById("settings-advanced-reset");
+  const advancedStatus = document.getElementById("settings-advanced-status");
 
   if (
     !paneAi ||
@@ -1135,6 +1241,11 @@ function initSettingsUi() {
     !paneBranchStrategy ||
     !paneCicdPipeline ||
     !paneTestRunner ||
+    !paneRcaEngine ||
+    !paneQualityGates ||
+    !paneNotifications ||
+    !paneWorkspacePaths ||
+    !paneAdvanced ||
     !paneGeneric ||
     !genericTitle ||
     !genericSubtitle ||
@@ -1166,6 +1277,11 @@ function initSettingsUi() {
   let branchStatusTimerId = null;
   let cicdStatusTimerId = null;
   let testRunnerStatusTimerId = null;
+  let rcaStatusTimerId = null;
+  let qualityStatusTimerId = null;
+  let notificationsStatusTimerId = null;
+  let pathsStatusTimerId = null;
+  let advancedStatusTimerId = null;
   let activeGenericPaneKey = "";
   let activeGenericFieldIds = [];
   const genericFieldRefs = {};
@@ -1304,6 +1420,11 @@ function initSettingsUi() {
     paneBranchStrategy.setAttribute("hidden", "");
     paneCicdPipeline.setAttribute("hidden", "");
     paneTestRunner.setAttribute("hidden", "");
+    paneRcaEngine.setAttribute("hidden", "");
+    paneQualityGates.setAttribute("hidden", "");
+    paneNotifications.setAttribute("hidden", "");
+    paneWorkspacePaths.setAttribute("hidden", "");
+    paneAdvanced.setAttribute("hidden", "");
     paneGeneric.setAttribute("hidden", "");
   }
 
@@ -1326,6 +1447,11 @@ function initSettingsUi() {
     paneBranchStrategy.setAttribute("hidden", "");
     paneCicdPipeline.setAttribute("hidden", "");
     paneTestRunner.setAttribute("hidden", "");
+    paneRcaEngine.setAttribute("hidden", "");
+    paneQualityGates.setAttribute("hidden", "");
+    paneNotifications.setAttribute("hidden", "");
+    paneWorkspacePaths.setAttribute("hidden", "");
+    paneAdvanced.setAttribute("hidden", "");
     paneGeneric.setAttribute("hidden", "");
   }
 
@@ -1336,6 +1462,11 @@ function initSettingsUi() {
     paneBranchStrategy.setAttribute("hidden", "");
     paneCicdPipeline.setAttribute("hidden", "");
     paneTestRunner.setAttribute("hidden", "");
+    paneRcaEngine.setAttribute("hidden", "");
+    paneQualityGates.setAttribute("hidden", "");
+    paneNotifications.setAttribute("hidden", "");
+    paneWorkspacePaths.setAttribute("hidden", "");
+    paneAdvanced.setAttribute("hidden", "");
     paneGeneric.setAttribute("hidden", "");
   }
 
@@ -1346,6 +1477,11 @@ function initSettingsUi() {
     paneRepositoryConfig.setAttribute("hidden", "");
     paneCicdPipeline.setAttribute("hidden", "");
     paneTestRunner.setAttribute("hidden", "");
+    paneRcaEngine.setAttribute("hidden", "");
+    paneQualityGates.setAttribute("hidden", "");
+    paneNotifications.setAttribute("hidden", "");
+    paneWorkspacePaths.setAttribute("hidden", "");
+    paneAdvanced.setAttribute("hidden", "");
     paneGeneric.setAttribute("hidden", "");
   }
 
@@ -1356,6 +1492,11 @@ function initSettingsUi() {
     paneRepositoryConfig.setAttribute("hidden", "");
     paneBranchStrategy.setAttribute("hidden", "");
     paneTestRunner.setAttribute("hidden", "");
+    paneRcaEngine.setAttribute("hidden", "");
+    paneQualityGates.setAttribute("hidden", "");
+    paneNotifications.setAttribute("hidden", "");
+    paneWorkspacePaths.setAttribute("hidden", "");
+    paneAdvanced.setAttribute("hidden", "");
     paneGeneric.setAttribute("hidden", "");
   }
 
@@ -1366,6 +1507,86 @@ function initSettingsUi() {
     paneRepositoryConfig.setAttribute("hidden", "");
     paneBranchStrategy.setAttribute("hidden", "");
     paneCicdPipeline.setAttribute("hidden", "");
+    paneRcaEngine.setAttribute("hidden", "");
+    paneQualityGates.setAttribute("hidden", "");
+    paneNotifications.setAttribute("hidden", "");
+    paneWorkspacePaths.setAttribute("hidden", "");
+    paneAdvanced.setAttribute("hidden", "");
+    paneGeneric.setAttribute("hidden", "");
+  }
+
+  function showRcaEnginePane() {
+    paneRcaEngine.removeAttribute("hidden");
+    paneAi.setAttribute("hidden", "");
+    panePromptTemplates.setAttribute("hidden", "");
+    paneRepositoryConfig.setAttribute("hidden", "");
+    paneBranchStrategy.setAttribute("hidden", "");
+    paneCicdPipeline.setAttribute("hidden", "");
+    paneTestRunner.setAttribute("hidden", "");
+    paneQualityGates.setAttribute("hidden", "");
+    paneNotifications.setAttribute("hidden", "");
+    paneWorkspacePaths.setAttribute("hidden", "");
+    paneAdvanced.setAttribute("hidden", "");
+    paneGeneric.setAttribute("hidden", "");
+  }
+
+  function showQualityGatesPane() {
+    paneQualityGates.removeAttribute("hidden");
+    paneAi.setAttribute("hidden", "");
+    panePromptTemplates.setAttribute("hidden", "");
+    paneRepositoryConfig.setAttribute("hidden", "");
+    paneBranchStrategy.setAttribute("hidden", "");
+    paneCicdPipeline.setAttribute("hidden", "");
+    paneTestRunner.setAttribute("hidden", "");
+    paneRcaEngine.setAttribute("hidden", "");
+    paneNotifications.setAttribute("hidden", "");
+    paneWorkspacePaths.setAttribute("hidden", "");
+    paneAdvanced.setAttribute("hidden", "");
+    paneGeneric.setAttribute("hidden", "");
+  }
+
+  function showNotificationsPane() {
+    paneNotifications.removeAttribute("hidden");
+    paneAi.setAttribute("hidden", "");
+    panePromptTemplates.setAttribute("hidden", "");
+    paneRepositoryConfig.setAttribute("hidden", "");
+    paneBranchStrategy.setAttribute("hidden", "");
+    paneCicdPipeline.setAttribute("hidden", "");
+    paneTestRunner.setAttribute("hidden", "");
+    paneRcaEngine.setAttribute("hidden", "");
+    paneQualityGates.setAttribute("hidden", "");
+    paneWorkspacePaths.setAttribute("hidden", "");
+    paneAdvanced.setAttribute("hidden", "");
+    paneGeneric.setAttribute("hidden", "");
+  }
+
+  function showWorkspacePathsPane() {
+    paneWorkspacePaths.removeAttribute("hidden");
+    paneAi.setAttribute("hidden", "");
+    panePromptTemplates.setAttribute("hidden", "");
+    paneRepositoryConfig.setAttribute("hidden", "");
+    paneBranchStrategy.setAttribute("hidden", "");
+    paneCicdPipeline.setAttribute("hidden", "");
+    paneTestRunner.setAttribute("hidden", "");
+    paneRcaEngine.setAttribute("hidden", "");
+    paneQualityGates.setAttribute("hidden", "");
+    paneNotifications.setAttribute("hidden", "");
+    paneAdvanced.setAttribute("hidden", "");
+    paneGeneric.setAttribute("hidden", "");
+  }
+
+  function showAdvancedPane() {
+    paneAdvanced.removeAttribute("hidden");
+    paneAi.setAttribute("hidden", "");
+    panePromptTemplates.setAttribute("hidden", "");
+    paneRepositoryConfig.setAttribute("hidden", "");
+    paneBranchStrategy.setAttribute("hidden", "");
+    paneCicdPipeline.setAttribute("hidden", "");
+    paneTestRunner.setAttribute("hidden", "");
+    paneRcaEngine.setAttribute("hidden", "");
+    paneQualityGates.setAttribute("hidden", "");
+    paneNotifications.setAttribute("hidden", "");
+    paneWorkspacePaths.setAttribute("hidden", "");
     paneGeneric.setAttribute("hidden", "");
   }
 
@@ -1490,6 +1711,11 @@ function initSettingsUi() {
     paneBranchStrategy.setAttribute("hidden", "");
     paneCicdPipeline.setAttribute("hidden", "");
     paneTestRunner.setAttribute("hidden", "");
+    paneRcaEngine.setAttribute("hidden", "");
+    paneQualityGates.setAttribute("hidden", "");
+    paneNotifications.setAttribute("hidden", "");
+    paneWorkspacePaths.setAttribute("hidden", "");
+    paneAdvanced.setAttribute("hidden", "");
   }
 
   function syncNavActive(activeBtn) {
@@ -1698,6 +1924,16 @@ function initSettingsUi() {
         showCicdPipelinePane();
       } else if (pane === "test-runner") {
         showTestRunnerPane();
+      } else if (pane === "rca-engine") {
+        showRcaEnginePane();
+      } else if (pane === "quality-gates") {
+        showQualityGatesPane();
+      } else if (pane === "notifications") {
+        showNotificationsPane();
+      } else if (pane === "workspace-paths") {
+        showWorkspacePathsPane();
+      } else if (pane === "advanced") {
+        showAdvancedPane();
       } else {
         showGenericPane(title, pane);
       }
@@ -2172,6 +2408,374 @@ function initSettingsUi() {
   }
 
   loadTestRunnerUi();
+
+  function flashRcaStatus(message, isWarning = false) {
+    if (!rcaStatus) return;
+    rcaStatus.textContent = message;
+    rcaStatus.hidden = !message;
+    rcaStatus.classList.toggle("is-warning", isWarning);
+    if (rcaStatusTimerId) window.clearTimeout(rcaStatusTimerId);
+    rcaStatusTimerId = window.setTimeout(() => {
+      rcaStatus.hidden = true;
+      rcaStatus.textContent = "";
+    }, 4500);
+  }
+
+  function readRcaSettings() {
+    const stored = readPlatformSettings();
+    const r = stored.rcaEngine && typeof stored.rcaEngine === "object" ? stored.rcaEngine : {};
+    return {
+      autoTrigger: typeof r.autoTrigger === "boolean" ? r.autoTrigger : true,
+      autoApplyHighConfidence: typeof r.autoApplyHighConfidence === "boolean" ? r.autoApplyHighConfidence : true,
+      reviewBelowThreshold: typeof r.reviewBelowThreshold === "boolean" ? r.reviewBelowThreshold : true,
+      searchGitHistory: typeof r.searchGitHistory === "boolean" ? r.searchGitHistory : true,
+      autoApplyThreshold: typeof r.autoApplyThreshold === "number" ? r.autoApplyThreshold : 80,
+      maxIterations: typeof r.maxIterations === "number" ? r.maxIterations : 3,
+      onMaxIterations: typeof r.onMaxIterations === "string" ? r.onMaxIterations : "pause-notify"
+    };
+  }
+
+  function writeRcaSettings(nextSettings) {
+    const next = readPlatformSettings();
+    next.rcaEngine = nextSettings;
+    writePlatformSettings(next);
+  }
+
+  function loadRcaUi() {
+    if (
+      !rcaAutoTrigger ||
+      !rcaAutoApply ||
+      !rcaReviewBelowThreshold ||
+      !rcaSearchHistory ||
+      !rcaAutoApplyThreshold ||
+      !rcaMaxIterations ||
+      !rcaMaxIterationAction
+    ) {
+      return;
+    }
+    const r = readRcaSettings();
+    rcaAutoTrigger.checked = r.autoTrigger;
+    rcaAutoApply.checked = r.autoApplyHighConfidence;
+    rcaReviewBelowThreshold.checked = r.reviewBelowThreshold;
+    rcaSearchHistory.checked = r.searchGitHistory;
+    rcaAutoApplyThreshold.value = String(r.autoApplyThreshold);
+    rcaMaxIterations.value = String(r.maxIterations);
+    rcaMaxIterationAction.value = r.onMaxIterations;
+  }
+
+  if (rcaSaveBtn) {
+    rcaSaveBtn.addEventListener("click", () => {
+      if (!rcaAutoApplyThreshold || !rcaMaxIterations) return;
+      const threshold = Number(rcaAutoApplyThreshold.value);
+      const maxIterations = Number(rcaMaxIterations.value);
+      if (!Number.isFinite(threshold) || threshold < 0 || threshold > 100) {
+        flashRcaStatus("Auto-apply threshold must be between 0 and 100.", true);
+        return;
+      }
+      if (!Number.isFinite(maxIterations) || maxIterations < 1 || maxIterations > 20) {
+        flashRcaStatus("Max RCA iterations must be between 1 and 20.", true);
+        return;
+      }
+      writeRcaSettings({
+        autoTrigger: Boolean(rcaAutoTrigger?.checked),
+        autoApplyHighConfidence: Boolean(rcaAutoApply?.checked),
+        reviewBelowThreshold: Boolean(rcaReviewBelowThreshold?.checked),
+        searchGitHistory: Boolean(rcaSearchHistory?.checked),
+        autoApplyThreshold: Math.round(threshold),
+        maxIterations: Math.round(maxIterations),
+        onMaxIterations: String(rcaMaxIterationAction?.value || "pause-notify")
+      });
+      flashRcaStatus("RCA engine settings saved locally.");
+    });
+  }
+
+  loadRcaUi();
+
+  function flashQualityStatus(message, isWarning = false) {
+    if (!qualityStatus) return;
+    qualityStatus.textContent = message;
+    qualityStatus.hidden = !message;
+    qualityStatus.classList.toggle("is-warning", isWarning);
+    if (qualityStatusTimerId) window.clearTimeout(qualityStatusTimerId);
+    qualityStatusTimerId = window.setTimeout(() => {
+      qualityStatus.hidden = true;
+      qualityStatus.textContent = "";
+    }, 4500);
+  }
+
+  function readQualitySettings() {
+    const stored = readPlatformSettings();
+    const q = stored.qualityGates && typeof stored.qualityGates === "object" ? stored.qualityGates : {};
+    return {
+      minPassRate: typeof q.minPassRate === "number" ? q.minPassRate : 100,
+      minCoverage: typeof q.minCoverage === "number" ? q.minCoverage : 80,
+      maxWarnings: typeof q.maxWarnings === "number" ? q.maxWarnings : 5,
+      blockOnFail: typeof q.blockOnFail === "boolean" ? q.blockOnFail : true
+    };
+  }
+
+  function writeQualitySettings(nextSettings) {
+    const next = readPlatformSettings();
+    next.qualityGates = nextSettings;
+    writePlatformSettings(next);
+  }
+
+  function loadQualityUi() {
+    if (!qualityMinPassRate || !qualityMinCoverage || !qualityMaxWarnings || !qualityBlockOnFail) return;
+    const q = readQualitySettings();
+    qualityMinPassRate.value = String(q.minPassRate);
+    qualityMinCoverage.value = String(q.minCoverage);
+    qualityMaxWarnings.value = String(q.maxWarnings);
+    qualityBlockOnFail.checked = q.blockOnFail;
+  }
+
+  if (qualitySaveBtn) {
+    qualitySaveBtn.addEventListener("click", () => {
+      if (!qualityMinPassRate || !qualityMinCoverage || !qualityMaxWarnings || !qualityBlockOnFail) return;
+      const minPassRate = Number(qualityMinPassRate.value);
+      const minCoverage = Number(qualityMinCoverage.value);
+      const maxWarnings = Number(qualityMaxWarnings.value);
+      if (!Number.isFinite(minPassRate) || minPassRate < 0 || minPassRate > 100) {
+        flashQualityStatus("Min test pass rate must be between 0 and 100.", true);
+        return;
+      }
+      if (!Number.isFinite(minCoverage) || minCoverage < 0 || minCoverage > 100) {
+        flashQualityStatus("Min code coverage must be between 0 and 100.", true);
+        return;
+      }
+      if (!Number.isFinite(maxWarnings) || maxWarnings < 0 || maxWarnings > 1000) {
+        flashQualityStatus("Max build warnings must be between 0 and 1000.", true);
+        return;
+      }
+      writeQualitySettings({
+        minPassRate: Math.round(minPassRate),
+        minCoverage: Math.round(minCoverage),
+        maxWarnings: Math.round(maxWarnings),
+        blockOnFail: Boolean(qualityBlockOnFail.checked)
+      });
+      flashQualityStatus("Quality gate settings saved locally.");
+    });
+  }
+
+  loadQualityUi();
+
+  function flashNotificationsStatus(message, isWarning = false) {
+    if (!notificationsStatus) return;
+    notificationsStatus.textContent = message;
+    notificationsStatus.hidden = !message;
+    notificationsStatus.classList.toggle("is-warning", isWarning);
+    if (notificationsStatusTimerId) window.clearTimeout(notificationsStatusTimerId);
+    notificationsStatusTimerId = window.setTimeout(() => {
+      notificationsStatus.hidden = true;
+      notificationsStatus.textContent = "";
+    }, 4500);
+  }
+
+  function readNotificationsSettings() {
+    const stored = readPlatformSettings();
+    const n = stored.notifications && typeof stored.notifications === "object" ? stored.notifications : {};
+    return {
+      emailOnCompletion: typeof n.emailOnCompletion === "boolean" ? n.emailOnCompletion : true,
+      emailOnFailure: typeof n.emailOnFailure === "boolean" ? n.emailOnFailure : true,
+      teamsEnabled: typeof n.teamsEnabled === "boolean" ? n.teamsEnabled : false,
+      slackEnabled: typeof n.slackEnabled === "boolean" ? n.slackEnabled : false,
+      emailAddress: typeof n.emailAddress === "string" ? n.emailAddress : "chandu.vangal@tcs.com"
+    };
+  }
+
+  function writeNotificationsSettings(nextSettings) {
+    const next = readPlatformSettings();
+    next.notifications = nextSettings;
+    writePlatformSettings(next);
+  }
+
+  function loadNotificationsUi() {
+    if (
+      !notifyEmailCompletion ||
+      !notifyEmailFailure ||
+      !notifyTeamsEnabled ||
+      !notifySlackEnabled ||
+      !notifyEmailAddress
+    ) {
+      return;
+    }
+    const n = readNotificationsSettings();
+    notifyEmailCompletion.checked = n.emailOnCompletion;
+    notifyEmailFailure.checked = n.emailOnFailure;
+    notifyTeamsEnabled.checked = n.teamsEnabled;
+    notifySlackEnabled.checked = n.slackEnabled;
+    notifyEmailAddress.value = n.emailAddress;
+  }
+
+  if (notificationsSaveBtn) {
+    notificationsSaveBtn.addEventListener("click", () => {
+      if (
+        !notifyEmailCompletion ||
+        !notifyEmailFailure ||
+        !notifyTeamsEnabled ||
+        !notifySlackEnabled ||
+        !notifyEmailAddress
+      ) {
+        return;
+      }
+      const email = String(notifyEmailAddress.value || "").trim();
+      const emailLooksValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+      if ((notifyEmailCompletion.checked || notifyEmailFailure.checked) && !emailLooksValid) {
+        flashNotificationsStatus("Enter a valid email address when email notifications are enabled.", true);
+        return;
+      }
+      writeNotificationsSettings({
+        emailOnCompletion: Boolean(notifyEmailCompletion.checked),
+        emailOnFailure: Boolean(notifyEmailFailure.checked),
+        teamsEnabled: Boolean(notifyTeamsEnabled.checked),
+        slackEnabled: Boolean(notifySlackEnabled.checked),
+        emailAddress: email
+      });
+      flashNotificationsStatus("Notification settings saved locally.");
+    });
+  }
+
+  loadNotificationsUi();
+
+  function flashPathsStatus(message, isWarning = false) {
+    if (!pathsStatus) return;
+    pathsStatus.textContent = message;
+    pathsStatus.hidden = !message;
+    pathsStatus.classList.toggle("is-warning", isWarning);
+    if (pathsStatusTimerId) window.clearTimeout(pathsStatusTimerId);
+    pathsStatusTimerId = window.setTimeout(() => {
+      pathsStatus.hidden = true;
+      pathsStatus.textContent = "";
+    }, 4500);
+  }
+
+  function readPathsSettings() {
+    const stored = readPlatformSettings();
+    const w = stored.workspacePaths && typeof stored.workspacePaths === "object" ? stored.workspacePaths : {};
+    return {
+      platformRoot:
+        typeof w.platformRoot === "string" ? w.platformRoot : "/home/tcs/Downloads/Unified_Platform_UI",
+      promptOutputDir: typeof w.promptOutputDir === "string" ? w.promptOutputDir : "./prompts/generated/",
+      logOutputDir: typeof w.logOutputDir === "string" ? w.logOutputDir : "./logs/",
+      testResultsDir: typeof w.testResultsDir === "string" ? w.testResultsDir : "./test_results/"
+    };
+  }
+
+  function writePathsSettings(nextSettings) {
+    const next = readPlatformSettings();
+    next.workspacePaths = nextSettings;
+    writePlatformSettings(next);
+  }
+
+  function loadPathsUi() {
+    if (!pathPlatformRoot || !pathPromptOutput || !pathLogOutput || !pathTestResults) return;
+    const w = readPathsSettings();
+    pathPlatformRoot.value = w.platformRoot;
+    pathPromptOutput.value = w.promptOutputDir;
+    pathLogOutput.value = w.logOutputDir;
+    pathTestResults.value = w.testResultsDir;
+  }
+
+  if (pathsSaveBtn) {
+    pathsSaveBtn.addEventListener("click", () => {
+      if (!pathPlatformRoot || !pathPromptOutput || !pathLogOutput || !pathTestResults) return;
+      const platformRoot = String(pathPlatformRoot.value || "").trim();
+      if (!platformRoot) {
+        flashPathsStatus("Platform root is required.", true);
+        return;
+      }
+      writePathsSettings({
+        platformRoot,
+        promptOutputDir: String(pathPromptOutput.value || "").trim(),
+        logOutputDir: String(pathLogOutput.value || "").trim(),
+        testResultsDir: String(pathTestResults.value || "").trim()
+      });
+      flashPathsStatus("Workspace path settings saved locally.");
+    });
+  }
+
+  loadPathsUi();
+
+  const ADVANCED_DEFAULTS = {
+    dryRunMode: false,
+    verboseLogging: true,
+    persistSessionState: true,
+    version: "UIP v1.0.0-beta - Build 20260508"
+  };
+
+  function flashAdvancedStatus(message, isWarning = false) {
+    if (!advancedStatus) return;
+    advancedStatus.textContent = message;
+    advancedStatus.hidden = !message;
+    advancedStatus.classList.toggle("is-warning", isWarning);
+    if (advancedStatusTimerId) window.clearTimeout(advancedStatusTimerId);
+    advancedStatusTimerId = window.setTimeout(() => {
+      advancedStatus.hidden = true;
+      advancedStatus.textContent = "";
+    }, 4500);
+  }
+
+  function readAdvancedSettings() {
+    const stored = readPlatformSettings();
+    const a = stored.advanced && typeof stored.advanced === "object" ? stored.advanced : {};
+    return {
+      dryRunMode:
+        typeof a.dryRunMode === "boolean" ? a.dryRunMode : ADVANCED_DEFAULTS.dryRunMode,
+      verboseLogging:
+        typeof a.verboseLogging === "boolean"
+          ? a.verboseLogging
+          : ADVANCED_DEFAULTS.verboseLogging,
+      persistSessionState:
+        typeof a.persistSessionState === "boolean"
+          ? a.persistSessionState
+          : ADVANCED_DEFAULTS.persistSessionState,
+      version:
+        typeof a.version === "string" && a.version.trim()
+          ? a.version
+          : ADVANCED_DEFAULTS.version
+    };
+  }
+
+  function writeAdvancedSettings(nextSettings) {
+    const next = readPlatformSettings();
+    next.advanced = nextSettings;
+    writePlatformSettings(next);
+  }
+
+  function applyAdvancedValues(values) {
+    if (advancedDryRun) advancedDryRun.checked = Boolean(values.dryRunMode);
+    if (advancedVerboseLogging) advancedVerboseLogging.checked = Boolean(values.verboseLogging);
+    if (advancedPersistSession) advancedPersistSession.checked = Boolean(values.persistSessionState);
+    if (advancedVersion) advancedVersion.textContent = String(values.version || ADVANCED_DEFAULTS.version);
+  }
+
+  function loadAdvancedUi() {
+    if (!advancedDryRun || !advancedVerboseLogging || !advancedPersistSession || !advancedVersion) return;
+    applyAdvancedValues(readAdvancedSettings());
+  }
+
+  if (advancedSaveBtn) {
+    advancedSaveBtn.addEventListener("click", () => {
+      if (!advancedDryRun || !advancedVerboseLogging || !advancedPersistSession || !advancedVersion) return;
+      writeAdvancedSettings({
+        dryRunMode: Boolean(advancedDryRun.checked),
+        verboseLogging: Boolean(advancedVerboseLogging.checked),
+        persistSessionState: Boolean(advancedPersistSession.checked),
+        version: String(advancedVersion.textContent || ADVANCED_DEFAULTS.version)
+      });
+      flashAdvancedStatus("Advanced settings saved locally.");
+    });
+  }
+
+  if (advancedResetBtn) {
+    advancedResetBtn.addEventListener("click", () => {
+      applyAdvancedValues(ADVANCED_DEFAULTS);
+      writeAdvancedSettings(ADVANCED_DEFAULTS);
+      flashAdvancedStatus("Advanced settings reset to defaults.");
+    });
+  }
+
+  loadAdvancedUi();
 
   genericSaveBtn.addEventListener("click", () => {
     if (!activeGenericPaneKey) return;
@@ -2930,6 +3534,14 @@ pushBtn.addEventListener("click", async () => {
   }
 });
 
+centerTabs.forEach((tab) => {
+  tab.addEventListener("click", () => {
+    const paneId = tab.dataset.centerPane || "logs-outputs";
+    setActiveCenterPane(paneId);
+  });
+});
+
+setActiveCenterPane("logs-outputs");
 setReviewActionsVisible(false);
 setCommitMessageVisible(false);
 renderMilestones(getInitialMilestones());

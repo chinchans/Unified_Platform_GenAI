@@ -34,12 +34,18 @@
             <div class="panel top-panel">
               <div class="panel-head-row">
                 <h3>User Intent</h3>
-                <span class="status-pill">Ready to run</span>
+                <span id="intent-status-pill" class="status-pill">Idle</span>
               </div>
               <textarea
                 id="intent-input"
                 placeholder="Enter 5G feature intent or ambiguity resolution..."
               ></textarea>
+              <div class="intent-tags" aria-label="Intent tags">
+                <span class="intent-tag">FIAP</span>
+                <span class="intent-tag">LTM Handover</span>
+                <span class="intent-tag">TS 38.473</span>
+                <span class="intent-tag">OAI-CU</span>
+              </div>
               <div id="self-learning-ambiguity-callout" class="ambiguity-callout hidden" aria-live="polite">
                 <div class="ambiguity-callout-heading">Self-learning — open points</div>
                 <p class="ambiguity-callout-lead">
@@ -82,7 +88,13 @@
 
           <main class="center-panel panel">
             <div class="center-header-tabs">
-              <button class="header-tab active" type="button">Logs & Outputs</button>
+              <div class="header-tab-list" role="tablist" aria-label="Center panes">
+                <button class="header-tab active" type="button" role="tab" aria-selected="true" data-center-pane="logs-outputs">Logs &amp; Outputs</button>
+                <button class="header-tab" type="button" role="tab" aria-selected="false" data-center-pane="audit-trail">Audit Trail</button>
+                <button class="header-tab" type="button" role="tab" aria-selected="false" data-center-pane="eval-learning">Eval &amp; Learning</button>
+                <button class="header-tab" type="button" role="tab" aria-selected="false" data-center-pane="validation-compilation">Validation &amp; Compilation</button>
+              </div>
+              <span class="header-tab-status">Idle</span>
             </div>
             <div class="right-panel-header">
               <div class="right-panel-heading">
@@ -100,13 +112,36 @@
                 </div>
               </div>
             </div>
-            <div id="log-stream" class="log-stream"></div>
+            <div class="center-pane-wrap">
+              <div id="pane-logs-outputs" class="center-pane">
+                <div id="log-stream" class="log-stream"></div>
+              </div>
+              <div id="pane-audit-trail" class="center-pane hidden">
+                <div id="audit-trail-stream" class="secondary-stream">
+                  <div class="secondary-stream-empty">Audit events will be shown here.</div>
+                </div>
+              </div>
+              <div id="pane-eval-learning" class="center-pane hidden">
+                <div id="eval-learning-stream" class="secondary-stream">
+                  <div class="secondary-stream-empty">Evaluation and learning insights will appear here.</div>
+                </div>
+              </div>
+              <div id="pane-validation-compilation" class="center-pane hidden">
+                <div id="validation-compilation-stream" class="secondary-stream">
+                  <div class="secondary-stream-empty">Validation and compilation results will be listed here.</div>
+                </div>
+              </div>
+            </div>
           </main>
 
           <aside class="pipeline-panel panel">
             <div class="pipeline-panel-head">
               <h3>Pipeline</h3>
-              <span class="pipeline-count">Phase 1 of 7</span>
+            </div>
+            <div id="pipeline-run-meta" class="pipeline-run-meta hidden">
+              <div class="pipeline-meta-row"><span class="pipeline-meta-key">type</span><span class="pipeline-meta-value">uip</span></div>
+              <div class="pipeline-meta-row"><span class="pipeline-meta-key">spec</span><span class="pipeline-meta-value">TS 38.473</span></div>
+              <div class="pipeline-meta-row"><span class="pipeline-meta-key">branch</span><span class="pipeline-meta-value">ltm_feature</span></div>
             </div>
             <div id="pipeline-empty-state" class="pipeline-empty-state">
               Pipeline phases will appear after you start a run.
@@ -799,6 +834,360 @@
                 <p class="settings-inline-status" id="settings-test-runner-status" role="status" aria-live="polite" hidden></p>
                 <div class="settings-panel-actions">
                   <button id="settings-test-runner-save" class="settings-btn settings-btn-primary" type="button">Save Changes</button>
+                </div>
+              </section>
+            </div>
+
+            <div id="settings-pane-rca-engine" class="settings-pane" hidden>
+              <header class="settings-page-header settings-page-header-compact">
+                <h2 class="settings-page-title">RCA Engine Configuration</h2>
+                <p class="settings-page-subtitle">
+                  Control how the Root Cause Analysis loop behaves when tests fail. The RCA engine analyzes failure logs, generates fix diffs, and can apply them automatically.
+                </p>
+              </header>
+
+              <section class="settings-panel settings-panel-rca" aria-labelledby="settings-rca-behavior-heading">
+                <div class="settings-subpanel-head">
+                  <h3 id="settings-rca-behavior-heading" class="settings-subpanel-title">RCA Loop Behaviour</h3>
+                </div>
+                <div class="settings-rca-rows">
+                  <div class="settings-rca-row">
+                    <div class="settings-rca-copy">
+                      <div class="settings-rca-label">Auto-trigger RCA on test failure</div>
+                      <div class="settings-rca-hint">Starts RCA immediately after failing test case output.</div>
+                    </div>
+                    <label class="settings-toggle settings-toggle-compact">
+                      <input id="settings-rca-auto-trigger" type="checkbox" role="switch" checked />
+                      <span class="settings-toggle-slider" aria-hidden="true"></span>
+                    </label>
+                  </div>
+                  <div class="settings-rca-row">
+                    <div class="settings-rca-copy">
+                      <div class="settings-rca-label">Auto-apply high-confidence fixes</div>
+                      <div class="settings-rca-hint">Applies fix candidates that pass confidence threshold.</div>
+                    </div>
+                    <label class="settings-toggle settings-toggle-compact">
+                      <input id="settings-rca-auto-apply" type="checkbox" role="switch" checked />
+                      <span class="settings-toggle-slider" aria-hidden="true"></span>
+                    </label>
+                  </div>
+                  <div class="settings-rca-row">
+                    <div class="settings-rca-copy">
+                      <div class="settings-rca-label">Require manual review below threshold</div>
+                      <div class="settings-rca-hint">Low confidence suggestions wait for human approval.</div>
+                    </div>
+                    <label class="settings-toggle settings-toggle-compact">
+                      <input id="settings-rca-review-below-threshold" type="checkbox" role="switch" checked />
+                      <span class="settings-toggle-slider" aria-hidden="true"></span>
+                    </label>
+                  </div>
+                  <div class="settings-rca-row">
+                    <div class="settings-rca-copy">
+                      <div class="settings-rca-label">Search Git history for prior fixes</div>
+                      <div class="settings-rca-hint">Cross-checks similar failure signatures against previous commits.</div>
+                    </div>
+                    <label class="settings-toggle settings-toggle-compact">
+                      <input id="settings-rca-search-history" type="checkbox" role="switch" checked />
+                      <span class="settings-toggle-slider" aria-hidden="true"></span>
+                    </label>
+                  </div>
+                </div>
+              </section>
+
+              <section class="settings-panel settings-panel-rca" aria-labelledby="settings-rca-thresholds-heading">
+                <div class="settings-subpanel-head">
+                  <h3 id="settings-rca-thresholds-heading" class="settings-subpanel-title">Thresholds</h3>
+                </div>
+                <div class="settings-rca-threshold-grid">
+                  <label class="settings-field settings-field-row">
+                    <span class="settings-field-label">Auto-apply threshold</span>
+                    <div class="settings-inline-control">
+                      <input id="settings-rca-auto-apply-threshold" class="settings-input settings-input-sm" type="number" min="0" max="100" value="80" />
+                      <span class="settings-field-hint">% confidence</span>
+                    </div>
+                  </label>
+                  <label class="settings-field settings-field-row">
+                    <span class="settings-field-label">Max RCA iterations</span>
+                    <div class="settings-inline-control">
+                      <input id="settings-rca-max-iterations" class="settings-input settings-input-sm" type="number" min="1" max="20" value="3" />
+                      <span class="settings-field-hint">iterations</span>
+                    </div>
+                  </label>
+                  <label class="settings-field">
+                    <span class="settings-field-label">On max iterations exceeded</span>
+                    <select id="settings-rca-max-iteration-action" class="settings-select settings-select-wide">
+                      <option value="pause-notify" selected>Pause and notify user</option>
+                      <option value="open-ticket">Open incident ticket automatically</option>
+                      <option value="retry-with-review">Retry with manual review mode</option>
+                    </select>
+                  </label>
+                </div>
+                <p class="settings-inline-status" id="settings-rca-status" role="status" aria-live="polite" hidden></p>
+                <div class="settings-panel-actions">
+                  <button id="settings-rca-save" class="settings-btn settings-btn-primary" type="button">Save Changes</button>
+                </div>
+              </section>
+            </div>
+
+            <div id="settings-pane-quality-gates" class="settings-pane" hidden>
+              <header class="settings-page-header settings-page-header-compact">
+                <h2 class="settings-page-title">Quality Gates</h2>
+                <p class="settings-page-subtitle">
+                  Define minimum thresholds that must pass before a pipeline merge succeeds. Failed quality gates block progress and trigger notifications.
+                </p>
+              </header>
+
+              <section class="settings-panel settings-panel-rca" aria-labelledby="settings-quality-gates-thresholds-heading">
+                <div class="settings-subpanel-head">
+                  <h3 id="settings-quality-gates-thresholds-heading" class="settings-subpanel-title">Gate Thresholds</h3>
+                </div>
+                <div class="settings-rca-threshold-grid">
+                  <label class="settings-field settings-field-row">
+                    <span class="settings-field-label">Min test pass rate</span>
+                    <div class="settings-inline-control">
+                      <input id="settings-quality-min-pass-rate" class="settings-input settings-input-sm" type="number" min="0" max="100" value="100" />
+                      <span class="settings-field-hint">%</span>
+                    </div>
+                  </label>
+                  <label class="settings-field settings-field-row">
+                    <span class="settings-field-label">Min code coverage</span>
+                    <div class="settings-inline-control">
+                      <input id="settings-quality-min-coverage" class="settings-input settings-input-sm" type="number" min="0" max="100" value="80" />
+                      <span class="settings-field-hint">%</span>
+                    </div>
+                  </label>
+                  <label class="settings-field settings-field-row">
+                    <span class="settings-field-label">Max build warnings</span>
+                    <div class="settings-inline-control">
+                      <input id="settings-quality-max-warnings" class="settings-input settings-input-sm" type="number" min="0" max="1000" value="5" />
+                      <span class="settings-field-hint">warnings</span>
+                    </div>
+                  </label>
+                  <div class="settings-rca-row settings-rca-row-tight">
+                    <div class="settings-rca-copy">
+                      <div class="settings-rca-label">Block push if gate fails</div>
+                      <div class="settings-rca-hint">Prevents commit/push until all gates pass.</div>
+                    </div>
+                    <label class="settings-toggle settings-toggle-compact">
+                      <input id="settings-quality-block-on-fail" type="checkbox" role="switch" checked />
+                      <span class="settings-toggle-slider" aria-hidden="true"></span>
+                    </label>
+                  </div>
+                </div>
+                <p class="settings-inline-status" id="settings-quality-status" role="status" aria-live="polite" hidden></p>
+                <div class="settings-panel-actions">
+                  <button id="settings-quality-save" class="settings-btn settings-btn-primary" type="button">Save Changes</button>
+                </div>
+              </section>
+            </div>
+
+            <div id="settings-pane-notifications" class="settings-pane" hidden>
+              <header class="settings-page-header settings-page-header-compact">
+                <h2 class="settings-page-title">Notifications</h2>
+                <p class="settings-page-subtitle">
+                  Configure where platform events are sent. Useful for long-running pipelines where you want to be alerted on completion, failure, or RCA escalation.
+                </p>
+              </header>
+
+              <section class="settings-panel settings-panel-rca" aria-labelledby="settings-notification-channels-heading">
+                <div class="settings-subpanel-head">
+                  <h3 id="settings-notification-channels-heading" class="settings-subpanel-title">Notification Channels</h3>
+                </div>
+                <div class="settings-rca-rows">
+                  <div class="settings-rca-row">
+                    <div class="settings-rca-copy">
+                      <div class="settings-rca-label">Email on pipeline completion</div>
+                      <div class="settings-rca-hint">Sends summary report to configured address.</div>
+                    </div>
+                    <label class="settings-toggle settings-toggle-compact">
+                      <input id="settings-notify-email-completion" type="checkbox" role="switch" checked />
+                      <span class="settings-toggle-slider" aria-hidden="true"></span>
+                    </label>
+                  </div>
+                  <div class="settings-rca-row">
+                    <div class="settings-rca-copy">
+                      <div class="settings-rca-label">Email on test failure</div>
+                      <div class="settings-rca-hint">Notifies when test stage fails.</div>
+                    </div>
+                    <label class="settings-toggle settings-toggle-compact">
+                      <input id="settings-notify-email-failure" type="checkbox" role="switch" checked />
+                      <span class="settings-toggle-slider" aria-hidden="true"></span>
+                    </label>
+                  </div>
+                  <div class="settings-rca-row">
+                    <div class="settings-rca-copy">
+                      <div class="settings-rca-label">Microsoft Teams webhook</div>
+                      <div class="settings-rca-hint">Post pipeline events to Teams channel.</div>
+                    </div>
+                    <label class="settings-toggle settings-toggle-compact">
+                      <input id="settings-notify-teams-enabled" type="checkbox" role="switch" />
+                      <span class="settings-toggle-slider" aria-hidden="true"></span>
+                    </label>
+                  </div>
+                  <div class="settings-rca-row">
+                    <div class="settings-rca-copy">
+                      <div class="settings-rca-label">Slack webhook</div>
+                    </div>
+                    <label class="settings-toggle settings-toggle-compact">
+                      <input id="settings-notify-slack-enabled" type="checkbox" role="switch" />
+                      <span class="settings-toggle-slider" aria-hidden="true"></span>
+                    </label>
+                  </div>
+                </div>
+
+                <div class="settings-rca-threshold-grid settings-threshold-grid-tight">
+                  <label class="settings-field settings-field-row settings-field-row-input">
+                    <span class="settings-field-label">Email address</span>
+                    <div class="settings-inline-control settings-inline-control-fluid">
+                      <input
+                        id="settings-notify-email-address"
+                        class="settings-input settings-input-inline"
+                        type="email"
+                        spellcheck="false"
+                        autocomplete="off"
+                        value="chandu.vangal@tcs.com"
+                        placeholder="name@company.com"
+                      />
+                    </div>
+                  </label>
+                </div>
+
+                <p class="settings-inline-status" id="settings-notifications-status" role="status" aria-live="polite" hidden></p>
+                <div class="settings-panel-actions">
+                  <button id="settings-notifications-save" class="settings-btn settings-btn-primary" type="button">Save Changes</button>
+                </div>
+              </section>
+            </div>
+
+            <div id="settings-pane-workspace-paths" class="settings-pane" hidden>
+              <header class="settings-page-header settings-page-header-compact">
+                <h2 class="settings-page-title">Workspace &amp; Paths</h2>
+                <p class="settings-page-subtitle">
+                  Configure all filesystem paths used by the platform. These are resolved at runtime for each intent execution.
+                </p>
+              </header>
+
+              <section class="settings-panel settings-panel-rca" aria-labelledby="settings-path-config-heading">
+                <div class="settings-subpanel-head">
+                  <h3 id="settings-path-config-heading" class="settings-subpanel-title">Path Configuration</h3>
+                </div>
+
+                <div class="settings-rca-threshold-grid">
+                  <label class="settings-field settings-field-row settings-field-row-input">
+                    <span class="settings-field-label">Platform root</span>
+                    <div class="settings-inline-control settings-inline-control-fluid">
+                      <input
+                        id="settings-path-platform-root"
+                        class="settings-input settings-input-inline"
+                        type="text"
+                        spellcheck="false"
+                        autocomplete="off"
+                        value="/home/tcs/Downloads/Unified_Platform_UI"
+                      />
+                    </div>
+                  </label>
+                  <label class="settings-field settings-field-row settings-field-row-input">
+                    <span class="settings-field-label">Prompt output dir</span>
+                    <div class="settings-inline-control settings-inline-control-fluid">
+                      <input
+                        id="settings-path-prompt-output"
+                        class="settings-input settings-input-inline"
+                        type="text"
+                        spellcheck="false"
+                        autocomplete="off"
+                        value="./prompts/generated/"
+                      />
+                    </div>
+                  </label>
+                  <label class="settings-field settings-field-row settings-field-row-input">
+                    <span class="settings-field-label">Log output dir</span>
+                    <div class="settings-inline-control settings-inline-control-fluid">
+                      <input
+                        id="settings-path-log-output"
+                        class="settings-input settings-input-inline"
+                        type="text"
+                        spellcheck="false"
+                        autocomplete="off"
+                        value="./logs/"
+                      />
+                    </div>
+                  </label>
+                  <label class="settings-field settings-field-row settings-field-row-input">
+                    <span class="settings-field-label">Test results dir</span>
+                    <div class="settings-inline-control settings-inline-control-fluid">
+                      <input
+                        id="settings-path-test-results"
+                        class="settings-input settings-input-inline"
+                        type="text"
+                        spellcheck="false"
+                        autocomplete="off"
+                        value="./test_results/"
+                      />
+                    </div>
+                  </label>
+                </div>
+
+                <p class="settings-inline-status" id="settings-paths-status" role="status" aria-live="polite" hidden></p>
+                <div class="settings-panel-actions">
+                  <button id="settings-paths-save" class="settings-btn settings-btn-primary" type="button">Save Changes</button>
+                </div>
+              </section>
+            </div>
+
+            <div id="settings-pane-advanced" class="settings-pane" hidden>
+              <header class="settings-page-header settings-page-header-compact">
+                <h2 class="settings-page-title">Advanced Settings</h2>
+                <p class="settings-page-subtitle">
+                  Low-level platform controls. Change only if you know what you're doing.
+                </p>
+              </header>
+
+              <section class="settings-panel settings-panel-rca" aria-labelledby="settings-advanced-behavior-heading">
+                <div class="settings-subpanel-head">
+                  <h3 id="settings-advanced-behavior-heading" class="settings-subpanel-title">Platform Behaviour</h3>
+                </div>
+                <div class="settings-rca-rows">
+                  <div class="settings-rca-row">
+                    <div class="settings-rca-copy">
+                      <div class="settings-rca-label">Dry run mode</div>
+                      <div class="settings-rca-hint">Simulate execution and fix flow without applying changes.</div>
+                    </div>
+                    <label class="settings-toggle settings-toggle-compact">
+                      <input id="settings-advanced-dry-run" type="checkbox" role="switch" />
+                      <span class="settings-toggle-slider" aria-hidden="true"></span>
+                    </label>
+                  </div>
+                  <div class="settings-rca-row">
+                    <div class="settings-rca-copy">
+                      <div class="settings-rca-label">Verbose logging</div>
+                    </div>
+                    <label class="settings-toggle settings-toggle-compact">
+                      <input id="settings-advanced-verbose-logging" type="checkbox" role="switch" checked />
+                      <span class="settings-toggle-slider" aria-hidden="true"></span>
+                    </label>
+                  </div>
+                  <div class="settings-rca-row">
+                    <div class="settings-rca-copy">
+                      <div class="settings-rca-label">Persist session state</div>
+                      <div class="settings-rca-hint">Resume interrupted pipeline runs on restart.</div>
+                    </div>
+                    <label class="settings-toggle settings-toggle-compact">
+                      <input id="settings-advanced-persist-session" type="checkbox" role="switch" checked />
+                      <span class="settings-toggle-slider" aria-hidden="true"></span>
+                    </label>
+                  </div>
+                  <div class="settings-rca-row">
+                    <div class="settings-rca-copy">
+                      <div class="settings-rca-label">Platform version</div>
+                    </div>
+                    <div class="settings-advanced-version" id="settings-advanced-version">UIP v1.0.0-beta - Build 20260508</div>
+                  </div>
+                </div>
+
+                <p class="settings-inline-status" id="settings-advanced-status" role="status" aria-live="polite" hidden></p>
+                <div class="settings-panel-actions">
+                  <button id="settings-advanced-reset" class="settings-btn settings-btn-danger-outline" type="button">Reset to Defaults</button>
+                  <button id="settings-advanced-save" class="settings-btn settings-btn-primary" type="button">Save Changes</button>
                 </div>
               </section>
             </div>
