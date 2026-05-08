@@ -28,7 +28,8 @@ body {
   font-family: "Inter", "Segoe UI", Arial, sans-serif;
   background: var(--base-0);
   color: var(--text-strong);
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
   scrollbar-width: thin;
   scrollbar-color: var(--base-3) transparent;
 }
@@ -586,7 +587,8 @@ button.secondary:hover {
   display: flex;
   align-items: center;
   gap: 6px;
-  width: 100%;
+  flex: 1;
+  min-width: 0;
 }
 
 .milestone-label.is-expandable {
@@ -604,6 +606,20 @@ button.secondary:hover {
   color: var(--text-main);
   font-size: 12px;
   margin-left: 10px;
+  flex-shrink: 0;
+}
+
+.milestone-duration {
+  margin-left: 8px;
+  padding: 1px 7px;
+  border-radius: 999px;
+  border: 1px solid #dbe2ec;
+  background: #f8fafc;
+  color: #64748b;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1.2;
+  white-space: nowrap;
   flex-shrink: 0;
 }
 
@@ -1053,6 +1069,17 @@ button.secondary:hover {
   color: #1e40af;
   background: #dbeafe;
   border: 1px solid #93c5fd;
+}
+
+.log-line-time {
+  flex: 0 0 auto;
+  min-width: 38px;
+  color: #64748b;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1.35;
+  text-align: right;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 }
 
 .log-line-content {

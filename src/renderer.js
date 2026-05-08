@@ -210,6 +210,66 @@ function getMilestoneStatusMap(milestones) {
   }, {});
 }
 
+function getMilestoneByIdMap(milestones) {
+  return milestones.reduce((acc, item) => {
+    acc[item.id] = item;
+    return acc;
+  }, {});
+}
+
+function parseTimestamp(value) {
+  if (!value) return null;
+  const parsed = Date.parse(value);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+function formatDurationMs(durationMs) {
+  if (!Number.isFinite(durationMs) || durationMs < 0) return "";
+  const roundedSeconds = Math.round(durationMs / 1000);
+  if (roundedSeconds < 1) return "<1s";
+  const minutes = Math.floor(roundedSeconds / 60);
+  const seconds = roundedSeconds % 60;
+  if (minutes <= 0) return `${seconds}s`;
+  if (seconds === 0) return `${minutes}m`;
+  return `${minutes}m ${seconds}s`;
+}
+
+function getMilestoneDurationMs(milestone) {
+  if (!milestone || typeof milestone !== "object") return null;
+  const durationSeconds = Number(
+    milestone.duration_seconds ?? milestone.durationSeconds ?? milestone.elapsed_seconds ?? milestone.elapsedSeconds
+  );
+  if (Number.isFinite(durationSeconds) && durationSeconds >= 0) {
+    return durationSeconds * 1000;
+  }
+  const durationMs = Number(milestone.duration_ms ?? milestone.durationMs ?? milestone.elapsed_ms ?? milestone.elapsedMs);
+  if (Number.isFinite(durationMs) && durationMs >= 0) {
+    return durationMs;
+  }
+  const startedAt = parseTimestamp(milestone.started_at ?? milestone.startedAt ?? milestone.start_time ?? milestone.startTime);
+  if (!Number.isFinite(startedAt)) return null;
+  const completedAt = parseTimestamp(
+    milestone.completed_at ?? milestone.completedAt ?? milestone.ended_at ?? milestone.endedAt ?? milestone.end_time ?? milestone.endTime
+  );
+  const endTime = Number.isFinite(completedAt) ? completedAt : Date.now();
+  return Math.max(endTime - startedAt, 0);
+}
+
+function getMilestoneDurationLabel(milestone) {
+  const durationMs = getMilestoneDurationMs(milestone);
+  if (!Number.isFinite(durationMs)) return "";
+  return formatDurationMs(durationMs);
+}
+
+function getAggregateDurationLabel(children, milestoneById) {
+  const totalMs = children.reduce((acc, child) => {
+    const durationMs = getMilestoneDurationMs(milestoneById[child.id]);
+    if (!Number.isFinite(durationMs)) return acc;
+    return acc + durationMs;
+  }, 0);
+  return totalMs > 0 ? formatDurationMs(totalMs) : "";
+}
+
 function aggregateStatus(statuses) {
   if (statuses.some((s) => s === "failed")) return "failed";
   if (statuses.some((s) => s === "in_progress")) return "in_progress";
@@ -304,10 +364,11 @@ function renderPipelinePhases(milestones) {
   });
 }
 
-function createMilestoneNode(label, status, isLast = false, extraClass = "") {
+function createMilestoneNode(label, status, isLast = false, extraClass = "", durationLabel = "") {
   const li = document.createElement("li");
   li.className = `milestone-item ${extraClass}`.trim();
   if (isLast) li.classList.add("is-last");
+  const safeDurationLabel = String(durationLabel || "").trim();
   li.innerHTML = `
     <span class="milestone-visual">
       <span class="status-ring status-${status}">
@@ -316,6 +377,7 @@ function createMilestoneNode(label, status, isLast = false, extraClass = "") {
       <span class="status-connector"></span>
     </span>
     <span class="milestone-label">${label}</span>
+    <span class="milestone-duration ${safeDurationLabel ? "" : "hidden"}">${safeDurationLabel}</span>
   `;
   return li;
 }
@@ -327,6 +389,7 @@ function renderMilestones(milestones) {
   renderPipelinePhases(state.currentMilestones);
   milestoneList.innerHTML = "";
   const statusById = getMilestoneStatusMap(milestones);
+  const milestoneById = getMilestoneByIdMap(milestones);
 
   const promptChildren = [
     { id: "feature_validation", label: "Intent Resolution" },
@@ -340,7 +403,13 @@ function renderMilestones(milestones) {
     promptChildren.map((c) => statusById[c.id] || "not_completed")
   );
 
-  const promptParent = createMilestoneNode("Prompt Generation", promptGroupStatus, false, "parent");
+  const promptParent = createMilestoneNode(
+    "Prompt Generation",
+    promptGroupStatus,
+    false,
+    "parent",
+    getAggregateDurationLabel(promptChildren, milestoneById)
+  );
   promptParent.classList.toggle("expanded", state.promptGroupExpanded);
   promptParent.classList.toggle("collapsed", !state.promptGroupExpanded);
   const promptLabel = promptParent.querySelector(".milestone-label");
@@ -366,7 +435,8 @@ function renderMilestones(milestones) {
       child.label,
       statusById[child.id] || "not_completed",
       index === promptChildren.length - 1,
-      "child"
+      "child",
+      getMilestoneDurationLabel(milestoneById[child.id])
     );
     childrenList.appendChild(childNode);
   });
@@ -386,7 +456,8 @@ function renderMilestones(milestones) {
     "Code Generation",
     statusById.code_generation || "not_completed",
     false,
-    "parent"
+    "parent",
+    getMilestoneDurationLabel(milestoneById.code_generation)
   );
   milestoneList.appendChild(codeNode);
 
@@ -394,7 +465,8 @@ function renderMilestones(milestones) {
     "Commit & Push",
     statusById.commit_push || "not_completed",
     false,
-    "parent"
+    "parent",
+    getMilestoneDurationLabel(milestoneById.commit_push)
   );
   milestoneList.appendChild(commitNode);
 
@@ -411,7 +483,13 @@ function renderMilestones(milestones) {
   const jenkinsGroupStatus = aggregateStatus(
     jenkinsChildren.map((c) => statusById[c.id] || "not_completed")
   );
-  const jenkinsParent = createMilestoneNode("CI/CD Pipeline", jenkinsGroupStatus, true, "parent");
+  const jenkinsParent = createMilestoneNode(
+    "CI/CD Pipeline",
+    jenkinsGroupStatus,
+    true,
+    "parent",
+    getAggregateDurationLabel(jenkinsChildren, milestoneById)
+  );
   jenkinsParent.classList.toggle("expanded", state.jenkinsGroupExpanded);
   jenkinsParent.classList.toggle("collapsed", !state.jenkinsGroupExpanded);
   const jenkinsLabel = jenkinsParent.querySelector(".milestone-label");
@@ -436,7 +514,8 @@ function renderMilestones(milestones) {
       child.label,
       statusById[child.id] || "not_completed",
       index === jenkinsChildren.length - 1,
-      "child"
+      "child",
+      getMilestoneDurationLabel(milestoneById[child.id])
     );
     jenkinsChildrenList.appendChild(childNode);
   });
@@ -492,10 +571,30 @@ function logLevelBadgeLabel(level) {
   }
 }
 
+function formatLogTime(timestampInput) {
+  let dateValue = null;
+  if (timestampInput instanceof Date && !Number.isNaN(timestampInput.getTime())) {
+    dateValue = timestampInput;
+  } else if (typeof timestampInput === "number" && Number.isFinite(timestampInput)) {
+    dateValue = new Date(timestampInput);
+  } else if (typeof timestampInput === "string" && timestampInput.trim()) {
+    const parsed = new Date(timestampInput);
+    if (!Number.isNaN(parsed.getTime())) {
+      dateValue = parsed;
+    }
+  }
+  if (!dateValue) {
+    dateValue = new Date();
+  }
+  const hh = String(dateValue.getHours()).padStart(2, "0");
+  const mm = String(dateValue.getMinutes()).padStart(2, "0");
+  return `${hh}:${mm}`;
+}
+
 /**
  * Renders a single log row with a level badge, optional [stage] tag, and message (colored in CSS).
  */
-function buildStructuredLogLine(text, level = "info") {
+function buildStructuredLogLine(text, level = "info", timestampInput = null) {
   const row = document.createElement("div");
   row.className = `log-line log-level-${level}`;
 
@@ -533,16 +632,21 @@ function buildStructuredLogLine(text, level = "info") {
     content.appendChild(msg);
   }
 
+  const time = document.createElement("span");
+  time.className = "log-line-time";
+  time.textContent = formatLogTime(timestampInput);
+
+  row.appendChild(time);
   row.appendChild(badge);
   row.appendChild(content);
   return row;
 }
 
-function appendLog(text, type = "info") {
+function appendLog(text, type = "info", timestampInput = null) {
   const signature = `${type}::${String(text)}`;
   if (state.lastLogSignature === signature) return;
   state.lastLogSignature = signature;
-  const div = buildStructuredLogLine(String(text), type);
+  const div = buildStructuredLogLine(String(text), type, timestampInput);
   div.classList.add("log-item");
   logStream.appendChild(div);
   logStream.scrollTop = logStream.scrollHeight;
@@ -594,7 +698,9 @@ function appendBackendLogs(logs = []) {
     }
     const logType =
       log.type === "warning" ? "warning" : log.type === "error" ? "error" : "info";
-    appendLog(`[${log.stage}] ${rawMessage}`, logType);
+    const logTimestamp =
+      log.timestamp ?? log.created_at ?? log.createdAt ?? log.time ?? log.logged_at ?? log.loggedAt ?? null;
+    appendLog(`[${log.stage}] ${rawMessage}`, logType, logTimestamp);
   });
 }
 

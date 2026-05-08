@@ -2,7 +2,7 @@
   "feature_json_path": "in_memory",
   "template_path": "C:\\Users\\ChanduVangala\\Desktop\\Unified_Platform_UI\\backend\\services\\codegen\\inputs\\Template_common.json",
   "intent": "gNB-CU has to prepare and send F1AP \"UE CONTEXT SETUP REQUEST\" message to the candidate gNB-DU and candidate gNB-DU has to respond with F1AP \"UE CONTEXT SETUP RESPONSE\" message and this message has to be handled on gNB-CU for Inter-gNB DU LTM Handover Procedure",
-  "timestamp": "2026-05-06T18:34:16.060459+05:30",
+  "timestamp": "2026-05-08T16:56:31.778895+05:30",
   "retrieval_config": {
     "max_depth_kg_expand": 2,
     "llm_iexpand_max_depth": 2,
